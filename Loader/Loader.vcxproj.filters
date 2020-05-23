@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Library">
+      <UniqueIdentifier>{f320162a-2313-4cf7-bd8d-eb551a0fc235}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -27,9 +30,6 @@
     <ClInclude Include="SQLiteDisassemblyReader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\sqlite3.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -39,6 +39,9 @@
     <ClInclude Include="..\Common\Utility.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\sqlite3.h">
+      <Filter>Library</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Loader.cpp">
@@ -47,14 +50,14 @@
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\sqlite3.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Utility.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\sqlite3.c">
+      <Filter>Library</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
