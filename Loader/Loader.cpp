@@ -355,11 +355,11 @@ void Loader::LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address
         p_map_info_map = m_pdisassemblyReader->ReadMapInfo(m_FileID, Address, IsFunction);
     }
 
-    Buildm_codeReferenceMap(p_map_info_map);
+    BuildCodeReferenceMap(p_map_info_map);
 }
 
 
-void Loader::Buildm_codeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map)
+void Loader::BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map)
 {
     for (auto& val : *p_map_info_map)
     {

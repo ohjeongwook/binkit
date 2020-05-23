@@ -50,7 +50,7 @@ public:
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
     char *GetDisasmLines(unsigned long start_addr, unsigned long end_addr);
-    void Buildm_codeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
+    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
 
     void LoadBlockToFunction();
     multimap <va_t, va_t> *GetFunctionToBlock();
