@@ -152,13 +152,13 @@ void SaveIDAAnalysis(bool ask_file_path)
     }
 
     long end_tick = GetTickCount();
-    LogMessage(1, __FUNCTION__, "DarunGrim Analysis Finished %.3f sec\n", (float)(end_tick - start_tick) / 1000);
+    LogMessage(1, __FUNCTION__, "IDAHasher Analysis Finished %.3f sec\n", (float)(end_tick - start_tick) / 1000);
 }
 
 bool idaapi run(size_t arg)
 {
     SetLogLevel(1);
-    LogMessage(1, __FUNCTION__, "DarunGrim plugin started...\n");
+    LogMessage(1, __FUNCTION__, "IDAHasher plugin started...\n");
 
     if (arg == 1)
     {
@@ -169,12 +169,12 @@ bool idaapi run(size_t arg)
     return true;
 }
 
-char comment[] = "This is a DarunGrim IDA Exporter Plugin";
+char comment[] = "This is a IDAHasher IDA Exporter Plugin";
 char help[] =
-"A DarunGrim Plugin module\n"
-"This module let you export disassembly and control flow information as a sqlite database.\n";
+"A IDAHasher Plugin module\n"
+"This will generate hash values for basic blocks to be used for identifying similar matching blocks from other binaries.\n";
 
-char wanted_name[] = "DarunGrim";
+char wanted_name[] = "IDAHasher";
 char wanted_hotkey[] = "Alt-8";
 
 plugin_t PLUGIN =

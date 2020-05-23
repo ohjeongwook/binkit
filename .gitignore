@@ -1,5 +1,5 @@
 libs/
 .vs/
 x64/
-DarunGrimIDAExporter.vcxproj.user
-DarunGrimIDAExporter.user
+IDAHasher.vcxproj.user
+IDAHasher.user
