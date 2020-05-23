@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string>
 
-#include "Common.h"
+#include "StorageDataStructures.h"
 #include "Storage.h"
 
 #include "sqlite3.h"

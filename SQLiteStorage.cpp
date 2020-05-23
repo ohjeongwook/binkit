@@ -10,7 +10,7 @@ using namespace stdext;
 
 #include "sqlite3.h"
 
-#include "Common.h"
+#include "StorageDataStructures.h"
 #include "SQLiteStorage.h"
 #include "Log.h"
 

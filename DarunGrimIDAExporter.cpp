@@ -11,7 +11,7 @@
 #include <expr.hpp>
 #include <loader.hpp>
 
-#include "Common.h"
+#include "StorageDataStructures.h"
 #include "IDAAnalyzer.h"
 #include "SQLiteStorage.h"
 #include "Log.h"
