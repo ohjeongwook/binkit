@@ -15,36 +15,32 @@ class Loader
 {
 private:
     int m_FileID;
-    DisassemblyReader *m_pdisassemblyReader;
-
-    char *m_OriginalFilePath;
+    string Identity;
+    char* m_OriginalFilePath;
     va_t TargetFunctionAddress;
+    multimap <va_t, va_t> m_codeReferenceMap;
+    multimap <va_t, va_t> m_blockToFunction;
+    multimap <va_t, va_t> m_functionToBlock;
+    unordered_set <va_t> m_functionHeads;
 
+    DisassemblyReader *m_pdisassemblyReader;
     DisassemblyHashMaps *m_disassemblyHashMaps;
-    char *DisasmLine;
+
+    void LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address, bool IsFunction = false);
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
-public:
-    DisassemblyHashMaps *Getm_disassemblyHashMaps()
-    {
-        return m_disassemblyHashMaps;
-    }
 
-    FileInfo *GetClientFileInfo()
-    {
-        return &m_disassemblyHashMaps->file_info;
-    }
+public:
     Loader(DisassemblyReader *DisassemblyReader = NULL);
     ~Loader();
-    BOOL Retrieve(char *DataFile, DWORD Offset = 0L, DWORD Length = 0L);
-
     void SetFileID(int FileID = 1);
-    void LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address, bool IsFunction = false);
-    BOOL Load();
+    int GetFileID();
+    string GetIdentity();
 
+    BOOL Retrieve(char *DataFile, DWORD Offset = 0L, DWORD Length = 0L);
+    BOOL Load();
     void AddAnalysisTargetFunction(va_t FunctionAddress);
     BOOL LoadBasicBlock();
-
     BOOL Save(char *DataFile, DWORD Offset = 0L, DWORD dwMoveMethod = FILE_BEGIN, unordered_set <va_t> *pSelectedAddresses = NULL);
     void DumpDisassemblyHashMaps();
     char *GetName(va_t address);
@@ -54,21 +50,27 @@ public:
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
     char *GetDisasmLines(unsigned long start_addr, unsigned long end_addr);
+    void Buildm_codeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
 
-    string Identity;
+    void LoadBlockToFunction();
+    multimap <va_t, va_t> *GetFunctionToBlock();
+    PBasicBlock GetBasicBlock(va_t address);
+    list <BLOCK> GetFunctionMemberBlocks(unsigned long FunctionAddress);
+    char *GetOriginalFilePath();
+    BOOL FixFunctionAddresses();
+    list <va_t> *GetFunctionAddresses();
 
-    multimap <va_t, va_t> CrefToMap;
-    void BuildCrefToMap(multimap <va_t, PMapInfo> *p_map_info_map);
+    void ClearBlockToFunction()
+    {
+        m_blockToFunction.clear();
+        m_functionToBlock.clear();
+    }
 
-    multimap <va_t, va_t> BlockToFunction;
-    multimap <va_t, va_t> FunctionToBlock;
-    unordered_set <va_t> FunctionHeads;
-public:
     bool GetFunctionAddress(va_t address, va_t& function_address)
     {
-        multimap <va_t, va_t>::iterator it = BlockToFunction.find(address);
+        multimap <va_t, va_t>::iterator it = m_blockToFunction.find(address);
 
-        if (it != BlockToFunction.end())
+        if (it != m_blockToFunction.end())
         {
             function_address = it->second;
             return true;
@@ -79,7 +81,7 @@ public:
 
     bool FindBlockFunctionMatch(va_t block, va_t function)
     {
-        for (multimap <va_t, va_t>::iterator it = BlockToFunction.find(block); it != BlockToFunction.end() && it->first == block; it++)
+        for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
         {
             if (it->second == function)
             {
@@ -89,28 +91,8 @@ public:
         return false;
     }
 
-    void LoadBlockToFunction();
-    multimap <va_t, va_t> *GetFunctionToBlock();
-    void ClearBlockToFunction()
+    FileInfo *GetClientFileInfo()
     {
-        BlockToFunction.clear();
-        FunctionToBlock.clear();
+        return &m_disassemblyHashMaps->file_info;
     }
-
-    string GetIdentity();
-
-    PBasicBlock GetBasicBlock(va_t address);
-    void FreeDisasmLines();
-    list <BLOCK> GetFunctionMemberBlocks(unsigned long FunctionAddress);
-    int GetFileID();
-    char *GetOriginalFilePath();
-
-    BOOL FixFunctionAddresses();
-    list <va_t> *GetFunctionAddresses();
 };
-
-unsigned char HexToChar(char *Hex);
-unsigned char *HexToBytes(char *HexBytes, int *pLen);
-unsigned char *HexToBytesWithLengthAmble(char *HexBytes);
-char *BytesWithLengthAmbleToHex(unsigned char *Bytes);
-int IsEqualByteWithLengthAmble(unsigned char *Bytes01, unsigned char *Bytes02);

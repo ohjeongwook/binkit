@@ -1,11 +1,13 @@
 #pragma warning(disable:4996)
 #pragma warning(disable:4200)
-#include "Loader.h"
 #include <string>
+#include <unordered_set>
+
+#include "Loader.h"
 #include "Log.h"
 #include "DisassemblyReader.h"
+#include "Utility.h"
 
-#include <unordered_set>
 using namespace std;
 using namespace stdext;
 
@@ -18,7 +20,6 @@ Loader::Loader(DisassemblyReader *p_disassemblyReader) :
     m_disassemblyHashMaps(NULL),
     TargetFunctionAddress(0),
     m_OriginalFilePath(NULL),
-    DisasmLine(NULL),
     m_FileID(0)
 {
     m_disassemblyHashMaps = new DisassemblyHashMaps;
@@ -354,17 +355,17 @@ void Loader::LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address
         p_map_info_map = m_pdisassemblyReader->ReadMapInfo(m_FileID, Address, IsFunction);
     }
 
-    BuildCrefToMap(p_map_info_map);
+    Buildm_codeReferenceMap(p_map_info_map);
 }
 
 
-void Loader::BuildCrefToMap(multimap <va_t, PMapInfo> *p_map_info_map)
+void Loader::Buildm_codeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map)
 {
     for (auto& val : *p_map_info_map)
     {
         if (val.second->Type == CREF_FROM)
         {
-            CrefToMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
+            m_codeReferenceMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
         }
     }
 }
@@ -487,12 +488,6 @@ PBasicBlock Loader::GetBasicBlock(va_t address)
     return m_pdisassemblyReader->ReadBasicBlock(m_FileID, address);
 }
 
-void Loader::FreeDisasmLines()
-{
-    if (DisasmLine)
-        free(DisasmLine);
-}
-
 list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
 {
     list <BLOCK> block_list;
@@ -522,7 +517,7 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
                     va_t address = p_addresses[i];
                     if (address)
                     {
-                        if (FunctionHeads.find(address) != FunctionHeads.end())
+                        if (m_functionHeads.find(address) != m_functionHeads.end())
                             continue;
 
                         if (checked_addresses.find(address) == checked_addresses.end())
@@ -623,7 +618,7 @@ int Loader::GetFileID()
 multimap <va_t, va_t> *Loader::GetFunctionToBlock()
 {
     LogMessage(10, __FUNCTION__, "LoadFunctionMembersMap\n");
-    return &FunctionToBlock;
+    return &m_functionToBlock;
 }
 
 static int ReadAddressToFunctionMapResultsCallback(void *arg, int argc, char **argv, char **names)
@@ -659,7 +654,7 @@ void Loader::LoadBlockToFunction()
             for (auto& val : function_member_blocks)
             {
                 va_t addr = val.Start;
-                BlockToFunction.insert(pair <va_t, va_t>(addr, address));
+                m_blockToFunction.insert(pair <va_t, va_t>(addr, address));
 
                 if (addresses.find(addr) == addresses.end())
                 {
@@ -686,8 +681,8 @@ void Loader::LoadBlockToFunction()
             if (val.second > 1)
             {
                 bool function_start = true;
-                for (multimap<va_t, va_t>::iterator it2 = CrefToMap.find(val.first);
-                    it2 != CrefToMap.end() && it2->first == val.first;
+                for (multimap<va_t, va_t>::iterator it2 = m_codeReferenceMap.find(val.first);
+                    it2 != m_codeReferenceMap.end() && it2->first == val.first;
                     it2++
                     )
                 {
@@ -710,7 +705,7 @@ void Loader::LoadBlockToFunction()
                 if (function_start)
                 {
                     va_t function_start_addr = val.first;
-                    FunctionHeads.insert(function_start_addr);
+                    m_functionHeads.insert(function_start_addr);
                     list <BLOCK> function_member_blocks = GetFunctionMemberBlocks(function_start_addr);
                     unordered_map<va_t, va_t>::iterator function_start_membership_it = membership_hash.find(function_start_addr);
 
@@ -726,15 +721,15 @@ void Loader::LoadBlockToFunction()
                         if (function_start_membership_it->second != current_membership_it->second)
                             continue;
 
-                        for (multimap <va_t, va_t>::iterator a2f_it = BlockToFunction.find(addr);
-                            a2f_it != BlockToFunction.end() && a2f_it->first == addr;
+                        for (multimap <va_t, va_t>::iterator a2f_it = m_blockToFunction.find(addr);
+                            a2f_it != m_blockToFunction.end() && a2f_it->first == addr;
                             a2f_it++
                             )
                         {
                             LogMessage(10, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
-                            a2f_it = BlockToFunction.erase(a2f_it);
+                            a2f_it = m_blockToFunction.erase(a2f_it);
                         }
-                        BlockToFunction.insert(pair <va_t, va_t>(addr, function_start_addr));
+                        m_blockToFunction.insert(pair <va_t, va_t>(addr, function_start_addr));
                         LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", addr, function_start_addr);
                     }
                 }
@@ -743,12 +738,12 @@ void Loader::LoadBlockToFunction()
         function_addresses->clear();
         delete function_addresses;
 
-        for (auto& val : BlockToFunction)
+        for (auto& val : m_blockToFunction)
         {
-            FunctionToBlock.insert(pair<va_t, va_t>(val.second, val.first));
+            m_functionToBlock.insert(pair<va_t, va_t>(val.second, val.first));
         }
 
-        LogMessage(10, __FUNCTION__, "%s: ID = %d BlockToFunction %u entries\n", __FUNCTION__, m_FileID, BlockToFunction.size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d m_blockToFunction %u entries\n", __FUNCTION__, m_FileID, m_blockToFunction.size());
     }
 }
 
@@ -761,7 +756,7 @@ BOOL Loader::FixFunctionAddresses()
     if (m_pdisassemblyReader)
         m_pdisassemblyReader->BeginTransaction();
 
-    for (auto& val : BlockToFunction)
+    for (auto& val : m_blockToFunction)
     {
         //StartAddress: val.first
         //FunctionAddress: val.second
