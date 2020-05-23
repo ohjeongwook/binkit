@@ -94,6 +94,5 @@ public:
 
     int GetLastInsertRowID();
     int ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...);
-    static int display_callback(void *NotUsed, int argc, char **argv, char **azColName);
     void UpdateBasicBlock(int fileID, va_t address1, va_t address2);
 };

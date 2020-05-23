@@ -225,16 +225,6 @@ void SQLiteDisassemblyStorage::Close()
     CloseDatabase();
 }
 
-int SQLiteDisassemblyStorage::display_callback(void *NotUsed, int argc, char **argv, char **azColName)
-{
-    int i;
-    for (i = 0; i < argc; i++) {
-        LogMessage(1, __FUNCTION__, "%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-    }
-    return 0;
-}
-
-
 void SQLiteDisassemblyStorage::UpdateBasicBlock(int fileID, va_t address1, va_t address2)
 {
     ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT,
