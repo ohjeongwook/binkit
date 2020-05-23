@@ -68,26 +68,6 @@ typedef unsigned char *PBYTE;
 #define UPDATE_BASIC_BLOCK_TABLE_DISASM_LINES_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET DisasmLines=%Q WHERE StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_FINGERPRINT_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET Fingerprint=%Q WHERE StartAddress='%u';"
 
-#define CREATE_FILE_LIST_TABLE_STATEMENT "CREATE TABLE " FILE_LIST_TABLE " ( \n\
-            id INTEGER PRIMARY KEY AUTOINCREMENT, \n\
-            Type VARCHAR(25), \n\
-            Filename VARCHAR(255), \n\
-            FileID INTEGER, \n\
-            FunctionAddress INTEGER\n\
-         );"
-
-#define INSERT_FILE_LIST_TABLE_STATEMENT "INSERT INTO  "FILE_LIST_TABLE" ( Type, Filename, FileID, FunctionAddress ) values ( '%s', '%s', '%d', '%d' );"
-
-#define UNIDENTIFIED_BLOCKS_TABLE "UnidentifiedBlocks"
-#define CREATE_UNIDENTIFIED_BLOCKS_TABLE_STATEMENT "CREATE TABLE "UNIDENTIFIED_BLOCKS_TABLE" ( \n\
-            id INTEGER PRIMARY KEY AUTOINCREMENT, \n\
-            OldFileID INTEGER, \n\
-            NewFileID INTEGER, \n\
-            Type INTEGER, \n\
-            Address INTEGER\n\
-         );"
-#define INSERT_UNIDENTIFIED_BLOCKS_TABLE_STATEMENT "INSERT INTO  "UNIDENTIFIED_BLOCKS_TABLE" ( Type, Address ) values ( '%u', '%u' );"
-
 class SQLiteStorage : public Storage
 {
 private:

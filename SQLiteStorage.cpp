@@ -339,9 +339,6 @@ va_t SQLiteStorage::ReadBlockStartAddress(int fileID, va_t address)
     return blockAddress;
 }
 
-
-unsigned char *HexToBytesWithLengthAmble(char *HexBytes);
-
 int SQLiteStorage::ReadMapInfoCallback(void *arg, int argc, char **argv, char **names)
 {
     multimap <va_t, PMapInfo> *p_map_info_map = (multimap <va_t, PMapInfo>*)arg;
@@ -423,19 +420,6 @@ list<BLOCK> SQLiteStorage::ReadFunctionMemberAddresses(int fileID, va_t function
         fileID, function_address);
 
     return block_list;
-}
-
-char *GetFilename(char *full_pathname)
-{
-    for (int i = strlen(full_pathname) - 1; i > 0; i--)
-    {
-        if (full_pathname[i] == '\\')
-        {
-            return full_pathname + i + 1;
-        }
-    }
-
-    return full_pathname;
 }
 
 char *SQLiteStorage::GetOriginalFilePath(int fileID)
