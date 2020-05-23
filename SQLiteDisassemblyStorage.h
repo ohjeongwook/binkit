@@ -68,7 +68,7 @@ typedef unsigned char *PBYTE;
 #define UPDATE_BASIC_BLOCK_TABLE_DISASM_LINES_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET DisasmLines=%Q WHERE StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_FINGERPRINT_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET Fingerprint=%Q WHERE StartAddress='%u';"
 
-class SQLiteDisassemblyStorage : public Storage
+class SQLiteDisassemblyStorage : public DisassemblyStorage
 {
 private:
     sqlite3 *m_database;

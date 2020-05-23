@@ -7,7 +7,7 @@
 using namespace std;
 using namespace stdext;
 
-class Storage
+class DisassemblyStorage
 {
 public:
     virtual void SetFileInfo(FileInfo *p_file_info)
