@@ -51,7 +51,7 @@ typedef unsigned char *PBYTE;
             BlockType INTEGER,\n\
             Name TEXT,\n\
             DisasmLines TEXT,\n\
-            Fingerprint TEXT\n\
+            InstructionHash TEXT\n\
 );"
 
 #define CREATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCK_TABLE"FunctionAddressIndex ON "BASIC_BLOCK_TABLE" (FunctionAddress)"
@@ -60,13 +60,13 @@ typedef unsigned char *PBYTE;
 
 #define CREATE_BASIC_BLOCK_TABLE_END_ADDRESS_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCK_TABLE"EndAddressIndex ON "BASIC_BLOCK_TABLE" (EndAddress)"
 
-//#define CREATE_BASIC_BLOCK_TABLE_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCK_TABLE"AddressIndex ON "BASIC_BLOCK_TABLE" (FileID,StartAddress,EndAddress,Name,Fingerprint)"
-#define INSERT_BASIC_BLOCK_TABLE_STATEMENT "INSERT INTO  " BASIC_BLOCK_TABLE" (FileID,StartAddress,EndAddress,Flag,FunctionAddress,BlockType,Name,DisasmLines,Fingerprint) values ('%u','%u','%u','%u','%u','%u',%Q,%Q,%Q);"
+//#define CREATE_BASIC_BLOCK_TABLE_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCK_TABLE"AddressIndex ON "BASIC_BLOCK_TABLE" (FileID,StartAddress,EndAddress,Name,InstructionHash)"
+#define INSERT_BASIC_BLOCK_TABLE_STATEMENT "INSERT INTO  " BASIC_BLOCK_TABLE" (FileID,StartAddress,EndAddress,Flag,FunctionAddress,BlockType,Name,DisasmLines,InstructionHash) values ('%u','%u','%u','%u','%u','%u',%Q,%Q,%Q);"
 #define UPDATE_BASIC_BLOCK_TABLE_NAME_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET Name=%Q WHERE StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET FunctionAddress='%u',BlockType='%d' WHERE FileID='%u' AND StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_BLOCK_TYPE_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET BlockType='%d' WHERE FileID='%u' AND StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_DISASM_LINES_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET DisasmLines=%Q WHERE StartAddress='%u';"
-#define UPDATE_BASIC_BLOCK_TABLE_FINGERPRINT_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET Fingerprint=%Q WHERE StartAddress='%u';"
+#define UPDATE_BASIC_BLOCK_TABLE_INSTRUCTION_HASH_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET InstructionHash=%Q WHERE StartAddress='%u';"
 
 class SQLiteDisassemblyStorage : public DisassemblyStorage
 {

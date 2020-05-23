@@ -13,7 +13,7 @@ typedef int va_t;
 
 enum { SEND_ANALYSIS_DATA, UNINDENTIFIED_ADDR, MATCHED_ADDR, SHOW_DATA, SHOW_MATCH_ADDR, JUMP_TO_ADDR, GET_DISASM_LINES, COLOR_ADDRESS, GET_INPUT_NAME, MODIFIED_ADDR };
 
-//DISASM_LINES,FINGERPRINT_INFO,NAME_INFO
+//DISASM_LINES,INSTRUCTION_HASH_INFO,NAME_INFO
 enum { UNKNOWN_BLOCK, FUNCTION_BLOCK };
 
 //Pushing Map information
@@ -44,7 +44,7 @@ typedef struct _BasicBlock_ {
 	char BlockType; // FUNCTION, UNKNOWN
 	int NameLen;
 	int DisasmLinesLen;
-	int FingerprintLen;
+	int InstructionHashLen;
 	int CmdArrayLen;
 	char Data[0];
 } BasicBlock,  *PBasicBlock;

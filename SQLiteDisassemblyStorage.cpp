@@ -176,19 +176,19 @@ void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
 
 void SQLiteDisassemblyStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID)
 {
-    char *fingerprintStr = NULL;
-    if (pBasicBlock->FingerprintLen > 0)
+    char *instruction_hashStr = NULL;
+    if (pBasicBlock->InstructionHashLen > 0)
     {
-        fingerprintStr = (char*)malloc(pBasicBlock->FingerprintLen * 2 + 10);
-        if (fingerprintStr)
+        instruction_hashStr = (char*)malloc(pBasicBlock->InstructionHashLen * 2 + 10);
+        if (instruction_hashStr)
         {
-            memset(fingerprintStr, 0, pBasicBlock->FingerprintLen * 2 + 10);
+            memset(instruction_hashStr, 0, pBasicBlock->InstructionHashLen * 2 + 10);
             char tmp_buffer[10];
-            for (int i = 0; i < pBasicBlock->FingerprintLen; i++)
+            for (int i = 0; i < pBasicBlock->InstructionHashLen; i++)
             {
                 _snprintf(tmp_buffer, sizeof(tmp_buffer) - 1, "%.2x", pBasicBlock->Data[pBasicBlock->NameLen + pBasicBlock->DisasmLinesLen + i] & 0xff);
                 tmp_buffer[sizeof(tmp_buffer) - 1] = NULL;
-                strncat(fingerprintStr, tmp_buffer, sizeof(tmp_buffer));
+                strncat(instruction_hashStr, tmp_buffer, sizeof(tmp_buffer));
             }
         }
     }
@@ -202,11 +202,11 @@ void SQLiteDisassemblyStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID
         pBasicBlock->BlockType,
         pBasicBlock->Data,
         pBasicBlock->Data + pBasicBlock->NameLen,
-        fingerprintStr ? fingerprintStr : ""
+        instruction_hashStr ? instruction_hashStr : ""
     );
 
-    if (fingerprintStr)
-        free(fingerprintStr);
+    if (instruction_hashStr)
+        free(instruction_hashStr);
 }
 
 void SQLiteDisassemblyStorage::AddMapInfo(PMapInfo pMapInfo, int fileID)

@@ -547,7 +547,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         }
     }
 
-    vector <unsigned char> FingerPrint;
+    vector <unsigned char> InstructionHash;
 
     basic_block.EndAddress = 0;
 
@@ -617,20 +617,20 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
                 )
             )
         {
-            FingerPrint.push_back((unsigned char)(*CmdArrayIter).itype);
+            InstructionHash.push_back((unsigned char)(*CmdArrayIter).itype);
             for (int i = 0; i < UA_MAXOP; i++)
             {
                 if ((*CmdArrayIter).ops[i].type != 0)
                 {
-                    FingerPrint.push_back((*CmdArrayIter).ops[i].type);
-                    FingerPrint.push_back((*CmdArrayIter).ops[i].dtype);
+                    InstructionHash.push_back((*CmdArrayIter).ops[i].type);
+                    InstructionHash.push_back((*CmdArrayIter).ops[i].dtype);
                     /*
                     if((*CmdArrayIter).ops[i].type == o_imm)
                     {
-                        FingerPrint.push_back(((*CmdArrayIter).ops[i].value>>24)&0xff);
-                        FingerPrint.push_back(((*CmdArrayIter).ops[i].value>>16)&0xff);
-                        FingerPrint.push_back(((*CmdArrayIter).ops[i].value>>8)&0xff);
-                        FingerPrint.push_back((*CmdArrayIter).ops[i].value&0xff);
+                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>24)&0xff);
+                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>16)&0xff);
+                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>8)&0xff);
+                        InstructionHash.push_back((*CmdArrayIter).ops[i].value&0xff);
                     }*/
                 }
             }
@@ -653,7 +653,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
 
     basic_block.NameLen = name.length() + 1;
     basic_block.DisasmLinesLen = disasm_buffer.length() + 1;
-    basic_block.FingerprintLen = FingerPrint.size();
+    basic_block.InstructionHashLen = InstructionHash.size();
 
     if (gatherCmdArray)
     {
@@ -664,7 +664,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         basic_block.CmdArrayLen = 0;
     }
 
-    int basic_block_length = sizeof(basic_block) + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.FingerprintLen + basic_block.CmdArrayLen;
+    int basic_block_length = sizeof(basic_block) + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.InstructionHashLen + basic_block.CmdArrayLen;
     PBasicBlock p_basic_block = (PBasicBlock)malloc(basic_block_length);
 
     if (p_basic_block)
@@ -683,12 +683,12 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
             *((char*)p_basic_block->Data + basic_block.NameLen) = NULL;
         }
 
-        for (size_t fi = 0; fi < FingerPrint.size(); fi++)
+        for (size_t fi = 0; fi < InstructionHash.size(); fi++)
         {
-            ((unsigned char*)p_basic_block->Data)[basic_block.NameLen + basic_block.DisasmLinesLen + fi] = FingerPrint.at(fi);
+            ((unsigned char*)p_basic_block->Data)[basic_block.NameLen + basic_block.DisasmLinesLen + fi] = InstructionHash.at(fi);
         }
 
-        insn_t *CmdsPtr = (insn_t*)(p_basic_block->Data + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.FingerprintLen);
+        insn_t *CmdsPtr = (insn_t*)(p_basic_block->Data + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.InstructionHashLen);
 
         if (gatherCmdArray)
         {
@@ -702,8 +702,8 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         m_pStorage->AddBasicBlock(p_basic_block);
         free(p_basic_block);
     }
-    //Reset FingerPrint Data
-    FingerPrint.clear();
+    //Reset InstructionHash Data
+    InstructionHash.clear();
 }
 
 list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
