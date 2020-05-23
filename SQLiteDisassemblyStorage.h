@@ -3,7 +3,7 @@
 #include <string>
 
 #include "StorageDataStructures.h"
-#include "Storage.h"
+#include "DisassemblyStorage.h"
 
 #include "sqlite3.h"
 
@@ -68,15 +68,15 @@ typedef unsigned char *PBYTE;
 #define UPDATE_BASIC_BLOCK_TABLE_DISASM_LINES_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET DisasmLines=%Q WHERE StartAddress='%u';"
 #define UPDATE_BASIC_BLOCK_TABLE_FINGERPRINT_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET Fingerprint=%Q WHERE StartAddress='%u';"
 
-class SQLiteStorage : public Storage
+class SQLiteDisassemblyStorage : public Storage
 {
 private:
     sqlite3 *m_database;
     string m_databaseName;
 
 public:
-    SQLiteStorage(const char *DatabaseName = NULL);
-    ~SQLiteStorage();
+    SQLiteDisassemblyStorage(const char *DatabaseName = NULL);
+    ~SQLiteDisassemblyStorage();
 
 public:
     void SetFileInfo(FileInfo *p_file_info);

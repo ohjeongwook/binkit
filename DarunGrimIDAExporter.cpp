@@ -13,7 +13,7 @@
 
 #include "StorageDataStructures.h"
 #include "IDAAnalyzer.h"
-#include "SQLiteStorage.h"
+#include "SQLiteDisassemblyStorage.h"
 #include "Log.h"
 
 using namespace std;
@@ -145,7 +145,7 @@ void SaveIDAAnalysis(bool ask_file_path)
 
     if (input_file_path)
     {
-        SQLiteStorage disassemblyStorage(input_file_path);
+        SQLiteDisassemblyStorage disassemblyStorage(input_file_path);
         IDAAnalyzer idaAnalyzer = IDAAnalyzer(&disassemblyStorage);
         idaAnalyzer.Analyze(0, 0, false);
         disassemblyStorage.Close();

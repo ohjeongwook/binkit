@@ -8,7 +8,7 @@
 #include <string>
 
 #include "IDAAnalyzer.h"
-#include "Storage.h"
+#include "DisassemblyStorage.h"
 
 using namespace std;
 using namespace stdext;

@@ -11,10 +11,10 @@ using namespace stdext;
 #include "sqlite3.h"
 
 #include "StorageDataStructures.h"
-#include "SQLiteStorage.h"
+#include "SQLiteDisassemblyStorage.h"
 #include "Log.h"
 
-SQLiteStorage::SQLiteStorage(const char *DatabaseName)
+SQLiteDisassemblyStorage::SQLiteDisassemblyStorage(const char *DatabaseName)
 {
     m_database = NULL;
     if (DatabaseName)
@@ -24,12 +24,12 @@ SQLiteStorage::SQLiteStorage(const char *DatabaseName)
     }
 }
 
-SQLiteStorage::~SQLiteStorage()
+SQLiteDisassemblyStorage::~SQLiteDisassemblyStorage()
 {
     CloseDatabase();
 }
 
-void SQLiteStorage::CreateTables()
+void SQLiteDisassemblyStorage::CreateTables()
 {
     ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCK_TABLE_STATEMENT);
     ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_INDEX_STATEMENT);
@@ -40,13 +40,13 @@ void SQLiteStorage::CreateTables()
     ExecuteStatement(NULL, NULL, CREATE_FILE_INFO_TABLE_STATEMENT);
 }
 
-bool SQLiteStorage::Open(char *DatabaseName)
+bool SQLiteDisassemblyStorage::Open(char *DatabaseName)
 {
     m_databaseName = DatabaseName;
     return ConnectDatabase(DatabaseName);
 }
 
-bool SQLiteStorage::ConnectDatabase(const char *DatabaseName)
+bool SQLiteDisassemblyStorage::ConnectDatabase(const char *DatabaseName)
 {
     //Database Setup
     m_databaseName = DatabaseName;
@@ -61,12 +61,12 @@ bool SQLiteStorage::ConnectDatabase(const char *DatabaseName)
     return TRUE;
 }
 
-const char *SQLiteStorage::GetDatabaseName()
+const char *SQLiteDisassemblyStorage::GetDatabaseName()
 {
     return m_databaseName.c_str();
 }
 
-void SQLiteStorage::CloseDatabase()
+void SQLiteDisassemblyStorage::CloseDatabase()
 {
     //Close Database
     if (m_database)
@@ -76,22 +76,22 @@ void SQLiteStorage::CloseDatabase()
     }
 }
 
-int SQLiteStorage::BeginTransaction()
+int SQLiteDisassemblyStorage::BeginTransaction()
 {
     return ExecuteStatement(NULL, NULL, "BEGIN TRANSACTION");
 }
 
-int SQLiteStorage::EndTransaction()
+int SQLiteDisassemblyStorage::EndTransaction()
 {
     return ExecuteStatement(NULL, NULL, "COMMIT TRANSACTION");
 }
 
-int SQLiteStorage::GetLastInsertRowID()
+int SQLiteDisassemblyStorage::GetLastInsertRowID()
 {
     return (int)sqlite3_last_insert_rowid(m_database);
 }
 
-int SQLiteStorage::ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...)
+int SQLiteDisassemblyStorage::ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...)
 {
     int debug = 0;
 
@@ -158,7 +158,7 @@ int SQLiteStorage::ExecuteStatement(sqlite3_callback callback, void *context, co
     return SQLITE_ERROR;
 }
 
-void SQLiteStorage::SetFileInfo(FileInfo *pFileInfo)
+void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
 {
     ExecuteStatement(NULL, NULL, INSERT_FILE_INFO_TABLE_STATEMENT,
         pFileInfo->OriginalFilePath,
@@ -174,7 +174,7 @@ void SQLiteStorage::SetFileInfo(FileInfo *pFileInfo)
     );
 }
 
-void SQLiteStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID)
+void SQLiteDisassemblyStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID)
 {
     char *fingerprintStr = NULL;
     if (pBasicBlock->FingerprintLen > 0)
@@ -209,7 +209,7 @@ void SQLiteStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID)
         free(fingerprintStr);
 }
 
-void SQLiteStorage::AddMapInfo(PMapInfo pMapInfo, int fileID)
+void SQLiteDisassemblyStorage::AddMapInfo(PMapInfo pMapInfo, int fileID)
 {
     ExecuteStatement(NULL, NULL, INSERT_MAP_INFO_TABLE_STATEMENT,
         fileID,
@@ -220,12 +220,12 @@ void SQLiteStorage::AddMapInfo(PMapInfo pMapInfo, int fileID)
     );
 }
 
-void SQLiteStorage::Close()
+void SQLiteDisassemblyStorage::Close()
 {
     CloseDatabase();
 }
 
-int SQLiteStorage::ProcessTLV(BYTE Type, PBYTE Data, DWORD Length)
+int SQLiteDisassemblyStorage::ProcessTLV(BYTE Type, PBYTE Data, DWORD Length)
 {
     static int fileID = 0;
     bool Status = FALSE;
@@ -261,7 +261,7 @@ int SQLiteStorage::ProcessTLV(BYTE Type, PBYTE Data, DWORD Length)
 }
 
 
-int SQLiteStorage::display_callback(void *NotUsed, int argc, char **argv, char **azColName)
+int SQLiteDisassemblyStorage::display_callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
     int i;
     for (i = 0; i < argc; i++) {
@@ -270,7 +270,7 @@ int SQLiteStorage::display_callback(void *NotUsed, int argc, char **argv, char *
     return 0;
 }
 
-int SQLiteStorage::ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names)
 {
 #if DEBUG_LEVEL > 2
     printf("%s: arg=%x %d\n", __FUNCTION__, arg, argc);
@@ -283,7 +283,7 @@ int SQLiteStorage::ReadRecordIntegerCallback(void *arg, int argc, char **argv, c
     return 0;
 }
 
-int SQLiteStorage::ReadRecordStringCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadRecordStringCallback(void *arg, int argc, char **argv, char **names)
 {
 #if DEBUG_LEVEL > 2
     printf("%s: arg=%x %d\n", __FUNCTION__, arg, argc);
@@ -296,7 +296,7 @@ int SQLiteStorage::ReadRecordStringCallback(void *arg, int argc, char **argv, ch
     return 0;
 }
 
-int SQLiteStorage::ReadFunctionAddressesCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadFunctionAddressesCallback(void *arg, int argc, char **argv, char **names)
 {
     unordered_set <va_t> *FunctionAddressHash = (unordered_set <va_t>*)arg;
     if (FunctionAddressHash)
@@ -309,12 +309,12 @@ int SQLiteStorage::ReadFunctionAddressesCallback(void *arg, int argc, char **arg
     return 0;
 }
 
-void SQLiteStorage::ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
+void SQLiteDisassemblyStorage::ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
 {
     ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", fileID, FUNCTION_BLOCK);
 }
 
-char *SQLiteStorage::ReadFingerPrint(int fileID, va_t address)
+char *SQLiteDisassemblyStorage::ReadFingerPrint(int fileID, va_t address)
 {
     char *fingerPrintString = NULL;
 
@@ -322,7 +322,7 @@ char *SQLiteStorage::ReadFingerPrint(int fileID, va_t address)
     return fingerPrintString;
 }
 
-char *SQLiteStorage::ReadName(int fileID, va_t address)
+char *SQLiteDisassemblyStorage::ReadName(int fileID, va_t address)
 {
     char *name = NULL;
     ExecuteStatement(ReadRecordStringCallback, &name,
@@ -330,7 +330,7 @@ char *SQLiteStorage::ReadName(int fileID, va_t address)
     return name;
 }
 
-va_t SQLiteStorage::ReadBlockStartAddress(int fileID, va_t address)
+va_t SQLiteDisassemblyStorage::ReadBlockStartAddress(int fileID, va_t address)
 {
     va_t blockAddress;
     ExecuteStatement(ReadRecordIntegerCallback, &blockAddress,
@@ -339,7 +339,7 @@ va_t SQLiteStorage::ReadBlockStartAddress(int fileID, va_t address)
     return blockAddress;
 }
 
-int SQLiteStorage::ReadMapInfoCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadMapInfoCallback(void *arg, int argc, char **argv, char **names)
 {
     multimap <va_t, PMapInfo> *p_map_info_map = (multimap <va_t, PMapInfo>*)arg;
 
@@ -360,7 +360,7 @@ int SQLiteStorage::ReadMapInfoCallback(void *arg, int argc, char **argv, char **
     return 0;
 }
 
-multimap <va_t, PMapInfo> *SQLiteStorage::ReadMapInfo(int fileID, va_t address, bool isFunction)
+multimap <va_t, PMapInfo> *SQLiteDisassemblyStorage::ReadMapInfo(int fileID, va_t address, bool isFunction)
 {
     multimap <va_t, PMapInfo> *p_map_info_map = new multimap <va_t, PMapInfo>();
     if (address == 0)
@@ -394,7 +394,7 @@ multimap <va_t, PMapInfo> *SQLiteStorage::ReadMapInfo(int fileID, va_t address, 
     return p_map_info_map;
 }
 
-int SQLiteStorage::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)
 {
     list <BLOCK> *p_address_list = (list <BLOCK>*)arg;
     if (p_address_list)
@@ -410,7 +410,7 @@ int SQLiteStorage::ReadFunctionMemberAddressesCallback(void *arg, int argc, char
     return 0;
 }
 
-list<BLOCK> SQLiteStorage::ReadFunctionMemberAddresses(int fileID, va_t function_address)
+list<BLOCK> SQLiteDisassemblyStorage::ReadFunctionMemberAddresses(int fileID, va_t function_address)
 {
     list<BLOCK> block_list;
 
@@ -422,7 +422,7 @@ list<BLOCK> SQLiteStorage::ReadFunctionMemberAddresses(int fileID, va_t function
     return block_list;
 }
 
-char *SQLiteStorage::GetOriginalFilePath(int fileID)
+char *SQLiteDisassemblyStorage::GetOriginalFilePath(int fileID)
 {
     char *originalFilePath;
     ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
@@ -431,7 +431,7 @@ char *SQLiteStorage::GetOriginalFilePath(int fileID)
     return originalFilePath;
 }
 
-char *SQLiteStorage::ReadDisasmLine(int fileID, va_t startAddress)
+char *SQLiteDisassemblyStorage::ReadDisasmLine(int fileID, va_t startAddress)
 {
     char *disasmLines = NULL;
     ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
@@ -439,7 +439,7 @@ char *SQLiteStorage::ReadDisasmLine(int fileID, va_t startAddress)
     return disasmLines;
 }
 
-int SQLiteStorage::ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyStorage::ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names)
 {
     PBasicBlock p_basic_block = (PBasicBlock)arg;
     p_basic_block->StartAddress = strtoul10(argv[0]);
@@ -458,7 +458,7 @@ int SQLiteStorage::ReadBasicBlockCallback(void *arg, int argc, char **argv, char
     return 0;
 }
 
-PBasicBlock SQLiteStorage::ReadBasicBlock(int fileID, va_t address)
+PBasicBlock SQLiteDisassemblyStorage::ReadBasicBlock(int fileID, va_t address)
 {
     PBasicBlock p_basic_block = (PBasicBlock)malloc(sizeof(BasicBlock));
     ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
@@ -469,7 +469,7 @@ PBasicBlock SQLiteStorage::ReadBasicBlock(int fileID, va_t address)
     return p_basic_block;
 }
 
-void SQLiteStorage::UpdateBasicBlock(int fileID, va_t address1, va_t address2)
+void SQLiteDisassemblyStorage::UpdateBasicBlock(int fileID, va_t address1, va_t address2)
 {
     ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT,
         address2, address2 == address1 ? FUNCTION_BLOCK : UNKNOWN_BLOCK, fileID, address1);

@@ -16,7 +16,7 @@
 #include <name.hpp>
 #include <allins.hpp>
 
-#include "SQLiteStorage.h"
+#include "SQLiteDisassemblyStorage.h"
 
 using namespace std;
 using namespace stdext;

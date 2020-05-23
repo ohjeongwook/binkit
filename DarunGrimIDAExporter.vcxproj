@@ -153,7 +153,7 @@
     <ClInclude Include="IDAAnalyzer.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="sqlite3.h" />
-    <ClInclude Include="SQLiteStorage.h" />
+    <ClInclude Include="SQLiteDisassemblyStorage.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -162,7 +162,7 @@
     <ClCompile Include="DarunGrimIDAExporter.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="sqlite3.c" />
-    <ClCompile Include="SQLiteStorage.cpp" />
+    <ClCompile Include="SQLiteDisassemblyStorage.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
