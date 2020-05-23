@@ -1,5 +1,5 @@
 libs/
 .vs/
 x64/
-IDAHasher.vcxproj.user
-IDAHasher.user
+*.user
+Loader/Debug/
