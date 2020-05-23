@@ -699,7 +699,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
             }
         }
 
-        m_pStorage->AddBasicBlock(p_basic_block);
+        m_pdisassemblyReader->AddBasicBlock(p_basic_block);
         free(p_basic_block);
     }
     //Reset InstructionHash Data
@@ -930,7 +930,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                     map_info.Type = CALL;
                     map_info.Dst = targetAddress;
 
-                    m_pStorage->AddMapInfo(&map_info);
+                    m_pdisassemblyReader->AddMapInfo(&map_info);
                 }
                 else {
                     //this is a jump
@@ -1050,7 +1050,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
             //PUSH THIS: dref
             map_info.Type = DREF_TO;
             map_info.Dst = dref;
-            m_pStorage->AddMapInfo(&map_info);
+            m_pdisassemblyReader->AddMapInfo(&map_info);
             dref = get_next_dref_to(currentAddress, dref);
         }
 
@@ -1062,7 +1062,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
             map_info.Type = DREF_FROM;
             map_info.Dst = dref;
-            m_pStorage->AddMapInfo(&map_info);
+            m_pdisassemblyReader->AddMapInfo(&map_info);
             dref = get_next_dref_from(currentAddress, dref);
         }
 
@@ -1191,7 +1191,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                 {
                     map_info.Type = CREF_FROM;
                     map_info.Dst = *cref_list_iter;
-                    m_pStorage->AddMapInfo(&map_info);
+                    m_pdisassemblyReader->AddMapInfo(&map_info);
                 }
             }
             else
@@ -1203,7 +1203,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                 {
                     map_info.Type = CREF_FROM;
                     map_info.Dst = *cref_list_iter;
-                    m_pStorage->AddMapInfo(&map_info);
+                    m_pdisassemblyReader->AddMapInfo(&map_info);
                 }
             }
 
@@ -1235,7 +1235,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
 IDAAnalyzer::IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage)
 {
-    m_pStorage = p_disassemblyStorage;
+    m_pdisassemblyReader = p_disassemblyStorage;
 }
 
 void IDAAnalyzer::AnalyzeRegion(ea_t startEA, ea_t endEA, bool gatherCmdArray)
@@ -1297,11 +1297,11 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
     DWORD UserNameLen = sizeof(file_info.UserName);
     GetUserName(file_info.UserName, &UserNameLen);
 
-    m_pStorage->BeginTransaction();
+    m_pdisassemblyReader->BeginTransaction();
 
     char *input_file_path = NULL;
     get_input_file_path(file_info.OriginalFilePath, sizeof(file_info.OriginalFilePath) - 1);
-    m_pStorage->SetFileInfo(&file_info);
+    m_pdisassemblyReader->SetFileInfo(&file_info);
 
     LogMessage(1, __FUNCTION__, "Analyze: %x ~ %x\n", startEA, endEA);
 
@@ -1340,7 +1340,7 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
         }
     }
 
-    m_pStorage->EndTransaction();
+    m_pdisassemblyReader->EndTransaction();
     LogMessage(1, __FUNCTION__, "Finished Analysis\n");
 }
 
