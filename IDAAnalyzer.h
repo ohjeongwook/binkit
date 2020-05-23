@@ -249,7 +249,7 @@ list <int> GetRelatedFlags(int itype, bool IsModifying);
 class IDAAnalyzer
 {
 private:
-    Storage *m_pStorage;
+    DisassemblyStorage *m_pStorage;
     unordered_map <ea_t, ea_t> m_newBlocks;
 
     void UpdateInstructionMap(
@@ -273,6 +273,6 @@ private:
 	void MakeCode(ea_t start_addr, ea_t end_addr);
 	void FixExceptionHandlers();
 public:
-    IDAAnalyzer(Storage* p_disassemblyStorage);
+    IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage);
     void Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray = false);
 };

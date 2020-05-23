@@ -1233,7 +1233,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
     return currentAddress;
 }
 
-IDAAnalyzer::IDAAnalyzer(Storage* p_disassemblyStorage)
+IDAAnalyzer::IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage)
 {
     m_pStorage = p_disassemblyStorage;
 }
