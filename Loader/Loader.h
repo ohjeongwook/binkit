@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <list>
 
-#include "Common.h"
+#include "Structures.h"
 #include "DisassemblyReader.h"
 
 using namespace std;
@@ -20,19 +20,19 @@ private:
     char *m_OriginalFilePath;
     va_t TargetFunctionAddress;
 
-    AnalysisInfo *ClientAnalysisInfo;
+    DisassemblyHashMaps *m_disassemblyHashMaps;
     char *DisasmLine;
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
 public:
-    AnalysisInfo *GetClientAnalysisInfo()
+    DisassemblyHashMaps *Getm_disassemblyHashMaps()
     {
-        return ClientAnalysisInfo;
+        return m_disassemblyHashMaps;
     }
 
     FileInfo *GetClientFileInfo()
     {
-        return &ClientAnalysisInfo->file_info;
+        return &m_disassemblyHashMaps->file_info;
     }
     Loader(DisassemblyReader *DisassemblyReader = NULL);
     ~Loader();
@@ -46,7 +46,7 @@ public:
     BOOL LoadBasicBlock();
 
     BOOL Save(char *DataFile, DWORD Offset = 0L, DWORD dwMoveMethod = FILE_BEGIN, unordered_set <va_t> *pSelectedAddresses = NULL);
-    void DumpAnalysisInfo();
+    void DumpDisassemblyHashMaps();
     char *GetName(va_t address);
     void DumpBlockInfo(va_t block_address);
     char *GetInstructionHashStr(va_t address);

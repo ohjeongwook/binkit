@@ -2,7 +2,8 @@
 #pragma warning(disable:4200)
 #include "Loader.h"
 #include <string>
-#include "LogOperation.h"
+#include "Log.h"
+#include "DisassemblyReader.h"
 
 #include <unordered_set>
 using namespace std;
@@ -10,19 +11,18 @@ using namespace stdext;
 
 #define DEBUG_LEVEL 0
 
-char *MapInfoTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "Dref To" };
+const char *MapInfoTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "Dref To" };
 int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
 
-Loader::Loader(DisassemblyReader *DisassemblyReader) :
-    ClientAnalysisInfo(NULL),
+Loader::Loader(DisassemblyReader *p_disassemblyReader) :
+    m_disassemblyHashMaps(NULL),
     TargetFunctionAddress(0),
     m_OriginalFilePath(NULL),
     DisasmLine(NULL),
-    Socket(INVALID_SOCKET),
     m_FileID(0)
 {
-    ClientAnalysisInfo = new AnalysisInfo;
-    m_pdisassemblyReader = DisassemblyReader;
+    m_disassemblyHashMaps = new DisassemblyHashMaps;
+    m_pdisassemblyReader = p_disassemblyReader;
 }
 
 Loader::~Loader()
@@ -30,29 +30,29 @@ Loader::~Loader()
     if (m_OriginalFilePath)
         free(m_OriginalFilePath);
 
-    if (ClientAnalysisInfo)
+    if (m_disassemblyHashMaps)
     {
-        ClientAnalysisInfo->symbol_map.clear();
+        m_disassemblyHashMaps->symbol_map.clear();
 
-        for (auto& val : ClientAnalysisInfo->map_info_map)
+        for (auto& val : m_disassemblyHashMaps->map_info_map)
         {
             if (val.second)
                 delete val.second;
         }
 
-        ClientAnalysisInfo->map_info_map.clear();
+        m_disassemblyHashMaps->map_info_map.clear();
 
-        for (auto& val : ClientAnalysisInfo->address_to_instruction_hash_map)
+        for (auto& val : m_disassemblyHashMaps->address_to_instruction_hash_map)
         {
             if (val.second)
             {
                 free(val.second);
             }
         }
-        ClientAnalysisInfo->address_to_instruction_hash_map.clear();
-        ClientAnalysisInfo->instruction_hash_map.clear();
+        m_disassemblyHashMaps->address_to_instruction_hash_map.clear();
+        m_disassemblyHashMaps->instruction_hash_map.clear();
 
-        delete ClientAnalysisInfo;
+        delete m_disassemblyHashMaps;
     }
 }
 
@@ -66,9 +66,9 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
 
     multimap <va_t, PMapInfo> *p_map_info_map;
 
-    if (ClientAnalysisInfo && ClientAnalysisInfo->map_info_map.size() > 0)
+    if (m_disassemblyHashMaps && m_disassemblyHashMaps->map_info_map.size() > 0)
     {
-        p_map_info_map = &ClientAnalysisInfo->map_info_map;
+        p_map_info_map = &m_disassemblyHashMaps->map_info_map;
     }
     else
     {
@@ -97,7 +97,7 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
         }
     }
 
-    if (!ClientAnalysisInfo)
+    if (!m_disassemblyHashMaps)
     {
         p_map_info_map->clear();
         free(p_map_info_map);
@@ -134,11 +134,11 @@ list <va_t> *Loader::GetFunctionAddresses()
 
     if (DoCrefFromCheck)
     {
-        LogMessage(10, LOG_IDA_CONTROLLER, "addresses.size() = %u\n", addresses.size());
+        LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
 
-        for (auto& val: ClientAnalysisInfo->map_info_map)
+        for (auto& val: m_disassemblyHashMaps->map_info_map)
         {
-            LogMessage(10, LOG_IDA_CONTROLLER, "%X-%X(%s) ", val.first, val.second->Dst, MapInfoTypesStr[val.second->Type]);
+            LogMessage(10, __FUNCTION__, "%X-%X(%s) ", val.first, val.second->Dst, MapInfoTypesStr[val.second->Type]);
             if (val.second->Type == CREF_FROM)
             {
                 unordered_map <va_t, short>::iterator iter = addresses.find(val.second->Dst);
@@ -148,19 +148,19 @@ list <va_t> *Loader::GetFunctionAddresses()
                 }
             }
         }
-        LogMessage(10, LOG_IDA_CONTROLLER, "%s\n", __FUNCTION__);
+        LogMessage(10, __FUNCTION__, "%s\n", __FUNCTION__);
 
-        for (auto& val : ClientAnalysisInfo->address_to_instruction_hash_map)
+        for (auto& val : m_disassemblyHashMaps->address_to_instruction_hash_map)
         {
             addresses.insert(pair<va_t, short>(val.first, DoCrefFromCheck ? TRUE : FALSE));
         }
 
-        LogMessage(10, LOG_IDA_CONTROLLER, "addresses.size() = %u\n", addresses.size());
+        LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
         for (auto& val : addresses)
         {
             if (val.second)
             {
-                LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val.first);
+                LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val.first);
                 function_address_hash.insert(val.first);
             }
         }
@@ -170,15 +170,15 @@ list <va_t> *Loader::GetFunctionAddresses()
         m_pdisassemblyReader->ReadFunctionAddressMap(m_FileID, function_address_hash);
     }
 
-    if (DoCallCheck && ClientAnalysisInfo)
+    if (DoCallCheck && m_disassemblyHashMaps)
     {
-        for (auto& val : ClientAnalysisInfo->map_info_map)
+        for (auto& val : m_disassemblyHashMaps->map_info_map)
         {
             if (val.second->Type == CALL)
             {
                 if (function_address_hash.find(val.second->Dst) == function_address_hash.end())
                 {
-                    LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_FileID, val.second->Dst);
+                    LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_FileID, val.second->Dst);
                     function_address_hash.insert(val.second->Dst);
                 }
             }
@@ -191,10 +191,10 @@ list <va_t> *Loader::GetFunctionAddresses()
         for (auto& val : function_address_hash)
         {
             function_addresses->push_back(val);
-            LogMessage(11, LOG_IDA_CONTROLLER, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val);
+            LogMessage(11, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val);
         }
 
-        LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_FileID, function_addresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_FileID, function_addresses->size());
     }
     return function_addresses;
 }
@@ -214,8 +214,8 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
     if (InstructionHash)
     {
         multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_PIter;
-        for (instruction_hash_map_PIter = ClientAnalysisInfo->instruction_hash_map.find(InstructionHash);
-            instruction_hash_map_PIter != ClientAnalysisInfo->instruction_hash_map.end();
+        for (instruction_hash_map_PIter = m_disassemblyHashMaps->instruction_hash_map.find(InstructionHash);
+            instruction_hash_map_PIter != m_disassemblyHashMaps->instruction_hash_map.end();
             instruction_hash_map_PIter++
             )
         {
@@ -223,7 +223,7 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
                 break;
             if (instruction_hash_map_PIter->second == address)
             {
-                ClientAnalysisInfo->instruction_hash_map.erase(instruction_hash_map_PIter);
+                m_disassemblyHashMaps->instruction_hash_map.erase(instruction_hash_map_PIter);
                 break;
             }
         }
@@ -233,10 +233,10 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
 
 char *Loader::GetInstructionHashStr(va_t address)
 {
-    if (ClientAnalysisInfo && ClientAnalysisInfo->address_to_instruction_hash_map.size() > 0)
+    if (m_disassemblyHashMaps && m_disassemblyHashMaps->address_to_instruction_hash_map.size() > 0)
     {
-        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = ClientAnalysisInfo->address_to_instruction_hash_map.find(address);
-        if (address_to_instruction_hash_map_PIter != ClientAnalysisInfo->address_to_instruction_hash_map.end())
+        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(address);
+        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
         {
             return BytesWithLengthAmbleToHex(address_to_instruction_hash_map_PIter->second);
         }
@@ -263,24 +263,24 @@ va_t Loader::GetBlockAddress(va_t address)
 void Loader::DumpBlockInfo(va_t block_address)
 {
     int addresses_number;
-    char *type_descriptions[] = { "Cref From", "Cref To", "Call", "Dref From", "Dref To" };
+    const char *type_descriptions[] = { "Cref From", "Cref To", "Call", "Dref From", "Dref To" };
     for (int i = 0; i < sizeof(types) / sizeof(int); i++)
     {
         va_t *addresses = GetMappedAddresses(block_address, types[i], &addresses_number);
         if (addresses)
         {
-            LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d %s: ", __FUNCTION__, m_FileID, type_descriptions[i]);
+            LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_FileID, type_descriptions[i]);
             for (int j = 0; j < addresses_number; j++)
             {
-                LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d %X ", __FUNCTION__, m_FileID, addresses[j]);
+                LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_FileID, addresses[j]);
             }
-            LogMessage(10, LOG_IDA_CONTROLLER, "\n");
+            LogMessage(10, __FUNCTION__, "\n");
         }
     }
     char *hex_str = GetInstructionHashStr(block_address);
     if (hex_str)
     {
-        LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d instruction_hash: %s\n", __FUNCTION__, m_FileID, hex_str);
+        LogMessage(10, __FUNCTION__, "%s: ID = %d instruction_hash: %s\n", __FUNCTION__, m_FileID, hex_str);
         free(hex_str);
     }
 }
@@ -320,7 +320,7 @@ char *Loader::GetOriginalFilePath()
 
 BOOL Loader::LoadBasicBlock()
 {
-    if (ClientAnalysisInfo->instruction_hash_map.size() == 0)
+    if (m_disassemblyHashMaps->instruction_hash_map.size() == 0)
     {
         char conditionStr[50] = { 0, };
         if (TargetFunctionAddress)
@@ -328,7 +328,7 @@ BOOL Loader::LoadBasicBlock()
             _snprintf(conditionStr, sizeof(conditionStr) - 1, "AND FunctionAddress = '%d'", TargetFunctionAddress);
         }
 
-        m_pdisassemblyReader->ReadBasicBlockInfo(m_FileID, conditionStr, ClientAnalysisInfo);
+        m_pdisassemblyReader->ReadBasicBlockInfo(m_FileID, conditionStr, m_disassemblyHashMaps);
     }
     return TRUE;
 }
@@ -374,14 +374,14 @@ BOOL Loader::Load()
     m_OriginalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_FileID);
 
     LoadBasicBlock();
-    LoadMapInfo(&(ClientAnalysisInfo->map_info_map), TargetFunctionAddress, true);
+    LoadMapInfo(&(m_disassemblyHashMaps->map_info_map), TargetFunctionAddress, true);
 
     return TRUE;
 }
 
 void Loader::AddAnalysisTargetFunction(va_t FunctionAddress)
 {
-    LogMessage(10, LOG_IDA_CONTROLLER, "Add Analysis Target Function: %X\n", FunctionAddress);
+    LogMessage(10, __FUNCTION__, "Add Analysis Target Function: %X\n", FunctionAddress);
     TargetFunctionAddress = FunctionAddress;
 }
 
@@ -394,12 +394,12 @@ void Loader::GenerateTwoLevelInstructionHash()
 {
     /*
     multimap <unsigned char *, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_pIter;
-    for (instruction_hash_map_pIter = ClientAnalysisInfo->instruction_hash_map.begin();
-        instruction_hash_map_pIter != ClientAnalysisInfo->instruction_hash_map.end();
+    for (instruction_hash_map_pIter = m_disassemblyHashMaps->instruction_hash_map.begin();
+        instruction_hash_map_pIter != m_disassemblyHashMaps->instruction_hash_map.end();
         instruction_hash_map_pIter++)
 
     {
-        if(ClientAnalysisInfo->instruction_hash_map.count(instruction_hash_map_pIter->first)>1)
+        if(m_disassemblyHashMaps->instruction_hash_map.count(instruction_hash_map_pIter->first)>1)
         {
             int addresses_number = 0;
             va_t *addresses = GetMappedAddresses(instruction_hash_map_pIter->second, CREF_FROM, &addresses_number);
@@ -412,8 +412,8 @@ void Loader::GenerateTwoLevelInstructionHash()
                 multimap <va_t,  unsigned char *>::iterator address_to_instruction_hash_map_Iter;
                 for (int i = 0;i<addresses_number;i++)
                 {
-                    address_to_instruction_hash_map_Iter = ClientAnalysisInfo->address_to_instruction_hash_map.find(addresses[i]);
-                    if(address_to_instruction_hash_map_Iter != ClientAnalysisInfo->address_to_instruction_hash_map.end())
+                    address_to_instruction_hash_map_Iter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(addresses[i]);
+                    if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
                     {
                         TwoLevelInstructionHashLength += *(unsigned short *)address_to_instruction_hash_map_Iter->second; //+
                     }
@@ -431,14 +431,14 @@ void Loader::GenerateTwoLevelInstructionHash()
                         Offset += *(unsigned short *)instruction_hash_map_pIter->first;
                         for (int i = 0;i<addresses_number;i++)
                         {
-                            address_to_instruction_hash_map_Iter = ClientAnalysisInfo->address_to_instruction_hash_map.find(addresses[i]);
-                            if(address_to_instruction_hash_map_Iter != ClientAnalysisInfo->address_to_instruction_hash_map.end())
+                            address_to_instruction_hash_map_Iter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(addresses[i]);
+                            if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
                             {
                                 memcpy(TwoLevelInstructionHash+Offset, address_to_instruction_hash_map_Iter->second+sizeof(short), *(unsigned short *)address_to_instruction_hash_map_Iter->second);
                                 Offset += *(unsigned short *)address_to_instruction_hash_map_Iter->second;
                             }
                         }
-                        ClientAnalysisInfo->instruction_hash_map.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instruction_hash_map_pIter->second));
+                        m_disassemblyHashMaps->instruction_hash_map.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instruction_hash_map_pIter->second));
                     }
                 }
             }
@@ -446,22 +446,22 @@ void Loader::GenerateTwoLevelInstructionHash()
     }*/
 }
 
-void Loader::DumpAnalysisInfo()
+void Loader::DumpDisassemblyHashMaps()
 {
-    if (ClientAnalysisInfo)
+    if (m_disassemblyHashMaps)
     {
-        LogMessage(10, LOG_IDA_CONTROLLER, "OriginalFilePath = %s\n", ClientAnalysisInfo->file_info.OriginalFilePath);
-        LogMessage(10, LOG_IDA_CONTROLLER, "ComputerName = %s\n", ClientAnalysisInfo->file_info.ComputerName);
-        LogMessage(10, LOG_IDA_CONTROLLER, "UserName = %s\n", ClientAnalysisInfo->file_info.UserName);
-        LogMessage(10, LOG_IDA_CONTROLLER, "CompanyName = %s\n", ClientAnalysisInfo->file_info.CompanyName);
-        LogMessage(10, LOG_IDA_CONTROLLER, "FileVersion = %s\n", ClientAnalysisInfo->file_info.FileVersion);
-        LogMessage(10, LOG_IDA_CONTROLLER, "FileDescription = %s\n", ClientAnalysisInfo->file_info.FileDescription);
-        LogMessage(10, LOG_IDA_CONTROLLER, "InternalName = %s\n", ClientAnalysisInfo->file_info.InternalName);
-        LogMessage(10, LOG_IDA_CONTROLLER, "ProductName = %s\n", ClientAnalysisInfo->file_info.ProductName);
-        LogMessage(10, LOG_IDA_CONTROLLER, "ModifiedTime = %s\n", ClientAnalysisInfo->file_info.ModifiedTime);
-        LogMessage(10, LOG_IDA_CONTROLLER, "MD5Sum = %s\n", ClientAnalysisInfo->file_info.MD5Sum);
+        LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", m_disassemblyHashMaps->file_info.OriginalFilePath);
+        LogMessage(10, __FUNCTION__, "ComputerName = %s\n", m_disassemblyHashMaps->file_info.ComputerName);
+        LogMessage(10, __FUNCTION__, "UserName = %s\n", m_disassemblyHashMaps->file_info.UserName);
+        LogMessage(10, __FUNCTION__, "CompanyName = %s\n", m_disassemblyHashMaps->file_info.CompanyName);
+        LogMessage(10, __FUNCTION__, "FileVersion = %s\n", m_disassemblyHashMaps->file_info.FileVersion);
+        LogMessage(10, __FUNCTION__, "FileDescription = %s\n", m_disassemblyHashMaps->file_info.FileDescription);
+        LogMessage(10, __FUNCTION__, "InternalName = %s\n", m_disassemblyHashMaps->file_info.InternalName);
+        LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps->file_info.ProductName);
+        LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps->file_info.ModifiedTime);
+        LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps->file_info.MD5Sum);
 
-        LogMessage(10, LOG_IDA_CONTROLLER, "instruction_hash_map = %u\n", ClientAnalysisInfo->instruction_hash_map.size());
+        LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps->instruction_hash_map.size());
     }
 }
 
@@ -471,7 +471,7 @@ char *Loader::GetDisasmLines(unsigned long StartAddress, unsigned long EndAddres
 
     if (DisasmLines)
     {
-        LogMessage(10, LOG_IDA_CONTROLLER, "DisasmLines = %s\n", DisasmLines);
+        LogMessage(10, __FUNCTION__, "DisasmLines = %s\n", DisasmLines);
         return DisasmLines;
     }
     return _strdup("");
@@ -497,7 +497,7 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
 {
     list <BLOCK> block_list;
 
-    if (ClientAnalysisInfo)
+    if (m_disassemblyHashMaps)
     {
         list <va_t> address_list;
         unordered_set <va_t> checked_addresses;
@@ -551,20 +551,20 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
 
 void Loader::MergeBlocks()
 {
-    multimap <va_t, PMapInfo>::iterator last_iter = ClientAnalysisInfo->map_info_map.end();
+    multimap <va_t, PMapInfo>::iterator last_iter = m_disassemblyHashMaps->map_info_map.end();
     multimap <va_t, PMapInfo>::iterator iter;
     multimap <va_t, PMapInfo>::iterator child_iter;
 
     int NumberOfChildren = 1;
-    for (iter = ClientAnalysisInfo->map_info_map.begin();
-        iter != ClientAnalysisInfo->map_info_map.end();
+    for (iter = m_disassemblyHashMaps->map_info_map.begin();
+        iter != m_disassemblyHashMaps->map_info_map.end();
         iter++
         )
     {
         if (iter->second->Type == CREF_FROM)
         {
             BOOL bHasOnlyOneChild = FALSE;
-            if (last_iter != ClientAnalysisInfo->map_info_map.end())
+            if (last_iter != m_disassemblyHashMaps->map_info_map.end())
             {
                 if (last_iter->first == iter->first)
                 {
@@ -572,7 +572,7 @@ void Loader::MergeBlocks()
                 }
                 else
                 {
-                    LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Number Of Children for %X  = %u\n",
+                    LogMessage(10, __FUNCTION__, "%s: ID = %d Number Of Children for %X  = %u\n",
                         __FUNCTION__, m_FileID,
                         last_iter->first,
                         NumberOfChildren);
@@ -580,7 +580,7 @@ void Loader::MergeBlocks()
                         bHasOnlyOneChild = TRUE;
                     multimap <va_t, PMapInfo>::iterator next_iter = iter;
                     next_iter++;
-                    if (next_iter == ClientAnalysisInfo->map_info_map.end())
+                    if (next_iter == m_disassemblyHashMaps->map_info_map.end())
                     {
                         last_iter = iter;
                         bHasOnlyOneChild = TRUE;
@@ -591,13 +591,13 @@ void Loader::MergeBlocks()
             if (bHasOnlyOneChild)
             {
                 int NumberOfParents = 0;
-                for (child_iter = ClientAnalysisInfo->map_info_map.find(last_iter->second->Dst);
-                    child_iter != ClientAnalysisInfo->map_info_map.end() && child_iter->first == last_iter->second->Dst;
+                for (child_iter = m_disassemblyHashMaps->map_info_map.find(last_iter->second->Dst);
+                    child_iter != m_disassemblyHashMaps->map_info_map.end() && child_iter->first == last_iter->second->Dst;
                     child_iter++)
                 {
                     if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)
                     {
-                        LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Found %X -> %X\n",
+                        LogMessage(10, __FUNCTION__, "%s: ID = %d Found %X -> %X\n",
                             __FUNCTION__, m_FileID,
                             child_iter->second->Dst, child_iter->first);
                         NumberOfParents++;
@@ -605,7 +605,7 @@ void Loader::MergeBlocks()
                 }
                 if (NumberOfParents == 0)
                 {
-                    LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Found Mergable Nodes %X -> %X\n",
+                    LogMessage(10, __FUNCTION__, "%s: ID = %d Found Mergable Nodes %X -> %X\n",
                         __FUNCTION__, m_FileID,
                         last_iter->first, last_iter->second->Dst);
                 }
@@ -622,7 +622,7 @@ int Loader::GetFileID()
 
 multimap <va_t, va_t> *Loader::GetFunctionToBlock()
 {
-    LogMessage(10, LOG_IDA_CONTROLLER, "LoadFunctionMembersMap\n");
+    LogMessage(10, __FUNCTION__, "LoadFunctionMembersMap\n");
     return &FunctionToBlock;
 }
 
@@ -643,11 +643,11 @@ void Loader::LoadBlockToFunction()
 {
     int Count = 0;
 
-    LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d GetFunctionAddresses\n", __FUNCTION__);
+    LogMessage(10, __FUNCTION__, "%s: ID = %d GetFunctionAddresses\n", __FUNCTION__);
     list <va_t> *function_addresses = GetFunctionAddresses();
     if (function_addresses)
     {
-        LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_FileID, function_addresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_FileID, function_addresses->size());
 
         unordered_map<va_t, va_t> addresses;
         unordered_map<va_t, va_t> membership_hash;
@@ -693,7 +693,7 @@ void Loader::LoadBlockToFunction()
                 {
                     unordered_map<va_t, va_t>::iterator current_membership_it = membership_hash.find(val.first);
                     va_t parent = it2->second;
-                    LogMessage(10, LOG_IDA_CONTROLLER, "Found parent for %X -> %X\n", val.first, parent);
+                    LogMessage(10, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parent);
                     unordered_map<va_t, va_t>::iterator parent_membership_it = membership_hash.find(parent);
                     if (current_membership_it != membership_hash.end() && parent_membership_it != membership_hash.end())
                     {
@@ -705,7 +705,7 @@ void Loader::LoadBlockToFunction()
                     }
                 }
 
-                LogMessage(10, LOG_IDA_CONTROLLER, "Multiple function membership: %X (%d) %s\n", val.first, val.second, function_start ? "Possible Head" : "Member");
+                LogMessage(10, __FUNCTION__, "Multiple function membership: %X (%d) %s\n", val.first, val.second, function_start ? "Possible Head" : "Member");
 
                 if (function_start)
                 {
@@ -731,11 +731,11 @@ void Loader::LoadBlockToFunction()
                             a2f_it++
                             )
                         {
-                            LogMessage(10, LOG_IDA_CONTROLLER, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
+                            LogMessage(10, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
                             a2f_it = BlockToFunction.erase(a2f_it);
                         }
                         BlockToFunction.insert(pair <va_t, va_t>(addr, function_start_addr));
-                        LogMessage(10, LOG_IDA_CONTROLLER, "\tAdding Block: %X Function: %X\n", addr, function_start_addr);
+                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", addr, function_start_addr);
                     }
                 }
             }
@@ -748,14 +748,14 @@ void Loader::LoadBlockToFunction()
             FunctionToBlock.insert(pair<va_t, va_t>(val.second, val.first));
         }
 
-        LogMessage(10, LOG_IDA_CONTROLLER, "%s: ID = %d BlockToFunction %u entries\n", __FUNCTION__, m_FileID, BlockToFunction.size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d BlockToFunction %u entries\n", __FUNCTION__, m_FileID, BlockToFunction.size());
     }
 }
 
 BOOL Loader::FixFunctionAddresses()
 {
     BOOL is_fixed = FALSE;
-    LogMessage(10, LOG_IDA_CONTROLLER, "%s", __FUNCTION__);
+    LogMessage(10, __FUNCTION__, "%s", __FUNCTION__);
     LoadBlockToFunction();
 
     if (m_pdisassemblyReader)
@@ -765,7 +765,7 @@ BOOL Loader::FixFunctionAddresses()
     {
         //StartAddress: val.first
         //FunctionAddress: val.second
-        LogMessage(10, LOG_IDA_CONTROLLER, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
+        LogMessage(10, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
 
         m_pdisassemblyReader->UpdateBasicBlock(m_FileID, val.first, val.second);
         is_fixed = TRUE;
