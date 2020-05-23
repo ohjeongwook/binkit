@@ -169,10 +169,10 @@ bool idaapi run(size_t arg)
     return true;
 }
 
-char comment[] = "This is a DarunGrim Plugin";
+char comment[] = "This is a DarunGrim IDA Exporter Plugin";
 char help[] =
 "A DarunGrim Plugin module\n"
-"This module let you analyze differences in two binaries.\n";
+"This module let you export disassembly and control flow information as a sqlite database.\n";
 
 char wanted_name[] = "DarunGrim";
 char wanted_hotkey[] = "Alt-8";
