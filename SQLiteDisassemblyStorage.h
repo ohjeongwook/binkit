@@ -79,15 +79,13 @@ public:
     ~SQLiteDisassemblyStorage();
 
 public:
-    void SetFileInfo(FileInfo *p_file_info);
     int BeginTransaction();
     int EndTransaction();
     void Close();
     void AddBasicBlock(PBasicBlock pBasicBlock, int fileID = 0);
     void AddMapInfo(PMapInfo p_map_info, int fileID = 0);
 
-    int ProcessTLV(BYTE Type, PBYTE Data, DWORD Length);
-
+    void SetFileInfo(FileInfo *p_file_info);
     void CreateTables();
     bool Open(char *DatabaseName);
     const char *GetDatabaseName();
@@ -97,32 +95,5 @@ public:
     int GetLastInsertRowID();
     int ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...);
     static int display_callback(void *NotUsed, int argc, char **argv, char **azColName);
-    static int ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names);
-    static int ReadRecordStringCallback(void *arg, int argc, char **argv, char **names);
-
-    static int ReadFunctionAddressesCallback(void *arg, int argc, char **argv, char **names);
-    void ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap);
-
-    char *ReadFingerPrint(int fileID, va_t address);
-    char *ReadName(int fileID, va_t address);
-    va_t ReadBlockStartAddress(int fileID, va_t address);
-
-    static int ReadBasicBlockDataCallback(void *arg, int argc, char **argv, char **names);
-
-    static int ReadMapInfoCallback(void *arg, int argc, char **argv, char **names);
-    multimap <va_t, PMapInfo> *ReadMapInfo(int fileID, va_t address = 0, bool isFunction = false);
-
-    static int ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names);
-    list<BLOCK> ReadFunctionMemberAddresses(int fileID, va_t function_address);
-
-    static int QueryFunctionMatchesCallback(void *arg, int argc, char **argv, char **names);
-
-    char *GetOriginalFilePath(int fileID);
-
-    char *ReadDisasmLine(int fileID, va_t startAddress);
-
-    static int ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names);
-    PBasicBlock ReadBasicBlock(int fileID, va_t address);
-
     void UpdateBasicBlock(int fileID, va_t address1, va_t address2);
 };
