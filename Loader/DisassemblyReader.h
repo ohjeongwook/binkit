@@ -68,7 +68,7 @@ public:
         return NULL;
     }
 
-    virtual char *ReadDisasmLine(int fileID, va_t startAddress)
+    virtual string ReadDisasmLine(int fileID, va_t startAddress)
     {
         return NULL;
     }

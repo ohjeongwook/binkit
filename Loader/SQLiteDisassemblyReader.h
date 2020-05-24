@@ -59,7 +59,7 @@ public:
 
     string GetOriginalFilePath(int fileID);
 
-    char *ReadDisasmLine(int fileID, va_t startAddress);
+    string ReadDisasmLine(int fileID, va_t startAddress);
 
     static int ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names);
     PBasicBlock ReadBasicBlock(int fileID, va_t address);

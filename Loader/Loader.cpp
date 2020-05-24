@@ -265,16 +265,9 @@ void Loader::GenerateTwoLevelInstructionHash()
     }*/
 }
 
-char *Loader::GetDisasmLines(unsigned long startAddress, unsigned long endAddress)
+string Loader::GetDisasmLines(unsigned long startAddress, unsigned long endAddress)
 {
-    char *disasmLines = m_pdisassemblyReader->ReadDisasmLine(m_fileID, startAddress);
-
-    if (disasmLines)
-    {
-        LogMessage(10, __FUNCTION__, "DisasmLines = %s\n", disasmLines);
-        return disasmLines;
-    }
-    return _strdup("");
+    return m_pdisassemblyReader->ReadDisasmLine(m_fileID, startAddress);
 }
 
 string Loader::GetIdentity()

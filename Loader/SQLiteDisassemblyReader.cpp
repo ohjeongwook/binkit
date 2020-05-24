@@ -333,9 +333,9 @@ string SQLiteDisassemblyReader::GetOriginalFilePath(int fileID)
     return originalFilePath;
 }
 
-char *SQLiteDisassemblyReader::ReadDisasmLine(int fileID, va_t startAddress)
+string SQLiteDisassemblyReader::ReadDisasmLine(int fileID, va_t startAddress)
 {
-    char *disasmLines = NULL;
+    string disasmLines;
     ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
         fileID, startAddress);
     return disasmLines;
