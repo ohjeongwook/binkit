@@ -38,8 +38,8 @@ public:
 //,hash_compare<string,equ_str> 
 typedef struct _DisassemblyHashMaps_ {
     FileInfo file_info;
-    multimap <unsigned char*, va_t, hash_compare_instruction_hash> instruction_hash_map;
-    multimap <va_t, unsigned char*> address_to_instruction_hash_map;
-    multimap <string, va_t> symbol_map;
+    multimap <unsigned char*, va_t, hash_compare_instruction_hash> instructionHashMap;
+    multimap <va_t, unsigned char*> addressToInstructionHashMap;
+    multimap <string, va_t> symbolMap;
     multimap <va_t, PMapInfo> mapInfoMap;
 } DisassemblyHashMaps, * PDisassemblyHashMaps;

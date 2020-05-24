@@ -28,7 +28,7 @@ Loader::~Loader()
     if (m_originalFilePath)
         free(m_originalFilePath);
 
-    m_disassemblyHashMaps.symbol_map.clear();
+    m_disassemblyHashMaps.symbolMap.clear();
 
     for (auto& val : m_disassemblyHashMaps.mapInfoMap)
     {
@@ -38,15 +38,15 @@ Loader::~Loader()
 
     m_disassemblyHashMaps.mapInfoMap.clear();
 
-    for (auto& val : m_disassemblyHashMaps.address_to_instruction_hash_map)
+    for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
     {
         if (val.second)
         {
             free(val.second);
         }
     }
-    m_disassemblyHashMaps.address_to_instruction_hash_map.clear();
-    m_disassemblyHashMaps.instruction_hash_map.clear();
+    m_disassemblyHashMaps.addressToInstructionHashMap.clear();
+    m_disassemblyHashMaps.instructionHashMap.clear();
 }
 
 va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
@@ -127,7 +127,7 @@ list <va_t> *Loader::GetFunctionAddresses()
         }
         LogMessage(10, __FUNCTION__, "%s\n", __FUNCTION__);
 
-        for (auto& val : m_disassemblyHashMaps.address_to_instruction_hash_map)
+        for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
         {
             addresses.insert(pair<va_t, short>(val.first, DoCrefFromCheck ? TRUE : FALSE));
         }
@@ -178,12 +178,12 @@ list <va_t> *Loader::GetFunctionAddresses()
 
 char *Loader::GetInstructionHashStr(va_t address)
 {
-    if (m_disassemblyHashMaps.address_to_instruction_hash_map.size() > 0)
+    if (m_disassemblyHashMaps.addressToInstructionHashMap.size() > 0)
     {
-        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(address);
-        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
+        multimap <va_t, unsigned char*>::iterator addressToInstructionHashMap_PIter = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
+        if (addressToInstructionHashMap_PIter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
         {
-            return BytesWithLengthAmbleToHex(address_to_instruction_hash_map_PIter->second);
+            return BytesWithLengthAmbleToHex(addressToInstructionHashMap_PIter->second);
         }
     }
     else
@@ -207,8 +207,8 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
     if (p_instructionHash)
     {
         multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator it;
-        for (it = m_disassemblyHashMaps.instruction_hash_map.find(p_instructionHash);
-            it != m_disassemblyHashMaps.instruction_hash_map.end();
+        for (it = m_disassemblyHashMaps.instructionHashMap.find(p_instructionHash);
+            it != m_disassemblyHashMaps.instructionHashMap.end();
             it++
             )
         {
@@ -216,7 +216,7 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
                 break;
             if (it->second == address)
             {
-                m_disassemblyHashMaps.instruction_hash_map.erase(it);
+                m_disassemblyHashMaps.instructionHashMap.erase(it);
                 break;
             }
         }
@@ -242,7 +242,7 @@ char *Loader::GetOriginalFilePath()
 
 BOOL Loader::LoadBasicBlock(va_t functionAddress)
 {
-    if (m_disassemblyHashMaps.instruction_hash_map.size() == 0)
+    if (m_disassemblyHashMaps.instructionHashMap.size() == 0)
     {
         char conditionStr[50] = { 0, };
         if (functionAddress)
@@ -304,29 +304,29 @@ BOOL Loader::Load(va_t functionAddress)
 void Loader::GenerateTwoLevelInstructionHash()
 {
     /*
-    multimap <unsigned char *, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_pIter;
-    for (instruction_hash_map_pIter = m_disassemblyHashMaps.instruction_hash_map.begin();
-        instruction_hash_map_pIter != m_disassemblyHashMaps.instruction_hash_map.end();
-        instruction_hash_map_pIter++)
+    multimap <unsigned char *, va_t, hash_compare_instruction_hash>::iterator instructionHashMap_pIter;
+    for (instructionHashMap_pIter = m_disassemblyHashMaps.instructionHashMap.begin();
+        instructionHashMap_pIter != m_disassemblyHashMaps.instructionHashMap.end();
+        instructionHashMap_pIter++)
 
     {
-        if(m_disassemblyHashMaps.instruction_hash_map.count(instruction_hash_map_pIter->first)>1)
+        if(m_disassemblyHashMaps.instructionHashMap.count(instructionHashMap_pIter->first)>1)
         {
             int addresses_number = 0;
-            va_t *addresses = GetMappedAddresses(instruction_hash_map_pIter->second, CREF_FROM, &addresses_number);
+            va_t *addresses = GetMappedAddresses(instructionHashMap_pIter->second, CREF_FROM, &addresses_number);
             if(!addresses)
-                addresses = GetMappedAddresses(instruction_hash_map_pIter->second, CREF_TO, NULL);
+                addresses = GetMappedAddresses(instructionHashMap_pIter->second, CREF_TO, NULL);
             if(addresses)
             {
                 int TwoLevelInstructionHashLength = 0;
-                TwoLevelInstructionHashLength += *(unsigned short *)instruction_hash_map_pIter->first; //+
-                multimap <va_t,  unsigned char *>::iterator address_to_instruction_hash_map_Iter;
+                TwoLevelInstructionHashLength += *(unsigned short *)instructionHashMap_pIter->first; //+
+                multimap <va_t,  unsigned char *>::iterator addressToInstructionHashMap_Iter;
                 for (int i = 0;i<addresses_number;i++)
                 {
-                    address_to_instruction_hash_map_Iter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(addresses[i]);
-                    if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
+                    addressToInstructionHashMap_Iter = m_disassemblyHashMaps.addressToInstructionHashMap.find(addresses[i]);
+                    if(addressToInstructionHashMap_Iter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
                     {
-                        TwoLevelInstructionHashLength += *(unsigned short *)address_to_instruction_hash_map_Iter->second; //+
+                        TwoLevelInstructionHashLength += *(unsigned short *)addressToInstructionHashMap_Iter->second; //+
                     }
                 }
 
@@ -338,18 +338,18 @@ void Loader::GenerateTwoLevelInstructionHash()
                         *(unsigned short *)TwoLevelInstructionHash = TwoLevelInstructionHashLength;
 
                         int Offset = sizeof(short);
-                        memcpy(TwoLevelInstructionHash+Offset, instruction_hash_map_pIter->first+sizeof(short), *(unsigned short *)instruction_hash_map_pIter->first);
-                        Offset += *(unsigned short *)instruction_hash_map_pIter->first;
+                        memcpy(TwoLevelInstructionHash+Offset, instructionHashMap_pIter->first+sizeof(short), *(unsigned short *)instructionHashMap_pIter->first);
+                        Offset += *(unsigned short *)instructionHashMap_pIter->first;
                         for (int i = 0;i<addresses_number;i++)
                         {
-                            address_to_instruction_hash_map_Iter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(addresses[i]);
-                            if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
+                            addressToInstructionHashMap_Iter = m_disassemblyHashMaps.addressToInstructionHashMap.find(addresses[i]);
+                            if(addressToInstructionHashMap_Iter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
                             {
-                                memcpy(TwoLevelInstructionHash+Offset, address_to_instruction_hash_map_Iter->second+sizeof(short), *(unsigned short *)address_to_instruction_hash_map_Iter->second);
-                                Offset += *(unsigned short *)address_to_instruction_hash_map_Iter->second;
+                                memcpy(TwoLevelInstructionHash+Offset, addressToInstructionHashMap_Iter->second+sizeof(short), *(unsigned short *)addressToInstructionHashMap_Iter->second);
+                                Offset += *(unsigned short *)addressToInstructionHashMap_Iter->second;
                             }
                         }
-                        m_disassemblyHashMaps.instruction_hash_map.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instruction_hash_map_pIter->second));
+                        m_disassemblyHashMaps.instructionHashMap.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instructionHashMap_pIter->second));
                     }
                 }
             }
@@ -699,7 +699,7 @@ void Loader::DumpDisassemblyHashMaps()
     LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps.file_info.ProductName);
     LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps.file_info.ModifiedTime);
     LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps.file_info.MD5Sum);
-    LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps.instruction_hash_map.size());
+    LogMessage(10, __FUNCTION__, "instructionHashMap = %u\n", m_disassemblyHashMaps.instructionHashMap.size());
 }
 
 void Loader::DumpBlockInfo(va_t blockAddress)

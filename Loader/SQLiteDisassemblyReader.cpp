@@ -144,13 +144,13 @@ int SQLiteDisassemblyReader::ReadBasicBlockDataCallback(void *arg, int argc, cha
         unsigned char *InstructionHashStr = HexToBytesWithLengthAmble(argv[1]);
         if (InstructionHashStr)
         {
-            m_disassemblyHashMaps->address_to_instruction_hash_map.insert(AddressInstructionHashAddress_Pair(Address, InstructionHashStr));
+            m_disassemblyHashMaps->addressToInstructionHashMap.insert(AddressInstructionHashAddress_Pair(Address, InstructionHashStr));
         }
 
         if (strtoul10(argv[3]) == 1 && strlen(argv[2]) > 0)
         {
             char *name = argv[2];
-            m_disassemblyHashMaps->symbol_map.insert(pair<string, va_t>(name, Address));
+            m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(name, Address));
         }
     }
     return 0;
