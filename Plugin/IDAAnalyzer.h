@@ -259,7 +259,7 @@ private:
         map <ea_t, insn_t>& InstructionHash,
         insn_t& instruction
     );
-    void DumpBasicBlock(ea_t src_block_address, list <insn_t> *pCmdArray, flags_t Flag, bool gatherCmdArray = false);
+    void DumpBasicBlock(ea_t src_blockAddress, list <insn_t> *pCmdArray, flags_t Flag, bool gatherCmdArray = false);
     list <AddressRegion> GetFunctionBlocks(ea_t address);
 
     ea_t AnalyzeBlock(ea_t StartEA, ea_t endEA, list <insn_t> *pCmdArray, flags_t *p_flags);

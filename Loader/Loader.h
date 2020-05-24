@@ -14,7 +14,7 @@ using namespace stdext;
 class Loader
 {
 private:
-    int m_FileID;
+    int m_fileID;
     string Identity;
     char* m_OriginalFilePath;
     va_t TargetFunctionAddress;
@@ -26,9 +26,9 @@ private:
     DisassemblyReader *m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
 
-    void LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address, bool IsFunction = false);
+    void LoadMapInfo(multimap <va_t, PMapInfo> *p_mapInfo, va_t Address, bool IsFunction = false);
     BOOL LoadBasicBlock();
-    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
+    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_mapInfo);
 
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
@@ -53,7 +53,7 @@ public:
     char *GetInstructionHashStr(va_t address);
 
     void DumpDisassemblyHashMaps();
-    void DumpBlockInfo(va_t block_address);
+    void DumpBlockInfo(va_t blockAddress);
     void RemoveFromInstructionHashHash(va_t address);
 
     va_t GetBlockAddress(va_t address);

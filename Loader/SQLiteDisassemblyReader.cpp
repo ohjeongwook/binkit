@@ -250,7 +250,7 @@ va_t SQLiteDisassemblyReader::ReadBlockStartAddress(int fileID, va_t address)
 
 int SQLiteDisassemblyReader::ReadMapInfoCallback(void *arg, int argc, char **argv, char **names)
 {
-    multimap <va_t, PMapInfo> *p_map_info_map = (multimap <va_t, PMapInfo>*)arg;
+    multimap <va_t, PMapInfo> *p_mapInfo = (multimap <va_t, PMapInfo>*)arg;
 
     PMapInfo p_map_info = new MapInfo;
     p_map_info->Type = strtoul10(argv[0]);
@@ -265,16 +265,16 @@ int SQLiteDisassemblyReader::ReadMapInfoCallback(void *arg, int argc, char **arg
         argv[3], strtoul10(argv[3])
     );
 #endif
-    p_map_info_map->insert(AddressPMapInfoPair(p_map_info->SrcBlock, p_map_info));
+    p_mapInfo->insert(AddressPMapInfoPair(p_map_info->SrcBlock, p_map_info));
     return 0;
 }
 
 multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t address, bool isFunction)
 {
-    multimap <va_t, PMapInfo> *p_map_info_map = new multimap <va_t, PMapInfo>();
+    multimap <va_t, PMapInfo> *p_mapInfo = new multimap <va_t, PMapInfo>();
     if (address == 0)
     {
-        ExecuteStatement(ReadMapInfoCallback, (void*)p_map_info_map,
+        ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
             "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo WHERE FileID = %u",
             fileID);
     }
@@ -282,9 +282,9 @@ multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t
     {
         if (isFunction)
         {
-            p_map_info_map = ReadMapInfo(fileID, address, isFunction);
+            p_mapInfo = ReadMapInfo(fileID, address, isFunction);
 
-            ExecuteStatement(ReadMapInfoCallback, (void*)p_map_info_map,
+            ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
@@ -292,7 +292,7 @@ multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t
         }
         else
         {
-            ExecuteStatement(ReadMapInfoCallback, (void*)p_map_info_map,
+            ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
@@ -300,7 +300,7 @@ multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t
         }
     }
 
-    return p_map_info_map;
+    return p_mapInfo;
 }
 
 int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)
