@@ -17,7 +17,7 @@ const char *MapInfoTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "
 int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
 
 Loader::Loader(DisassemblyReader *p_disassemblyReader) :
-    m_OriginalFilePath(NULL),
+    m_originalFilePath(NULL),
     m_fileID(0)
 {
     m_pdisassemblyReader = p_disassemblyReader;
@@ -25,8 +25,8 @@ Loader::Loader(DisassemblyReader *p_disassemblyReader) :
 
 Loader::~Loader()
 {
-    if (m_OriginalFilePath)
-        free(m_OriginalFilePath);
+    if (m_originalFilePath)
+        free(m_originalFilePath);
 
     m_disassemblyHashMaps.symbol_map.clear();
 
@@ -179,6 +179,24 @@ list <va_t> *Loader::GetFunctionAddresses()
     return p_functionAddressList;
 }
 
+char *Loader::GetInstructionHashStr(va_t address)
+{
+    if (m_disassemblyHashMaps.address_to_instruction_hash_map.size() > 0)
+    {
+        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(address);
+        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
+        {
+            return BytesWithLengthAmbleToHex(address_to_instruction_hash_map_PIter->second);
+        }
+    }
+    else
+    {
+        char *InstructionHashPtr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
+        return InstructionHashPtr;
+    }
+    return NULL;
+}
+
 void Loader::RemoveFromInstructionHashHash(va_t address)
 {
     unsigned char *p_instructionHash = NULL;
@@ -209,24 +227,6 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
     }
 }
 
-char *Loader::GetInstructionHashStr(va_t address)
-{
-    if (m_disassemblyHashMaps.address_to_instruction_hash_map.size() > 0)
-    {
-        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(address);
-        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
-        {
-            return BytesWithLengthAmbleToHex(address_to_instruction_hash_map_PIter->second);
-        }
-    }
-    else
-    {
-        char *InstructionHashPtr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
-        return InstructionHashPtr;
-    }
-    return NULL;
-}
-
 char *Loader::GetSymbol(va_t address)
 {
     char *Name = m_pdisassemblyReader->ReadSymbol(m_fileID, address);
@@ -238,52 +238,9 @@ va_t Loader::GetBlockAddress(va_t address)
     return m_pdisassemblyReader->ReadBlockStartAddress(m_fileID, address);
 }
 
-void Loader::DumpBlockInfo(va_t blockAddress)
-{
-    int addresses_number;
-    const char *type_descriptions[] = { "Cref From", "Cref To", "Call", "Dref From", "Dref To" };
-    for (int i = 0; i < sizeof(types) / sizeof(int); i++)
-    {
-        va_t *addresses = GetMappedAddresses(blockAddress, types[i], &addresses_number);
-        if (addresses)
-        {
-            LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_fileID, type_descriptions[i]);
-            for (int j = 0; j < addresses_number; j++)
-            {
-                LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_fileID, addresses[j]);
-            }
-            LogMessage(10, __FUNCTION__, "\n");
-        }
-    }
-    char *hexString = GetInstructionHashStr(blockAddress);
-    if (hexString)
-    {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d instruction_hash: %s\n", __FUNCTION__, m_fileID, hexString);
-        free(hexString);
-    }
-}
-
-const char *GetAnalysisDataTypeStr(int type)
-{
-    static const char *Types[] = { "BASIC_BLOCK", "MAP_INFO", "FILE_INFO", "END_OF_DATA" };
-    if (type < sizeof(Types) / sizeof(Types[0]))
-        return Types[type];
-    return "Unknown";
-}
-
-enum { TYPE_FILE_INFO, TYPE_ADDRESS_MAP, TYPE_ADDRESS_DISASSEMBLY_MAP, TYPE_INSTRUCTION_HASH_MAP, TYPE_TWO_LEVEL_INSTRUCTION_HASH_MAP, TYPE_address_to_instruction_hash_map, TYPE_NAME_MAP, TYPE_ADDRESS_NAME_MAP, TYPE_MAP_INFO_MAP };
-
-const char *GetFileDataTypeStr(int type)
-{
-    static const char *Types[] = { "FILE_INFO", "ADDRESS_MAP", "ADDRESS_DISASSEMBLY_MAP", "INSTRUCTION_HASH_MAP", "TWO_LEVEL_INSTRUCTION_HASH_MAP", "address_to_instruction_hash_map", "NAME_MAP", "ADDRESS_NAME_MAP", "MAP_INFO_MAP" };
-    if (type < sizeof(Types) / sizeof(Types[0]))
-        return Types[type];
-    return "Unknown";
-}
-
 char *Loader::GetOriginalFilePath()
 {
-    return m_OriginalFilePath;
+    return m_originalFilePath;
 }
 
 BOOL Loader::LoadBasicBlock(va_t functionAddress)
@@ -339,7 +296,7 @@ void Loader::BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_mapInfo)
 
 BOOL Loader::Load(va_t functionAddress)
 {
-    m_OriginalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
+    m_originalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
 
     LoadBasicBlock(functionAddress);
     LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), functionAddress, true);
@@ -401,21 +358,6 @@ void Loader::GenerateTwoLevelInstructionHash()
             }
         }
     }*/
-}
-
-void Loader::DumpDisassemblyHashMaps()
-{
-    LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", m_disassemblyHashMaps.file_info.OriginalFilePath);
-    LogMessage(10, __FUNCTION__, "ComputerName = %s\n", m_disassemblyHashMaps.file_info.ComputerName);
-    LogMessage(10, __FUNCTION__, "UserName = %s\n", m_disassemblyHashMaps.file_info.UserName);
-    LogMessage(10, __FUNCTION__, "CompanyName = %s\n", m_disassemblyHashMaps.file_info.CompanyName);
-    LogMessage(10, __FUNCTION__, "FileVersion = %s\n", m_disassemblyHashMaps.file_info.FileVersion);
-    LogMessage(10, __FUNCTION__, "FileDescription = %s\n", m_disassemblyHashMaps.file_info.FileDescription);
-    LogMessage(10, __FUNCTION__, "InternalName = %s\n", m_disassemblyHashMaps.file_info.InternalName);
-    LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps.file_info.ProductName);
-    LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps.file_info.ModifiedTime);
-    LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps.file_info.MD5Sum);
-    LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps.instruction_hash_map.size());
 }
 
 char *Loader::GetDisasmLines(unsigned long startAddress, unsigned long endAddress)
@@ -577,7 +519,7 @@ static int ReadAddressToFunctionMapResultsCallback(void *arg, int argc, char **a
     return 0;
 }
 
-void Loader::LoadBlockToFunction()
+void Loader::LoadBlockFunctionMaps()
 {
     int Count = 0;
 
@@ -690,7 +632,7 @@ void Loader::LoadBlockToFunction()
     }
 }
 
-void Loader::ClearBlockToFunction()
+void Loader::ClearBlockFunctionMaps()
 {
     m_blockToFunction.clear();
     m_functionToBlock.clear();
@@ -700,7 +642,7 @@ BOOL Loader::FixFunctionAddresses()
 {
     BOOL is_fixed = FALSE;
     LogMessage(10, __FUNCTION__, "%s", __FUNCTION__);
-    LoadBlockToFunction();
+    LoadBlockFunctionMaps();
 
     if (m_pdisassemblyReader)
         m_pdisassemblyReader->BeginTransaction();
@@ -718,7 +660,7 @@ BOOL Loader::FixFunctionAddresses()
     if (m_pdisassemblyReader)
         m_pdisassemblyReader->EndTransaction();
 
-    ClearBlockToFunction();
+    ClearBlockFunctionMaps();
 
     return is_fixed;
 }
@@ -746,4 +688,44 @@ bool Loader::IsFunctionBlock(va_t block, va_t function)
         }
     }
     return false;
+}
+
+void Loader::DumpDisassemblyHashMaps()
+{
+    LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", m_disassemblyHashMaps.file_info.OriginalFilePath);
+    LogMessage(10, __FUNCTION__, "ComputerName = %s\n", m_disassemblyHashMaps.file_info.ComputerName);
+    LogMessage(10, __FUNCTION__, "UserName = %s\n", m_disassemblyHashMaps.file_info.UserName);
+    LogMessage(10, __FUNCTION__, "CompanyName = %s\n", m_disassemblyHashMaps.file_info.CompanyName);
+    LogMessage(10, __FUNCTION__, "FileVersion = %s\n", m_disassemblyHashMaps.file_info.FileVersion);
+    LogMessage(10, __FUNCTION__, "FileDescription = %s\n", m_disassemblyHashMaps.file_info.FileDescription);
+    LogMessage(10, __FUNCTION__, "InternalName = %s\n", m_disassemblyHashMaps.file_info.InternalName);
+    LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps.file_info.ProductName);
+    LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps.file_info.ModifiedTime);
+    LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps.file_info.MD5Sum);
+    LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps.instruction_hash_map.size());
+}
+
+void Loader::DumpBlockInfo(va_t blockAddress)
+{
+    int addresses_number;
+    const char *type_descriptions[] = { "Cref From", "Cref To", "Call", "Dref From", "Dref To" };
+    for (int i = 0; i < sizeof(types) / sizeof(int); i++)
+    {
+        va_t *addresses = GetMappedAddresses(blockAddress, types[i], &addresses_number);
+        if (addresses)
+        {
+            LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_fileID, type_descriptions[i]);
+            for (int j = 0; j < addresses_number; j++)
+            {
+                LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_fileID, addresses[j]);
+            }
+            LogMessage(10, __FUNCTION__, "\n");
+        }
+    }
+    char *hexString = GetInstructionHashStr(blockAddress);
+    if (hexString)
+    {
+        LogMessage(10, __FUNCTION__, "%s: ID = %d instruction_hash: %s\n", __FUNCTION__, m_fileID, hexString);
+        free(hexString);
+    }
 }

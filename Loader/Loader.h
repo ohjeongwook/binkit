@@ -16,7 +16,7 @@ class Loader
 private:
     int m_fileID;
     string Identity;
-    char* m_OriginalFilePath;
+    char* m_originalFilePath;
     multimap <va_t, va_t> m_codeReferenceMap;
     multimap <va_t, va_t> m_blockToFunction;
     multimap <va_t, va_t> m_functionToBlock;
@@ -51,16 +51,16 @@ public:
     void RemoveFromInstructionHashHash(va_t address);
     char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
 
-    void DumpDisassemblyHashMaps();
-    void DumpBlockInfo(va_t blockAddress);
-
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
 
-    void LoadBlockToFunction();
-    void ClearBlockToFunction();
+    void LoadBlockFunctionMaps();
+    void ClearBlockFunctionMaps();
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsFunctionBlock(va_t block, va_t function);
     list <AddressRange> GetFunctionMemberBlocks(unsigned long FunctionAddress);
+
+    void DumpDisassemblyHashMaps();
+    void DumpBlockInfo(va_t blockAddress);
 };
