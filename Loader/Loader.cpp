@@ -357,20 +357,14 @@ BOOL Loader::Load()
 
     LoadBasicBlock();
     LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), TargetFunctionAddress, true);
-
     return TRUE;
 }
 
-void Loader::AddAnalysisTargetFunction(va_t FunctionAddress)
+void Loader::AddAnalysisTargetFunction(va_t functionAddress)
 {
-    LogMessage(10, __FUNCTION__, "Add Analysis Target Function: %X\n", FunctionAddress);
-    TargetFunctionAddress = FunctionAddress;
+    LogMessage(10, __FUNCTION__, "Add Analysis Target Function: %X\n", functionAddress);
+    TargetFunctionAddress = functionAddress;
 }
-
-typedef struct {
-    va_t address;
-    va_t child_address;
-} AddressPair;
 
 void Loader::GenerateTwoLevelInstructionHash()
 {
