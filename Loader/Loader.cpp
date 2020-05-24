@@ -26,9 +26,6 @@ Loader::Loader(DisassemblyReader *p_disassemblyReader) :
 
 Loader::~Loader()
 {
-    if (m_originalFilePath)
-        free(m_originalFilePath);
-
     m_disassemblyHashMaps.symbolMap.clear();
 
     for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
@@ -153,7 +150,7 @@ va_t Loader::GetBasicBlockStart(va_t address)
     return m_pdisassemblyReader->ReadBlockStartAddress(m_fileID, address);
 }
 
-char *Loader::GetOriginalFilePath()
+string Loader::GetOriginalFilePath()
 {
     return m_originalFilePath;
 }

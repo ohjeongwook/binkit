@@ -194,14 +194,7 @@ int SQLiteDisassemblyReader::ReadRecordIntegerCallback(void *arg, int argc, char
 
 int SQLiteDisassemblyReader::ReadRecordStringCallback(void *arg, int argc, char **argv, char **names)
 {
-#if DEBUG_LEVEL > 2
-    printf("%s: arg=%x %d\n", __FUNCTION__, arg, argc);
-    for (int i = 0; i < argc; i++)
-    {
-        printf("	[%d] %s=%s\n", i, names[i], argv[i]);
-    }
-#endif
-     *(char**)arg = _strdup(argv[0]);
+    *(string *)arg = string(argv[0]);
     return 0;
 }
 
@@ -331,9 +324,9 @@ list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int file
     return addressRangeList;
 }
 
-char *SQLiteDisassemblyReader::GetOriginalFilePath(int fileID)
+string SQLiteDisassemblyReader::GetOriginalFilePath(int fileID)
 {
-    char *originalFilePath;
+    string originalFilePath;
     ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
         "SELECT OriginalFilePath FROM FileInfo WHERE id = %u", fileID);
 

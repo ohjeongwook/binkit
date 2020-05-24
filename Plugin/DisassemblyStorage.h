@@ -42,9 +42,9 @@ public:
         return ret;
     }
 
-    virtual char *GetOriginalFilePath(int fileID)
+    virtual string GetOriginalFilePath(int fileID)
     {
-        return NULL;
+        return {};
     }
 
     virtual void UpdateBasicBlock(int fileID, va_t address1, va_t address2)

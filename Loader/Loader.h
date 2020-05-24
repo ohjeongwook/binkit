@@ -16,7 +16,7 @@ class Loader
 private:
     int m_fileID;
     string Identity;
-    char* m_originalFilePath;
+    string m_originalFilePath;
 
     DisassemblyReader *m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
@@ -42,7 +42,7 @@ public:
     void SetFileID(int FileID = 1);
     int GetFileID();
     string GetIdentity();
-    char *GetOriginalFilePath();
+    string GetOriginalFilePath();
 
     va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
