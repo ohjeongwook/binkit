@@ -59,7 +59,7 @@ typedef struct
 {
 	va_t Start;
 	va_t End;
-} BLOCK;
+} AddressRange;
 
 typedef struct _MapInfo_ {
 	BYTE Type;

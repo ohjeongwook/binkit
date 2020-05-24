@@ -305,30 +305,30 @@ multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t
 
 int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)
 {
-    list <BLOCK> *p_address_list = (list <BLOCK>*)arg;
+    list <AddressRange> *p_address_list = (list <AddressRange>*)arg;
     if (p_address_list)
     {
 #if DEBUG_LEVEL > 1
         if (DebugLevel & 1) Logger.Log(10, __FUNCTION__, "%s: ID = %d strtoul10(%s) = 0x%X\n", __FUNCTION__, fileID, argv[0], strtoul10(argv[0]));
 #endif
-        BLOCK block;
-        block.Start = strtoul10(argv[0]);
-        block.End = strtoul10(argv[1]);
-        p_address_list->push_back(block);
+        AddressRange addressRange;
+        addressRange.Start = strtoul10(argv[0]);
+        addressRange.End = strtoul10(argv[1]);
+        p_address_list->push_back(addressRange);
     }
     return 0;
 }
 
-list<BLOCK> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int fileID, va_t function_address)
+list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int fileID, va_t function_address)
 {
-    list<BLOCK> block_list;
+    list<AddressRange> addressRangeList;
 
-    ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&block_list,
+    ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
         "SELECT StartAddress, EndAddress FROM BasicBlock WHERE FileID = '%d' AND FunctionAddress='%d'"
         "ORDER BY ID ASC",
         fileID, function_address);
 
-    return block_list;
+    return addressRangeList;
 }
 
 char *SQLiteDisassemblyReader::GetOriginalFilePath(int fileID)

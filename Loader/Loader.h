@@ -45,9 +45,10 @@ public:
 
     BOOL Load();
 
-    multimap <va_t, va_t> *GetFunctionToBlock();
     PBasicBlock GetBasicBlock(va_t address);
-    
+    list <va_t> *GetFunctionAddresses();
+    multimap <va_t, va_t> *GetFunctionToBlock();
+
     char *GetSymbol(va_t address);
     char *GetInstructionHashStr(va_t address);
 
@@ -63,9 +64,6 @@ public:
     void ClearBlockToFunction();
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& function_address);
-    bool FindBlockFunctionMatch(va_t block, va_t function);
-
-    list <va_t> *GetFunctionAddresses();
-
-    list <BLOCK> GetFunctionMemberBlocks(unsigned long FunctionAddress);
+    bool IsFunctionBlock(va_t block, va_t function);
+    list <AddressRange> GetFunctionMemberBlocks(unsigned long FunctionAddress);
 };

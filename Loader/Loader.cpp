@@ -110,18 +110,18 @@ list <va_t> *Loader::GetFunctionAddresses()
 {
     if (TargetFunctionAddress != 0)
     {
-        list <va_t> *function_addresses = new list<va_t>;
-        if (function_addresses)
+        list <va_t> *functionAddresses = new list<va_t>;
+        if (functionAddresses)
         {
-            function_addresses->push_back(TargetFunctionAddress);
+            functionAddresses->push_back(TargetFunctionAddress);
         }
 
-        return function_addresses;
+        return functionAddresses;
     }
 
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
-    unordered_set <va_t> function_address_hash;
+    unordered_set <va_t> functionAddress_hash;
     unordered_map <va_t, short> addresses;
 
     if (DoCrefFromCheck)
@@ -153,13 +153,13 @@ list <va_t> *Loader::GetFunctionAddresses()
             if (val.second)
             {
                 LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val.first);
-                function_address_hash.insert(val.first);
+                functionAddress_hash.insert(val.first);
             }
         }
     }
     else
     {
-        m_pdisassemblyReader->ReadFunctionAddressMap(m_FileID, function_address_hash);
+        m_pdisassemblyReader->ReadFunctionAddressMap(m_FileID, functionAddress_hash);
     }
 
     if (DoCallCheck)
@@ -168,27 +168,27 @@ list <va_t> *Loader::GetFunctionAddresses()
         {
             if (val.second->Type == CALL)
             {
-                if (function_address_hash.find(val.second->Dst) == function_address_hash.end())
+                if (functionAddress_hash.find(val.second->Dst) == functionAddress_hash.end())
                 {
                     LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_FileID, val.second->Dst);
-                    function_address_hash.insert(val.second->Dst);
+                    functionAddress_hash.insert(val.second->Dst);
                 }
             }
         }
     }
 
-    list <va_t> *function_addresses = new list<va_t>;
-    if (function_addresses)
+    list <va_t> *functionAddresses = new list<va_t>;
+    if (functionAddresses)
     {
-        for (auto& val : function_address_hash)
+        for (auto& val : functionAddress_hash)
         {
-            function_addresses->push_back(val);
+            functionAddresses->push_back(val);
             LogMessage(11, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_FileID, val);
         }
 
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_FileID, function_addresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_FileID, functionAddresses->size());
     }
-    return function_addresses;
+    return functionAddresses;
 }
 
 #undef USE_LEGACY_MAP_FOR_ADDRESS_MAP
@@ -466,23 +466,22 @@ PBasicBlock Loader::GetBasicBlock(va_t address)
     return m_pdisassemblyReader->ReadBasicBlock(m_FileID, address);
 }
 
-list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
+list <AddressRange> Loader::GetFunctionMemberBlocks(unsigned long functionAddress)
 {
-    list <BLOCK> block_list;
+    list <AddressRange> addressRangeList;
+    list <va_t> addressList;
+    unordered_set <va_t> checkedAddresses;
+    addressList.push_back(functionAddress);
 
-    list <va_t> address_list;
-    unordered_set <va_t> checked_addresses;
-    address_list.push_back(function_address);
+    AddressRange addressRange;
+    addressRange.Start = functionAddress;
+    PBasicBlock pBasicBlock = GetBasicBlock(functionAddress);
+    addressRange.End = pBasicBlock->EndAddress;
+    addressRangeList.push_back(addressRange);
 
-    BLOCK block;
-    block.Start = function_address;
-    PBasicBlock pBasicBlock = GetBasicBlock(function_address);
-    block.End = pBasicBlock->EndAddress;
-    block_list.push_back(block);
+    checkedAddresses.insert(functionAddress);
 
-    checked_addresses.insert(function_address);
-
-    for (va_t currentAddress: address_list)
+    for (va_t currentAddress: addressList)
     {
         int addresses_number;
         va_t *p_addresses = GetMappedAddresses(currentAddress, CREF_FROM, &addresses_number);
@@ -496,15 +495,14 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
                     if (m_functionHeads.find(address) != m_functionHeads.end())
                         continue;
 
-                    if (checked_addresses.find(address) == checked_addresses.end())
+                    if (checkedAddresses.find(address) == checkedAddresses.end())
                     {
-                        address_list.push_back(address);
-                        block.Start = address;
+                        addressList.push_back(address);
+                        addressRange.Start = address;
                         PBasicBlock pBasicBlock = GetBasicBlock(address);
-                        block.End = pBasicBlock->EndAddress;
-                        block_list.push_back(block);
-
-                        checked_addresses.insert(address);
+                        addressRange.End = pBasicBlock->EndAddress;
+                        addressRangeList.push_back(addressRange);
+                        checkedAddresses.insert(address);
                     }
                 }
             }
@@ -512,7 +510,7 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
         }
     }
 
-    return block_list;
+    return addressRangeList;
 }
 
 void Loader::MergeBlocks()
@@ -610,17 +608,17 @@ void Loader::LoadBlockToFunction()
     int Count = 0;
 
     LogMessage(10, __FUNCTION__, "%s: ID = %d GetFunctionAddresses\n", __FUNCTION__);
-    list <va_t> *function_addresses = GetFunctionAddresses();
-    if (function_addresses)
+    list <va_t> *functionAddresses = GetFunctionAddresses();
+    if (functionAddresses)
     {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_FileID, function_addresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_FileID, functionAddresses->size());
 
         unordered_map<va_t, va_t> addresses;
         unordered_map<va_t, va_t> membership_hash;
 
-        for (va_t address : *function_addresses)
+        for (va_t address : *functionAddresses)
         {
-            list <BLOCK> function_member_blocks = GetFunctionMemberBlocks(address);
+            list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(address);
 
             for (auto& val : function_member_blocks)
             {
@@ -677,10 +675,10 @@ void Loader::LoadBlockToFunction()
                 {
                     va_t function_start_addr = val.first;
                     m_functionHeads.insert(function_start_addr);
-                    list <BLOCK> function_member_blocks = GetFunctionMemberBlocks(function_start_addr);
+                    list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(function_start_addr);
                     unordered_map<va_t, va_t>::iterator function_start_membership_it = membership_hash.find(function_start_addr);
 
-                    for (list <BLOCK>::iterator it2 = function_member_blocks.begin();
+                    for (list <AddressRange>::iterator it2 = function_member_blocks.begin();
                         it2 != function_member_blocks.end();
                         it2++
                         )
@@ -706,8 +704,8 @@ void Loader::LoadBlockToFunction()
                 }
             }
         }
-        function_addresses->clear();
-        delete function_addresses;
+        functionAddresses->clear();
+        delete functionAddresses;
 
         for (auto& val : m_blockToFunction)
         {
@@ -751,20 +749,20 @@ BOOL Loader::FixFunctionAddresses()
     return is_fixed;
 }
 
-bool Loader::GetFunctionAddress(va_t address, va_t& function_address)
+bool Loader::GetFunctionAddress(va_t address, va_t& functionAddress)
 {
     multimap <va_t, va_t>::iterator it = m_blockToFunction.find(address);
 
     if (it != m_blockToFunction.end())
     {
-        function_address = it->second;
+        functionAddress = it->second;
         return true;
     }
-    function_address = 0;
+    functionAddress = 0;
     return false;
 }
 
-bool Loader::FindBlockFunctionMatch(va_t block, va_t function)
+bool Loader::IsFunctionBlock(va_t block, va_t function)
 {
     for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
     {
