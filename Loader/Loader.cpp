@@ -30,13 +30,13 @@ Loader::~Loader()
 
     m_disassemblyHashMaps.symbol_map.clear();
 
-    for (auto& val : m_disassemblyHashMaps.map_info_map)
+    for (auto& val : m_disassemblyHashMaps.mapInfoMap)
     {
         if (val.second)
             delete val.second;
     }
 
-    m_disassemblyHashMaps.map_info_map.clear();
+    m_disassemblyHashMaps.mapInfoMap.clear();
 
     for (auto& val : m_disassemblyHashMaps.address_to_instruction_hash_map)
     {
@@ -58,10 +58,9 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
     int addresses_i = 0;
 
     multimap <va_t, PMapInfo> *p_mapInfo;
-
-    if (m_disassemblyHashMaps.map_info_map.size() > 0)
+    if (m_disassemblyHashMaps.mapInfoMap.size() > 0)
     {
-        p_mapInfo = &m_disassemblyHashMaps.map_info_map;
+        p_mapInfo = &m_disassemblyHashMaps.mapInfoMap;
     }
     else
     {
@@ -69,22 +68,21 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
         LoadMapInfo(p_mapInfo, address);
     }
 
-    multimap <va_t, PMapInfo>::iterator map_info_map_pIter;
-
-    for (map_info_map_pIter = p_mapInfo->find(address); map_info_map_pIter != p_mapInfo->end(); map_info_map_pIter++)
+    multimap <va_t, PMapInfo>::iterator it;
+    for (it = p_mapInfo->find(address); it != p_mapInfo->end(); it++)
     {
-        if (map_info_map_pIter->first != address)
+        if (it->first != address)
             break;
-        if (map_info_map_pIter->second->Type == type)
+        if (it->second->Type == type)
         {
-            //map_info_map_pIter->second->Dst
+            //it->second->Dst
             //TODO: add
             if (current_size < addresses_i + 2)
             {
                 current_size += 50;
                 addresses = (va_t*)realloc(addresses, sizeof(va_t)  *(current_size));
             }
-            addresses[addresses_i] = map_info_map_pIter->second->Dst;
+            addresses[addresses_i] = it->second->Dst;
             addresses_i++;
             addresses[addresses_i] = NULL;
         }
@@ -104,7 +102,6 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
     return addresses;
 }
 
-
 list <va_t> *Loader::GetFunctionAddresses()
 {
     int DoCrefFromCheck = FALSE;
@@ -116,7 +113,7 @@ list <va_t> *Loader::GetFunctionAddresses()
     {
         LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
 
-        for (auto& val: m_disassemblyHashMaps.map_info_map)
+        for (auto& val: m_disassemblyHashMaps.mapInfoMap)
         {
             LogMessage(10, __FUNCTION__, "%X-%X(%s) ", val.first, val.second->Dst, MapInfoTypesStr[val.second->Type]);
             if (val.second->Type == CREF_FROM)
@@ -152,7 +149,7 @@ list <va_t> *Loader::GetFunctionAddresses()
 
     if (DoCallCheck)
     {
-        for (auto& val : m_disassemblyHashMaps.map_info_map)
+        for (auto& val : m_disassemblyHashMaps.mapInfoMap)
         {
             if (val.second->Type == CALL)
             {
@@ -299,7 +296,7 @@ BOOL Loader::Load(va_t functionAddress)
     m_originalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
 
     LoadBasicBlock(functionAddress);
-    LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), functionAddress, true);
+    LoadMapInfo(&(m_disassemblyHashMaps.mapInfoMap), functionAddress, true);
     return TRUE;
 }
 
@@ -431,20 +428,20 @@ list <AddressRange> Loader::GetFunctionMemberBlocks(unsigned long functionAddres
 
 void Loader::MergeBlocks()
 {
-    multimap <va_t, PMapInfo>::iterator last_iter = m_disassemblyHashMaps.map_info_map.end();
+    multimap <va_t, PMapInfo>::iterator last_iter = m_disassemblyHashMaps.mapInfoMap.end();
     multimap <va_t, PMapInfo>::iterator iter;
     multimap <va_t, PMapInfo>::iterator child_iter;
 
     int NumberOfChildren = 1;
-    for (iter = m_disassemblyHashMaps.map_info_map.begin();
-        iter != m_disassemblyHashMaps.map_info_map.end();
+    for (iter = m_disassemblyHashMaps.mapInfoMap.begin();
+        iter != m_disassemblyHashMaps.mapInfoMap.end();
         iter++
         )
     {
         if (iter->second->Type == CREF_FROM)
         {
             BOOL bHasOnlyOneChild = FALSE;
-            if (last_iter != m_disassemblyHashMaps.map_info_map.end())
+            if (last_iter != m_disassemblyHashMaps.mapInfoMap.end())
             {
                 if (last_iter->first == iter->first)
                 {
@@ -460,7 +457,7 @@ void Loader::MergeBlocks()
                         bHasOnlyOneChild = TRUE;
                     multimap <va_t, PMapInfo>::iterator next_iter = iter;
                     next_iter++;
-                    if (next_iter == m_disassemblyHashMaps.map_info_map.end())
+                    if (next_iter == m_disassemblyHashMaps.mapInfoMap.end())
                     {
                         last_iter = iter;
                         bHasOnlyOneChild = TRUE;
@@ -471,8 +468,8 @@ void Loader::MergeBlocks()
             if (bHasOnlyOneChild)
             {
                 int NumberOfParents = 0;
-                for (child_iter = m_disassemblyHashMaps.map_info_map.find(last_iter->second->Dst);
-                    child_iter != m_disassemblyHashMaps.map_info_map.end() && child_iter->first == last_iter->second->Dst;
+                for (child_iter = m_disassemblyHashMaps.mapInfoMap.find(last_iter->second->Dst);
+                    child_iter != m_disassemblyHashMaps.mapInfoMap.end() && child_iter->first == last_iter->second->Dst;
                     child_iter++)
                 {
                     if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)

@@ -41,5 +41,5 @@ typedef struct _DisassemblyHashMaps_ {
     multimap <unsigned char*, va_t, hash_compare_instruction_hash> instruction_hash_map;
     multimap <va_t, unsigned char*> address_to_instruction_hash_map;
     multimap <string, va_t> symbol_map;
-    multimap <va_t, PMapInfo> map_info_map;
+    multimap <va_t, PMapInfo> mapInfoMap;
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
