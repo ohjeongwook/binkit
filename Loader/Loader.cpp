@@ -17,7 +17,6 @@ const char *MapInfoTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "
 int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
 
 Loader::Loader(DisassemblyReader *p_disassemblyReader) :
-    TargetFunctionAddress(0),
     m_OriginalFilePath(NULL),
     m_fileID(0)
 {
@@ -108,20 +107,9 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
 
 list <va_t> *Loader::GetFunctionAddresses()
 {
-    if (TargetFunctionAddress != 0)
-    {
-        list <va_t> *functionAddresses = new list<va_t>;
-        if (functionAddresses)
-        {
-            functionAddresses->push_back(TargetFunctionAddress);
-        }
-
-        return functionAddresses;
-    }
-
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
-    unordered_set <va_t> functionAddress_hash;
+    unordered_set <va_t> functionAddresses;
     unordered_map <va_t, short> addresses;
 
     if (DoCrefFromCheck)
@@ -153,13 +141,13 @@ list <va_t> *Loader::GetFunctionAddresses()
             if (val.second)
             {
                 LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_fileID, val.first);
-                functionAddress_hash.insert(val.first);
+                functionAddresses.insert(val.first);
             }
         }
     }
     else
     {
-        m_pdisassemblyReader->ReadFunctionAddressMap(m_fileID, functionAddress_hash);
+        m_pdisassemblyReader->ReadFunctionAddressMap(m_fileID, functionAddresses);
     }
 
     if (DoCallCheck)
@@ -168,27 +156,27 @@ list <va_t> *Loader::GetFunctionAddresses()
         {
             if (val.second->Type == CALL)
             {
-                if (functionAddress_hash.find(val.second->Dst) == functionAddress_hash.end())
+                if (functionAddresses.find(val.second->Dst) == functionAddresses.end())
                 {
                     LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_fileID, val.second->Dst);
-                    functionAddress_hash.insert(val.second->Dst);
+                    functionAddresses.insert(val.second->Dst);
                 }
             }
         }
     }
 
-    list <va_t> *functionAddresses = new list<va_t>;
-    if (functionAddresses)
+    list <va_t> *p_functionAddressList = new list<va_t>;
+    if (p_functionAddressList)
     {
-        for (auto& val : functionAddress_hash)
+        for (auto& val : functionAddresses)
         {
-            functionAddresses->push_back(val);
+            p_functionAddressList->push_back(val);
             LogMessage(11, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_fileID, val);
         }
 
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_fileID, functionAddresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_fileID, p_functionAddressList->size());
     }
-    return functionAddresses;
+    return p_functionAddressList;
 }
 
 #undef USE_LEGACY_MAP_FOR_ADDRESS_MAP
@@ -300,14 +288,14 @@ char *Loader::GetOriginalFilePath()
     return m_OriginalFilePath;
 }
 
-BOOL Loader::LoadBasicBlock()
+BOOL Loader::LoadBasicBlock(va_t functionAddress)
 {
     if (m_disassemblyHashMaps.instruction_hash_map.size() == 0)
     {
         char conditionStr[50] = { 0, };
-        if (TargetFunctionAddress)
+        if (functionAddress)
         {
-            _snprintf(conditionStr, sizeof(conditionStr) - 1, "AND FunctionAddress = '%d'", TargetFunctionAddress);
+            _snprintf(conditionStr, sizeof(conditionStr) - 1, "AND FunctionAddress = '%d'", functionAddress);
         }
 
         m_pdisassemblyReader->ReadBasicBlockInfo(m_fileID, conditionStr, &m_disassemblyHashMaps);
@@ -325,15 +313,15 @@ void Loader::SetFileID(int fileID)
     m_fileID = fileID;
 }
 
-void Loader::LoadMapInfo(multimap <va_t, PMapInfo> *p_mapInfo, va_t Address, bool IsFunction)
+void Loader::LoadMapInfo(multimap <va_t, PMapInfo> *p_mapInfo, va_t address, bool isFunction)
 {
-    if (Address == 0)
+    if (address == 0)
     {
         p_mapInfo = m_pdisassemblyReader->ReadMapInfo(m_fileID);
     }
     else
     {
-        p_mapInfo = m_pdisassemblyReader->ReadMapInfo(m_fileID, Address, IsFunction);
+        p_mapInfo = m_pdisassemblyReader->ReadMapInfo(m_fileID, address, isFunction);
     }
 
     BuildCodeReferenceMap(p_mapInfo);
@@ -351,20 +339,15 @@ void Loader::BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_mapInfo)
     }
 }
 
-BOOL Loader::Load()
+BOOL Loader::Load(va_t functionAddress)
 {
     m_OriginalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
 
-    LoadBasicBlock();
-    LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), TargetFunctionAddress, true);
+    LoadBasicBlock(functionAddress);
+    LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), functionAddress, true);
     return TRUE;
 }
 
-void Loader::AddAnalysisTargetFunction(va_t functionAddress)
-{
-    LogMessage(10, __FUNCTION__, "Add Analysis Target Function: %X\n", functionAddress);
-    TargetFunctionAddress = functionAddress;
-}
 
 void Loader::GenerateTwoLevelInstructionHash()
 {
