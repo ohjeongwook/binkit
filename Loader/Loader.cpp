@@ -17,12 +17,10 @@ const char *MapInfoTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "
 int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
 
 Loader::Loader(DisassemblyReader *p_disassemblyReader) :
-    m_disassemblyHashMaps(NULL),
     TargetFunctionAddress(0),
     m_OriginalFilePath(NULL),
     m_FileID(0)
 {
-    m_disassemblyHashMaps = new DisassemblyHashMaps;
     m_pdisassemblyReader = p_disassemblyReader;
 }
 
@@ -31,30 +29,25 @@ Loader::~Loader()
     if (m_OriginalFilePath)
         free(m_OriginalFilePath);
 
-    if (m_disassemblyHashMaps)
+    m_disassemblyHashMaps.symbol_map.clear();
+
+    for (auto& val : m_disassemblyHashMaps.map_info_map)
     {
-        m_disassemblyHashMaps->symbol_map.clear();
-
-        for (auto& val : m_disassemblyHashMaps->map_info_map)
-        {
-            if (val.second)
-                delete val.second;
-        }
-
-        m_disassemblyHashMaps->map_info_map.clear();
-
-        for (auto& val : m_disassemblyHashMaps->address_to_instruction_hash_map)
-        {
-            if (val.second)
-            {
-                free(val.second);
-            }
-        }
-        m_disassemblyHashMaps->address_to_instruction_hash_map.clear();
-        m_disassemblyHashMaps->instruction_hash_map.clear();
-
-        delete m_disassemblyHashMaps;
+        if (val.second)
+            delete val.second;
     }
+
+    m_disassemblyHashMaps.map_info_map.clear();
+
+    for (auto& val : m_disassemblyHashMaps.address_to_instruction_hash_map)
+    {
+        if (val.second)
+        {
+            free(val.second);
+        }
+    }
+    m_disassemblyHashMaps.address_to_instruction_hash_map.clear();
+    m_disassemblyHashMaps.instruction_hash_map.clear();
 }
 
 va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
@@ -67,9 +60,9 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
 
     multimap <va_t, PMapInfo> *p_map_info_map;
 
-    if (m_disassemblyHashMaps && m_disassemblyHashMaps->map_info_map.size() > 0)
+    if (m_disassemblyHashMaps.map_info_map.size() > 0)
     {
-        p_map_info_map = &m_disassemblyHashMaps->map_info_map;
+        p_map_info_map = &m_disassemblyHashMaps.map_info_map;
     }
     else
     {
@@ -98,14 +91,12 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
         }
     }
 
-    if (!m_disassemblyHashMaps)
-    {
-        p_map_info_map->clear();
-        free(p_map_info_map);
-    }
+    p_map_info_map->clear();
+    free(p_map_info_map);
 
     if (p_length)
         *p_length = addresses_i;
+
     if (addresses_i == 0)
     {
         free(addresses);
@@ -137,7 +128,7 @@ list <va_t> *Loader::GetFunctionAddresses()
     {
         LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
 
-        for (auto& val: m_disassemblyHashMaps->map_info_map)
+        for (auto& val: m_disassemblyHashMaps.map_info_map)
         {
             LogMessage(10, __FUNCTION__, "%X-%X(%s) ", val.first, val.second->Dst, MapInfoTypesStr[val.second->Type]);
             if (val.second->Type == CREF_FROM)
@@ -151,7 +142,7 @@ list <va_t> *Loader::GetFunctionAddresses()
         }
         LogMessage(10, __FUNCTION__, "%s\n", __FUNCTION__);
 
-        for (auto& val : m_disassemblyHashMaps->address_to_instruction_hash_map)
+        for (auto& val : m_disassemblyHashMaps.address_to_instruction_hash_map)
         {
             addresses.insert(pair<va_t, short>(val.first, DoCrefFromCheck ? TRUE : FALSE));
         }
@@ -171,9 +162,9 @@ list <va_t> *Loader::GetFunctionAddresses()
         m_pdisassemblyReader->ReadFunctionAddressMap(m_FileID, function_address_hash);
     }
 
-    if (DoCallCheck && m_disassemblyHashMaps)
+    if (DoCallCheck)
     {
-        for (auto& val : m_disassemblyHashMaps->map_info_map)
+        for (auto& val : m_disassemblyHashMaps.map_info_map)
         {
             if (val.second->Type == CALL)
             {
@@ -215,8 +206,8 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
     if (InstructionHash)
     {
         multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_PIter;
-        for (instruction_hash_map_PIter = m_disassemblyHashMaps->instruction_hash_map.find(InstructionHash);
-            instruction_hash_map_PIter != m_disassemblyHashMaps->instruction_hash_map.end();
+        for (instruction_hash_map_PIter = m_disassemblyHashMaps.instruction_hash_map.find(InstructionHash);
+            instruction_hash_map_PIter != m_disassemblyHashMaps.instruction_hash_map.end();
             instruction_hash_map_PIter++
             )
         {
@@ -224,7 +215,7 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
                 break;
             if (instruction_hash_map_PIter->second == address)
             {
-                m_disassemblyHashMaps->instruction_hash_map.erase(instruction_hash_map_PIter);
+                m_disassemblyHashMaps.instruction_hash_map.erase(instruction_hash_map_PIter);
                 break;
             }
         }
@@ -234,10 +225,10 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
 
 char *Loader::GetInstructionHashStr(va_t address)
 {
-    if (m_disassemblyHashMaps && m_disassemblyHashMaps->address_to_instruction_hash_map.size() > 0)
+    if (m_disassemblyHashMaps.address_to_instruction_hash_map.size() > 0)
     {
-        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(address);
-        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
+        multimap <va_t, unsigned char*>::iterator address_to_instruction_hash_map_PIter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(address);
+        if (address_to_instruction_hash_map_PIter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
         {
             return BytesWithLengthAmbleToHex(address_to_instruction_hash_map_PIter->second);
         }
@@ -311,7 +302,7 @@ char *Loader::GetOriginalFilePath()
 
 BOOL Loader::LoadBasicBlock()
 {
-    if (m_disassemblyHashMaps->instruction_hash_map.size() == 0)
+    if (m_disassemblyHashMaps.instruction_hash_map.size() == 0)
     {
         char conditionStr[50] = { 0, };
         if (TargetFunctionAddress)
@@ -319,7 +310,7 @@ BOOL Loader::LoadBasicBlock()
             _snprintf(conditionStr, sizeof(conditionStr) - 1, "AND FunctionAddress = '%d'", TargetFunctionAddress);
         }
 
-        m_pdisassemblyReader->ReadBasicBlockInfo(m_FileID, conditionStr, m_disassemblyHashMaps);
+        m_pdisassemblyReader->ReadBasicBlockInfo(m_FileID, conditionStr, &m_disassemblyHashMaps);
     }
     return TRUE;
 }
@@ -365,7 +356,7 @@ BOOL Loader::Load()
     m_OriginalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_FileID);
 
     LoadBasicBlock();
-    LoadMapInfo(&(m_disassemblyHashMaps->map_info_map), TargetFunctionAddress, true);
+    LoadMapInfo(&(m_disassemblyHashMaps.map_info_map), TargetFunctionAddress, true);
 
     return TRUE;
 }
@@ -385,12 +376,12 @@ void Loader::GenerateTwoLevelInstructionHash()
 {
     /*
     multimap <unsigned char *, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_pIter;
-    for (instruction_hash_map_pIter = m_disassemblyHashMaps->instruction_hash_map.begin();
-        instruction_hash_map_pIter != m_disassemblyHashMaps->instruction_hash_map.end();
+    for (instruction_hash_map_pIter = m_disassemblyHashMaps.instruction_hash_map.begin();
+        instruction_hash_map_pIter != m_disassemblyHashMaps.instruction_hash_map.end();
         instruction_hash_map_pIter++)
 
     {
-        if(m_disassemblyHashMaps->instruction_hash_map.count(instruction_hash_map_pIter->first)>1)
+        if(m_disassemblyHashMaps.instruction_hash_map.count(instruction_hash_map_pIter->first)>1)
         {
             int addresses_number = 0;
             va_t *addresses = GetMappedAddresses(instruction_hash_map_pIter->second, CREF_FROM, &addresses_number);
@@ -403,8 +394,8 @@ void Loader::GenerateTwoLevelInstructionHash()
                 multimap <va_t,  unsigned char *>::iterator address_to_instruction_hash_map_Iter;
                 for (int i = 0;i<addresses_number;i++)
                 {
-                    address_to_instruction_hash_map_Iter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(addresses[i]);
-                    if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
+                    address_to_instruction_hash_map_Iter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(addresses[i]);
+                    if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
                     {
                         TwoLevelInstructionHashLength += *(unsigned short *)address_to_instruction_hash_map_Iter->second; //+
                     }
@@ -422,14 +413,14 @@ void Loader::GenerateTwoLevelInstructionHash()
                         Offset += *(unsigned short *)instruction_hash_map_pIter->first;
                         for (int i = 0;i<addresses_number;i++)
                         {
-                            address_to_instruction_hash_map_Iter = m_disassemblyHashMaps->address_to_instruction_hash_map.find(addresses[i]);
-                            if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps->address_to_instruction_hash_map.end())
+                            address_to_instruction_hash_map_Iter = m_disassemblyHashMaps.address_to_instruction_hash_map.find(addresses[i]);
+                            if(address_to_instruction_hash_map_Iter != m_disassemblyHashMaps.address_to_instruction_hash_map.end())
                             {
                                 memcpy(TwoLevelInstructionHash+Offset, address_to_instruction_hash_map_Iter->second+sizeof(short), *(unsigned short *)address_to_instruction_hash_map_Iter->second);
                                 Offset += *(unsigned short *)address_to_instruction_hash_map_Iter->second;
                             }
                         }
-                        m_disassemblyHashMaps->instruction_hash_map.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instruction_hash_map_pIter->second));
+                        m_disassemblyHashMaps.instruction_hash_map.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instruction_hash_map_pIter->second));
                     }
                 }
             }
@@ -439,21 +430,18 @@ void Loader::GenerateTwoLevelInstructionHash()
 
 void Loader::DumpDisassemblyHashMaps()
 {
-    if (m_disassemblyHashMaps)
-    {
-        LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", m_disassemblyHashMaps->file_info.OriginalFilePath);
-        LogMessage(10, __FUNCTION__, "ComputerName = %s\n", m_disassemblyHashMaps->file_info.ComputerName);
-        LogMessage(10, __FUNCTION__, "UserName = %s\n", m_disassemblyHashMaps->file_info.UserName);
-        LogMessage(10, __FUNCTION__, "CompanyName = %s\n", m_disassemblyHashMaps->file_info.CompanyName);
-        LogMessage(10, __FUNCTION__, "FileVersion = %s\n", m_disassemblyHashMaps->file_info.FileVersion);
-        LogMessage(10, __FUNCTION__, "FileDescription = %s\n", m_disassemblyHashMaps->file_info.FileDescription);
-        LogMessage(10, __FUNCTION__, "InternalName = %s\n", m_disassemblyHashMaps->file_info.InternalName);
-        LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps->file_info.ProductName);
-        LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps->file_info.ModifiedTime);
-        LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps->file_info.MD5Sum);
+    LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", m_disassemblyHashMaps.file_info.OriginalFilePath);
+    LogMessage(10, __FUNCTION__, "ComputerName = %s\n", m_disassemblyHashMaps.file_info.ComputerName);
+    LogMessage(10, __FUNCTION__, "UserName = %s\n", m_disassemblyHashMaps.file_info.UserName);
+    LogMessage(10, __FUNCTION__, "CompanyName = %s\n", m_disassemblyHashMaps.file_info.CompanyName);
+    LogMessage(10, __FUNCTION__, "FileVersion = %s\n", m_disassemblyHashMaps.file_info.FileVersion);
+    LogMessage(10, __FUNCTION__, "FileDescription = %s\n", m_disassemblyHashMaps.file_info.FileDescription);
+    LogMessage(10, __FUNCTION__, "InternalName = %s\n", m_disassemblyHashMaps.file_info.InternalName);
+    LogMessage(10, __FUNCTION__, "ProductName = %s\n", m_disassemblyHashMaps.file_info.ProductName);
+    LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", m_disassemblyHashMaps.file_info.ModifiedTime);
+    LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", m_disassemblyHashMaps.file_info.MD5Sum);
 
-        LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps->instruction_hash_map.size());
-    }
+    LogMessage(10, __FUNCTION__, "instruction_hash_map = %u\n", m_disassemblyHashMaps.instruction_hash_map.size());
 }
 
 char *Loader::GetDisasmLines(unsigned long StartAddress, unsigned long EndAddress)
@@ -482,53 +470,46 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
 {
     list <BLOCK> block_list;
 
-    if (m_disassemblyHashMaps)
+    list <va_t> address_list;
+    unordered_set <va_t> checked_addresses;
+    address_list.push_back(function_address);
+
+    BLOCK block;
+    block.Start = function_address;
+    PBasicBlock pBasicBlock = GetBasicBlock(function_address);
+    block.End = pBasicBlock->EndAddress;
+    block_list.push_back(block);
+
+    checked_addresses.insert(function_address);
+
+    for (va_t currentAddress: address_list)
     {
-        list <va_t> address_list;
-        unordered_set <va_t> checked_addresses;
-        address_list.push_back(function_address);
-
-        BLOCK block;
-        block.Start = function_address;
-        PBasicBlock pBasicBlock = GetBasicBlock(function_address);
-        block.End = pBasicBlock->EndAddress;
-        block_list.push_back(block);
-
-        checked_addresses.insert(function_address);
-
-        for (va_t currentAddress: address_list)
+        int addresses_number;
+        va_t *p_addresses = GetMappedAddresses(currentAddress, CREF_FROM, &addresses_number);
+        if (p_addresses && addresses_number > 0)
         {
-            int addresses_number;
-            va_t *p_addresses = GetMappedAddresses(currentAddress, CREF_FROM, &addresses_number);
-            if (p_addresses && addresses_number > 0)
+            for (int i = 0; i < addresses_number; i++)
             {
-                for (int i = 0; i < addresses_number; i++)
+                va_t address = p_addresses[i];
+                if (address)
                 {
-                    va_t address = p_addresses[i];
-                    if (address)
+                    if (m_functionHeads.find(address) != m_functionHeads.end())
+                        continue;
+
+                    if (checked_addresses.find(address) == checked_addresses.end())
                     {
-                        if (m_functionHeads.find(address) != m_functionHeads.end())
-                            continue;
+                        address_list.push_back(address);
+                        block.Start = address;
+                        PBasicBlock pBasicBlock = GetBasicBlock(address);
+                        block.End = pBasicBlock->EndAddress;
+                        block_list.push_back(block);
 
-                        if (checked_addresses.find(address) == checked_addresses.end())
-                        {
-                            address_list.push_back(address);
-                            block.Start = address;
-                            PBasicBlock pBasicBlock = GetBasicBlock(address);
-                            block.End = pBasicBlock->EndAddress;
-                            block_list.push_back(block);
-
-                            checked_addresses.insert(address);
-                        }
+                        checked_addresses.insert(address);
                     }
                 }
-                free(p_addresses);
             }
+            free(p_addresses);
         }
-    }
-    else
-    {
-        block_list = m_pdisassemblyReader->ReadFunctionMemberAddresses(m_FileID, function_address);
     }
 
     return block_list;
@@ -536,20 +517,20 @@ list <BLOCK> Loader::GetFunctionMemberBlocks(unsigned long function_address)
 
 void Loader::MergeBlocks()
 {
-    multimap <va_t, PMapInfo>::iterator last_iter = m_disassemblyHashMaps->map_info_map.end();
+    multimap <va_t, PMapInfo>::iterator last_iter = m_disassemblyHashMaps.map_info_map.end();
     multimap <va_t, PMapInfo>::iterator iter;
     multimap <va_t, PMapInfo>::iterator child_iter;
 
     int NumberOfChildren = 1;
-    for (iter = m_disassemblyHashMaps->map_info_map.begin();
-        iter != m_disassemblyHashMaps->map_info_map.end();
+    for (iter = m_disassemblyHashMaps.map_info_map.begin();
+        iter != m_disassemblyHashMaps.map_info_map.end();
         iter++
         )
     {
         if (iter->second->Type == CREF_FROM)
         {
             BOOL bHasOnlyOneChild = FALSE;
-            if (last_iter != m_disassemblyHashMaps->map_info_map.end())
+            if (last_iter != m_disassemblyHashMaps.map_info_map.end())
             {
                 if (last_iter->first == iter->first)
                 {
@@ -565,7 +546,7 @@ void Loader::MergeBlocks()
                         bHasOnlyOneChild = TRUE;
                     multimap <va_t, PMapInfo>::iterator next_iter = iter;
                     next_iter++;
-                    if (next_iter == m_disassemblyHashMaps->map_info_map.end())
+                    if (next_iter == m_disassemblyHashMaps.map_info_map.end())
                     {
                         last_iter = iter;
                         bHasOnlyOneChild = TRUE;
@@ -576,8 +557,8 @@ void Loader::MergeBlocks()
             if (bHasOnlyOneChild)
             {
                 int NumberOfParents = 0;
-                for (child_iter = m_disassemblyHashMaps->map_info_map.find(last_iter->second->Dst);
-                    child_iter != m_disassemblyHashMaps->map_info_map.end() && child_iter->first == last_iter->second->Dst;
+                for (child_iter = m_disassemblyHashMaps.map_info_map.find(last_iter->second->Dst);
+                    child_iter != m_disassemblyHashMaps.map_info_map.end() && child_iter->first == last_iter->second->Dst;
                     child_iter++)
                 {
                     if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)

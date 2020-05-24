@@ -24,7 +24,7 @@ private:
     unordered_set <va_t> m_functionHeads;
 
     DisassemblyReader *m_pdisassemblyReader;
-    DisassemblyHashMaps *m_disassemblyHashMaps;
+    DisassemblyHashMaps m_disassemblyHashMaps;
 
     void LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address, bool IsFunction = false);
     BOOL LoadBasicBlock();
