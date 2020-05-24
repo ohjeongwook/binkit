@@ -28,7 +28,7 @@ typedef unsigned char *PBYTE;
 );"
 #define INSERT_FILE_INFO_TABLE_STATEMENT "INSERT INTO  " FILE_INFO_TABLE" (OriginalFilePath,ComputerName,UserName,CompanyName,FileVersion,FileDescription,InternalName,ProductName,ModifiedTime,MD5Sum) values (%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q);"
 
-#define MAP_INFO_TABLE "MapInfo"
+#define MAP_INFO_TABLE "ControlFlow"
 #define CREATE_MAP_INFO_TABLE_STATEMENT "CREATE TABLE " MAP_INFO_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             FileID INTEGER,\n\
@@ -83,7 +83,7 @@ public:
     int EndTransaction();
     void Close();
     void AddBasicBlock(PBasicBlock pBasicBlock, int fileID = 0);
-    void AddMapInfo(PMapInfo p_map_info, int fileID = 0);
+    void AddControlFlow(PControlFlow p_control_flow, int fileID = 0);
 
     void SetFileInfo(FileInfo *p_file_info);
     void CreateTables();

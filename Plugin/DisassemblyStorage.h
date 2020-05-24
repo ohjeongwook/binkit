@@ -32,7 +32,7 @@ public:
     {
     }
 
-    virtual void AddMapInfo(PMapInfo p_map_info, int fileID = 0)
+    virtual void AddControlFlow(PControlFlow p_control_flow, int fileID = 0)
     {
     }
 

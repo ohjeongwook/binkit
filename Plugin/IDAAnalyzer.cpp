@@ -889,9 +889,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         pCmdArray->push_back(insn);
         short current_itype = insn.itype;
 
-        MapInfo map_info;
+        ControlFlow control_flow;
         //New Location Found
-        map_info.SrcBlock = srcBlockAddress;
+        control_flow.SrcBlock = srcBlockAddress;
 
         //Finding Next CREF
         vector<ea_t> cref_list;
@@ -927,10 +927,10 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
                     //this is a call
                     //PUSH THIS: call_addrs targetAddress
-                    map_info.Type = CALL;
-                    map_info.Dst = targetAddress;
+                    control_flow.Type = CALL;
+                    control_flow.Dst = targetAddress;
 
-                    m_pdisassemblyReader->AddMapInfo(&map_info);
+                    m_pdisassemblyReader->AddControlFlow(&control_flow);
                 }
                 else {
                     //this is a jump
@@ -1048,9 +1048,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         while (dref != BADADDR)
         {
             //PUSH THIS: dref
-            map_info.Type = DREF_TO;
-            map_info.Dst = dref;
-            m_pdisassemblyReader->AddMapInfo(&map_info);
+            control_flow.Type = DREF_TO;
+            control_flow.Dst = dref;
+            m_pdisassemblyReader->AddControlFlow(&control_flow);
             dref = get_next_dref_to(currentAddress, dref);
         }
 
@@ -1060,9 +1060,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         {
             //PUSH THIS: next_drefs dref
 
-            map_info.Type = DREF_FROM;
-            map_info.Dst = dref;
-            m_pdisassemblyReader->AddMapInfo(&map_info);
+            control_flow.Type = DREF_FROM;
+            control_flow.Dst = dref;
+            m_pdisassemblyReader->AddControlFlow(&control_flow);
             dref = get_next_dref_from(currentAddress, dref);
         }
 
@@ -1189,9 +1189,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                     cref_list_iter != cref_list.end();
                     cref_list_iter++)
                 {
-                    map_info.Type = CREF_FROM;
-                    map_info.Dst = *cref_list_iter;
-                    m_pdisassemblyReader->AddMapInfo(&map_info);
+                    control_flow.Type = CREF_FROM;
+                    control_flow.Dst = *cref_list_iter;
+                    m_pdisassemblyReader->AddControlFlow(&control_flow);
                 }
             }
             else
@@ -1201,9 +1201,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                     cref_list_iter != cref_list.rend();
                     cref_list_iter++)
                 {
-                    map_info.Type = CREF_FROM;
-                    map_info.Dst = *cref_list_iter;
-                    m_pdisassemblyReader->AddMapInfo(&map_info);
+                    control_flow.Type = CREF_FROM;
+                    control_flow.Dst = *cref_list_iter;
+                    m_pdisassemblyReader->AddControlFlow(&control_flow);
                 }
             }
 

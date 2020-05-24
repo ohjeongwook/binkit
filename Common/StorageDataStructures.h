@@ -61,11 +61,11 @@ typedef struct
 	va_t End;
 } AddressRange;
 
-typedef struct _MapInfo_ {
+typedef struct _ControlFlow_ {
 	BYTE Type;
 	va_t SrcBlock;
 	va_t SrcBlockEnd;
 	va_t Dst;
-} MapInfo,  *PMapInfo;
+} ControlFlow,  *PControlFlow;
 
-typedef pair <va_t, PMapInfo> AddressPMapInfoPair;
+typedef pair <va_t, PControlFlow> AddressPControlFlowPair;

@@ -209,14 +209,14 @@ void SQLiteDisassemblyStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID
         free(instruction_hashStr);
 }
 
-void SQLiteDisassemblyStorage::AddMapInfo(PMapInfo pMapInfo, int fileID)
+void SQLiteDisassemblyStorage::AddControlFlow(PControlFlow pControlFlow, int fileID)
 {
     ExecuteStatement(NULL, NULL, INSERT_MAP_INFO_TABLE_STATEMENT,
         fileID,
-        pMapInfo->Type,
-        pMapInfo->SrcBlock,
-        pMapInfo->SrcBlockEnd,
-        pMapInfo->Dst
+        pControlFlow->Type,
+        pControlFlow->SrcBlock,
+        pControlFlow->SrcBlockEnd,
+        pControlFlow->Dst
     );
 }
 

@@ -32,7 +32,7 @@ public:
     {
     }
 
-    virtual void AddMapInfo(PMapInfo p_map_info, int fileID = 0)
+    virtual void AddControlFlow(PControlFlow p_control_flow, int fileID = 0)
     {
     }
 
@@ -60,7 +60,7 @@ public:
         return;
     }
 
-    virtual multimap <va_t, PMapInfo> *ReadMapInfo(int fileID, va_t address = 0, bool isFunction = false)
+    virtual multimap <va_t, PControlFlow> *ReadControlFlow(int fileID, va_t address = 0, bool isFunction = false)
     {
         return NULL;
     }

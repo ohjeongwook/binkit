@@ -25,9 +25,10 @@ private:
     DisassemblyReader *m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
 
-    void LoadMapInfo(multimap <va_t, PMapInfo> *p_mapInfo, va_t address, bool IsFunction = false);
+    void LoadControlFlow(multimap <va_t, PControlFlow> *p_controlFlow, va_t address, bool IsFunction = false);
     BOOL LoadBasicBlock(va_t functionAddress = 0);
-    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_mapInfo);
+    void BuildCodeReferenceMap(multimap <va_t, PControlFlow> *p_controlFlow);
+    list <va_t> *GetFunctionAddresses();
 
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
@@ -35,31 +36,29 @@ private:
 public:
     Loader(DisassemblyReader *DisassemblyReader = NULL);
     ~Loader();
+    BOOL Load(va_t functionAddress = 0);
+    void LoadBlockFunctionMaps();
+
     void SetFileID(int FileID = 1);
     int GetFileID();
     string GetIdentity();
     char *GetOriginalFilePath();
 
-    BOOL Load(va_t functionAddress = 0);
-
-    PBasicBlock GetBasicBlock(va_t address);
-    list <va_t> *GetFunctionAddresses();
-    multimap <va_t, va_t> *GetFunctionToBlock();
-
-    char *GetSymbol(va_t address);
-    char *GetInstructionHashStr(va_t address);
-    void RemoveFromInstructionHashHash(va_t address);
-    char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
 
     va_t GetBlockAddress(va_t address);
-    va_t *GetMappedAddresses(va_t address, int type, int *p_length);
+    PBasicBlock GetBasicBlock(va_t address);
+    va_t *GetMappedAddresses(va_t address, int type, int *p_length);    
+    char *GetSymbol(va_t address);    
+    char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
+    char *GetInstructionHashStr(va_t address);
+    void RemoveFromInstructionHashHash(va_t address);
 
-    void LoadBlockFunctionMaps();
     void ClearBlockFunctionMaps();
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsFunctionBlock(va_t block, va_t function);
     list <AddressRange> GetFunctionMemberBlocks(unsigned long FunctionAddress);
+    multimap <va_t, va_t> *GetFunctionToBlock();
 
     void DumpDisassemblyHashMaps();
     void DumpBlockInfo(va_t blockAddress);

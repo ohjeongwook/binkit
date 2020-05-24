@@ -13,7 +13,7 @@ typedef unsigned char BYTE;
 typedef unsigned char *PBYTE;
 
 #define FILE_INFO_TABLE "FileInfo"
-#define MAP_INFO_TABLE "MapInfo"
+#define MAP_INFO_TABLE "ControlFlow"
 #define CREATE_MAP_INFO_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "MAP_INFO_TABLE"Index ON "MAP_INFO_TABLE" (SrcBlock)"
 #define BASIC_BLOCK_TABLE "BasicBlock"
 
@@ -49,8 +49,8 @@ public:
     static int ReadBasicBlockDataCallback(void *arg, int argc, char **argv, char **names);
     void ReadBasicBlockInfo(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps);
 
-    static int ReadMapInfoCallback(void *arg, int argc, char **argv, char **names);
-    multimap <va_t, PMapInfo> *ReadMapInfo(int fileID, va_t address = 0, bool isFunction = false);
+    static int ReadControlFlowCallback(void *arg, int argc, char **argv, char **names);
+    multimap <va_t, PControlFlow> *ReadControlFlow(int fileID, va_t address = 0, bool isFunction = false);
 
     static int ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names);
     list<AddressRange> ReadFunctionMemberAddresses(int fileID, va_t functionAddress);

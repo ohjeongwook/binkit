@@ -248,15 +248,15 @@ va_t SQLiteDisassemblyReader::ReadBlockStartAddress(int fileID, va_t address)
     return blockAddress;
 }
 
-int SQLiteDisassemblyReader::ReadMapInfoCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char **argv, char **names)
 {
-    multimap <va_t, PMapInfo> *p_mapInfo = (multimap <va_t, PMapInfo>*)arg;
+    multimap <va_t, PControlFlow> *p_controlFlow = (multimap <va_t, PControlFlow>*)arg;
 
-    PMapInfo p_map_info = new MapInfo;
-    p_map_info->Type = strtoul10(argv[0]);
-    p_map_info->SrcBlock = strtoul10(argv[1]);
-    p_map_info->SrcBlockEnd = strtoul10(argv[2]);
-    p_map_info->Dst = strtoul10(argv[3]);
+    PControlFlow p_control_flow = new ControlFlow;
+    p_control_flow->Type = strtoul10(argv[0]);
+    p_control_flow->SrcBlock = strtoul10(argv[1]);
+    p_control_flow->SrcBlockEnd = strtoul10(argv[2]);
+    p_control_flow->Dst = strtoul10(argv[3]);
 #if DEBUG_LEVEL > 1
     Logger.Log(10, "%s: ID = %d strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X\n", __FUNCTION__, fileID,
         argv[0], strtoul10(argv[0]),
@@ -265,42 +265,42 @@ int SQLiteDisassemblyReader::ReadMapInfoCallback(void *arg, int argc, char **arg
         argv[3], strtoul10(argv[3])
     );
 #endif
-    p_mapInfo->insert(AddressPMapInfoPair(p_map_info->SrcBlock, p_map_info));
+    p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->SrcBlock, p_control_flow));
     return 0;
 }
 
-multimap <va_t, PMapInfo> *SQLiteDisassemblyReader::ReadMapInfo(int fileID, va_t address, bool isFunction)
+multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(int fileID, va_t address, bool isFunction)
 {
-    multimap <va_t, PMapInfo> *p_mapInfo = new multimap <va_t, PMapInfo>();
+    multimap <va_t, PControlFlow> *p_controlFlow = new multimap <va_t, PControlFlow>();
     if (address == 0)
     {
-        ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
-            "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo WHERE FileID = %u",
+        ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+            "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow WHERE FileID = %u",
             fileID);
     }
     else
     {
         if (isFunction)
         {
-            p_mapInfo = ReadMapInfo(fileID, address, isFunction);
+            p_controlFlow = ReadControlFlow(fileID, address, isFunction);
 
-            ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo "
+            ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
                 fileID, address);
         }
         else
         {
-            ExecuteStatement(ReadMapInfoCallback, (void*)p_mapInfo,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From MapInfo "
+            ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
                 fileID, address);
         }
     }
 
-    return p_mapInfo;
+    return p_controlFlow;
 }
 
 int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)
