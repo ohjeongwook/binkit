@@ -17,7 +17,6 @@ private:
     int m_fileID;
     string Identity;
     char* m_originalFilePath;
-    multimap <va_t, va_t> m_codeReferenceMap;
     multimap <va_t, va_t> m_blockToFunction;
     multimap <va_t, va_t> m_functionToBlock;
     unordered_set <va_t> m_functionHeads;
@@ -25,9 +24,8 @@ private:
     DisassemblyReader *m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
 
-    void LoadControlFlow(multimap <va_t, PControlFlow> *p_controlFlow, va_t address, bool IsFunction = false);
     BOOL LoadBasicBlock(va_t functionAddress = 0);
-    void BuildCodeReferenceMap(multimap <va_t, PControlFlow> *p_controlFlow);
+    void LoadControlFlow(multimap <va_t, PControlFlow> *p_controlFlow, va_t address, bool IsFunction = false);    
     list <va_t> *GetFunctionAddresses();
 
     void GenerateTwoLevelInstructionHash();
@@ -43,7 +41,6 @@ public:
     int GetFileID();
     string GetIdentity();
     char *GetOriginalFilePath();
-
 
     va_t GetBlockAddress(va_t address);
     PBasicBlock GetBasicBlock(va_t address);

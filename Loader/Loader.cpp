@@ -30,13 +30,13 @@ Loader::~Loader()
 
     m_disassemblyHashMaps.symbolMap.clear();
 
-    for (auto& val : m_disassemblyHashMaps.controlFlowMap)
+    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
     {
         if (val.second)
             delete val.second;
     }
 
-    m_disassemblyHashMaps.controlFlowMap.clear();
+    m_disassemblyHashMaps.addressToControlFlowMap.clear();
 
     for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
     {
@@ -58,9 +58,9 @@ va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
     int addresses_i = 0;
 
     multimap <va_t, PControlFlow> *p_controlFlow;
-    if (m_disassemblyHashMaps.controlFlowMap.size() > 0)
+    if (m_disassemblyHashMaps.addressToControlFlowMap.size() > 0)
     {
-        p_controlFlow = &m_disassemblyHashMaps.controlFlowMap;
+        p_controlFlow = &m_disassemblyHashMaps.addressToControlFlowMap;
     }
     else
     {
@@ -113,7 +113,7 @@ list <va_t> *Loader::GetFunctionAddresses()
     {
         LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
 
-        for (auto& val: m_disassemblyHashMaps.controlFlowMap)
+        for (auto& val: m_disassemblyHashMaps.addressToControlFlowMap)
         {
             LogMessage(10, __FUNCTION__, "%X-%X(%s) ", val.first, val.second->Dst, ControlFlowTypesStr[val.second->Type]);
             if (val.second->Type == CREF_FROM)
@@ -149,7 +149,7 @@ list <va_t> *Loader::GetFunctionAddresses()
 
     if (DoCallCheck)
     {
-        for (auto& val : m_disassemblyHashMaps.controlFlowMap)
+        for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
         {
             if (val.second->Type == CALL)
             {
@@ -275,20 +275,6 @@ void Loader::LoadControlFlow(multimap <va_t, PControlFlow> *p_controlFlow, va_t 
     {
         p_controlFlow = m_pdisassemblyReader->ReadControlFlow(m_fileID, address, isFunction);
     }
-
-    BuildCodeReferenceMap(p_controlFlow);
-}
-
-
-void Loader::BuildCodeReferenceMap(multimap <va_t, PControlFlow> *p_controlFlow)
-{
-    for (auto& val : *p_controlFlow)
-    {
-        if (val.second->Type == CREF_FROM)
-        {
-            m_codeReferenceMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
-        }
-    }
 }
 
 BOOL Loader::Load(va_t functionAddress)
@@ -296,7 +282,15 @@ BOOL Loader::Load(va_t functionAddress)
     m_originalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
 
     LoadBasicBlock(functionAddress);
-    LoadControlFlow(&(m_disassemblyHashMaps.controlFlowMap), functionAddress, true);
+    LoadControlFlow(&(m_disassemblyHashMaps.addressToControlFlowMap), functionAddress, true);
+
+    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    {
+        if (val.second->Type == CREF_FROM)
+        {
+            m_disassemblyHashMaps.dstToSrcAddressMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
+        }
+    }    
     return TRUE;
 }
 
@@ -428,20 +422,20 @@ list <AddressRange> Loader::GetFunctionMemberBlocks(unsigned long functionAddres
 
 void Loader::MergeBlocks()
 {
-    multimap <va_t, PControlFlow>::iterator last_iter = m_disassemblyHashMaps.controlFlowMap.end();
+    multimap <va_t, PControlFlow>::iterator last_iter = m_disassemblyHashMaps.addressToControlFlowMap.end();
     multimap <va_t, PControlFlow>::iterator iter;
     multimap <va_t, PControlFlow>::iterator child_iter;
 
     int NumberOfChildren = 1;
-    for (iter = m_disassemblyHashMaps.controlFlowMap.begin();
-        iter != m_disassemblyHashMaps.controlFlowMap.end();
+    for (iter = m_disassemblyHashMaps.addressToControlFlowMap.begin();
+        iter != m_disassemblyHashMaps.addressToControlFlowMap.end();
         iter++
         )
     {
         if (iter->second->Type == CREF_FROM)
         {
             BOOL bHasOnlyOneChild = FALSE;
-            if (last_iter != m_disassemblyHashMaps.controlFlowMap.end())
+            if (last_iter != m_disassemblyHashMaps.addressToControlFlowMap.end())
             {
                 if (last_iter->first == iter->first)
                 {
@@ -457,7 +451,7 @@ void Loader::MergeBlocks()
                         bHasOnlyOneChild = TRUE;
                     multimap <va_t, PControlFlow>::iterator next_iter = iter;
                     next_iter++;
-                    if (next_iter == m_disassemblyHashMaps.controlFlowMap.end())
+                    if (next_iter == m_disassemblyHashMaps.addressToControlFlowMap.end())
                     {
                         last_iter = iter;
                         bHasOnlyOneChild = TRUE;
@@ -468,8 +462,8 @@ void Loader::MergeBlocks()
             if (bHasOnlyOneChild)
             {
                 int NumberOfParents = 0;
-                for (child_iter = m_disassemblyHashMaps.controlFlowMap.find(last_iter->second->Dst);
-                    child_iter != m_disassemblyHashMaps.controlFlowMap.end() && child_iter->first == last_iter->second->Dst;
+                for (child_iter = m_disassemblyHashMaps.addressToControlFlowMap.find(last_iter->second->Dst);
+                    child_iter != m_disassemblyHashMaps.addressToControlFlowMap.end() && child_iter->first == last_iter->second->Dst;
                     child_iter++)
                 {
                     if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)
@@ -563,8 +557,8 @@ void Loader::LoadBlockFunctionMaps()
             if (val.second > 1)
             {
                 bool function_start = true;
-                for (multimap<va_t, va_t>::iterator it2 = m_codeReferenceMap.find(val.first);
-                    it2 != m_codeReferenceMap.end() && it2->first == val.first;
+                for (multimap<va_t, va_t>::iterator it2 = m_disassemblyHashMaps.dstToSrcAddressMap.find(val.first);
+                    it2 != m_disassemblyHashMaps.dstToSrcAddressMap.end() && it2->first == val.first;
                     it2++
                     )
                 {
