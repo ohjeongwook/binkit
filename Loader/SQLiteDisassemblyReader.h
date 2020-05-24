@@ -53,7 +53,7 @@ public:
     multimap <va_t, PMapInfo> *ReadMapInfo(int fileID, va_t address = 0, bool isFunction = false);
 
     static int ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names);
-    list<AddressRange> ReadFunctionMemberAddresses(int fileID, va_t function_address);
+    list<AddressRange> ReadFunctionMemberAddresses(int fileID, va_t functionAddress);
 
     static int QueryFunctionMatchesCallback(void *arg, int argc, char **argv, char **names);
 

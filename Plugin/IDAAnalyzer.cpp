@@ -1489,14 +1489,14 @@ void IDAAnalyzer::FixFunctionChunks()
 	} while (connected_links_count > 0);
 }
 
-void IDAAnalyzer::MakeCode(ea_t start_addr, ea_t end_addr)
+void IDAAnalyzer::MakeCode(ea_t startAddress, ea_t endAddress)
 {
 	while (1) {
 		bool converted = TRUE;
-		LogMessage(1, __FUNCTION__, "MakeCode: %X - %X \n", start_addr, end_addr);
+		LogMessage(1, __FUNCTION__, "MakeCode: %X - %X \n", startAddress, endAddress);
 
-		del_items(start_addr, 0, end_addr - start_addr);
-		for (ea_t addr = start_addr; addr <= end_addr; addr += get_item_size(addr))
+		del_items(startAddress, 0, endAddress - startAddress);
+		for (ea_t addr = startAddress; addr <= endAddress; addr += get_item_size(addr))
 		{
 			create_insn(addr);
 			if (!is_code(get_full_flags(addr)))
@@ -1507,7 +1507,7 @@ void IDAAnalyzer::MakeCode(ea_t start_addr, ea_t end_addr)
 		}
 		if (converted)
 			break;
-		end_addr += get_item_size(end_addr);
+		endAddress += get_item_size(endAddress);
 	}
 }
 

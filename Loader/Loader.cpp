@@ -672,10 +672,10 @@ void Loader::LoadBlockToFunction()
 
                 if (function_start)
                 {
-                    va_t function_start_addr = val.first;
-                    m_functionHeads.insert(function_start_addr);
-                    list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(function_start_addr);
-                    unordered_map<va_t, va_t>::iterator function_start_membership_it = membership_hash.find(function_start_addr);
+                    va_t function_startAddress = val.first;
+                    m_functionHeads.insert(function_startAddress);
+                    list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(function_startAddress);
+                    unordered_map<va_t, va_t>::iterator function_start_membership_it = membership_hash.find(function_startAddress);
 
                     for (list <AddressRange>::iterator it2 = function_member_blocks.begin();
                         it2 != function_member_blocks.end();
@@ -697,8 +697,8 @@ void Loader::LoadBlockToFunction()
                             LogMessage(10, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
                             a2f_it = m_blockToFunction.erase(a2f_it);
                         }
-                        m_blockToFunction.insert(pair <va_t, va_t>(addr, function_start_addr));
-                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", addr, function_start_addr);
+                        m_blockToFunction.insert(pair <va_t, va_t>(addr, function_startAddress));
+                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", addr, function_startAddress);
                     }
                 }
             }

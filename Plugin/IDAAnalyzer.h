@@ -270,7 +270,7 @@ private:
 	ea_t GetBlockEnd(ea_t address);
 	int ConnectFunctionChunks(ea_t address);
 	void FixFunctionChunks();
-	void MakeCode(ea_t start_addr, ea_t end_addr);
+	void MakeCode(ea_t startAddress, ea_t endAddress);
 	void FixExceptionHandlers();
 public:
     IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage);

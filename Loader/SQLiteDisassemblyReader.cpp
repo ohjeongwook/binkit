@@ -319,14 +319,14 @@ int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int 
     return 0;
 }
 
-list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int fileID, va_t function_address)
+list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int fileID, va_t functionAddress)
 {
     list<AddressRange> addressRangeList;
 
     ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
         "SELECT StartAddress, EndAddress FROM BasicBlock WHERE FileID = '%d' AND FunctionAddress='%d'"
         "ORDER BY ID ASC",
-        fileID, function_address);
+        fileID, functionAddress);
 
     return addressRangeList;
 }

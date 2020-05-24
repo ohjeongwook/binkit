@@ -58,12 +58,12 @@ public:
 
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
-    char *GetDisasmLines(unsigned long start_addr, unsigned long end_addr);
+    char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
 
     void LoadBlockToFunction();
     void ClearBlockToFunction();
     BOOL FixFunctionAddresses();
-    bool GetFunctionAddress(va_t address, va_t& function_address);
+    bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsFunctionBlock(va_t block, va_t function);
     list <AddressRange> GetFunctionMemberBlocks(unsigned long FunctionAddress);
 };
