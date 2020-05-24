@@ -47,7 +47,7 @@ public:
     va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
     vector<va_t> *GetCodeReferences(va_t address, int type);
-    char *GetSymbol(va_t address);    
+    string GetSymbol(va_t address);    
     char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
     char *GetInstructionHashStr(va_t address);
 

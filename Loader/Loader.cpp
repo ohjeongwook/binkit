@@ -139,10 +139,9 @@ void Loader::RemoveFromInstructionHashHash(va_t address)
     }
 }
 
-char *Loader::GetSymbol(va_t address)
+string Loader::GetSymbol(va_t address)
 {
-    char *Name = m_pdisassemblyReader->ReadSymbol(m_fileID, address);
-    return Name;
+    return m_pdisassemblyReader->ReadSymbol(m_fileID, address);
 }
 
 va_t Loader::GetBasicBlockStart(va_t address)

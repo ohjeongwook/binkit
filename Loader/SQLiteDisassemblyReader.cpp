@@ -224,9 +224,9 @@ char *SQLiteDisassemblyReader::ReadInstructionHash(int fileID, va_t address)
     return fingerPrintString;
 }
 
-char *SQLiteDisassemblyReader::ReadSymbol(int fileID, va_t address)
+string SQLiteDisassemblyReader::ReadSymbol(int fileID, va_t address)
 {
-    char *name = NULL;
+    string name;
     ExecuteStatement(ReadRecordStringCallback, &name,
         "SELECT Name FROM BasicBlock WHERE FileID = %u and StartAddress = %u", fileID, address);
     return name;
