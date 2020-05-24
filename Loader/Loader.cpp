@@ -250,9 +250,9 @@ char *Loader::GetInstructionHashStr(va_t address)
     return NULL;
 }
 
-char *Loader::GetName(va_t address)
+char *Loader::GetSymbol(va_t address)
 {
-    char *Name = m_pdisassemblyReader->ReadName(m_FileID, address);
+    char *Name = m_pdisassemblyReader->ReadSymbol(m_FileID, address);
     return Name;
 }
 
@@ -302,16 +302,6 @@ const char *GetFileDataTypeStr(int type)
     if (type < sizeof(Types) / sizeof(Types[0]))
         return Types[type];
     return "Unknown";
-}
-
-BOOL Loader::Save(char *DataFile, DWORD Offset, DWORD dwMoveMethod, unordered_set <va_t> *pSelectedAddresses)
-{
-    return TRUE;
-}
-
-BOOL Loader::Retrieve(char *DataFile, DWORD Offset, DWORD Length)
-{
-    return TRUE;
 }
 
 char *Loader::GetOriginalFilePath()
@@ -468,12 +458,12 @@ void Loader::DumpDisassemblyHashMaps()
 
 char *Loader::GetDisasmLines(unsigned long StartAddress, unsigned long EndAddress)
 {
-    char *DisasmLines = m_pdisassemblyReader->ReadDisasmLine(m_FileID, StartAddress);
+    char *disasmLines = m_pdisassemblyReader->ReadDisasmLine(m_FileID, StartAddress);
 
-    if (DisasmLines)
+    if (disasmLines)
     {
-        LogMessage(10, __FUNCTION__, "DisasmLines = %s\n", DisasmLines);
-        return DisasmLines;
+        LogMessage(10, __FUNCTION__, "DisasmLines = %s\n", disasmLines);
+        return disasmLines;
     }
     return _strdup("");
 }
@@ -747,6 +737,12 @@ void Loader::LoadBlockToFunction()
     }
 }
 
+void Loader::ClearBlockToFunction()
+{
+    m_blockToFunction.clear();
+    m_functionToBlock.clear();
+}
+
 BOOL Loader::FixFunctionAddresses()
 {
     BOOL is_fixed = FALSE;
@@ -772,4 +768,29 @@ BOOL Loader::FixFunctionAddresses()
     ClearBlockToFunction();
 
     return is_fixed;
+}
+
+bool Loader::GetFunctionAddress(va_t address, va_t& function_address)
+{
+    multimap <va_t, va_t>::iterator it = m_blockToFunction.find(address);
+
+    if (it != m_blockToFunction.end())
+    {
+        function_address = it->second;
+        return true;
+    }
+    function_address = 0;
+    return false;
+}
+
+bool Loader::FindBlockFunctionMatch(va_t block, va_t function)
+{
+    for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
+    {
+        if (it->second == function)
+        {
+            return true;
+        }
+    }
+    return false;
 }

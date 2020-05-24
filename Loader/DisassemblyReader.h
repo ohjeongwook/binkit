@@ -45,7 +45,7 @@ public:
         return NULL;
     }
 
-    virtual char *ReadName(int fileID, va_t address)
+    virtual char *ReadSymbol(int fileID, va_t address)
     {
         return NULL;
     }

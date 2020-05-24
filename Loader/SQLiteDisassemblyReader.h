@@ -43,7 +43,7 @@ public:
     void ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap);
 
     char *ReadInstructionHash(int fileID, va_t address);
-    char *ReadName(int fileID, va_t address);
+    char *ReadSymbol(int fileID, va_t address);
     va_t ReadBlockStartAddress(int fileID, va_t address);
 
     static int ReadBasicBlockDataCallback(void *arg, int argc, char **argv, char **names);

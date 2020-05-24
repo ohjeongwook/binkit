@@ -27,6 +27,9 @@ private:
     DisassemblyHashMaps *m_disassemblyHashMaps;
 
     void LoadMapInfo(multimap <va_t, PMapInfo> *p_map_info_map, va_t Address, bool IsFunction = false);
+    BOOL LoadBasicBlock();
+    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
+
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
 
@@ -36,63 +39,33 @@ public:
     void SetFileID(int FileID = 1);
     int GetFileID();
     string GetIdentity();
+    char *GetOriginalFilePath();
 
-    BOOL Retrieve(char *DataFile, DWORD Offset = 0L, DWORD Length = 0L);
-    BOOL Load();
     void AddAnalysisTargetFunction(va_t FunctionAddress);
-    BOOL LoadBasicBlock();
-    BOOL Save(char *DataFile, DWORD Offset = 0L, DWORD dwMoveMethod = FILE_BEGIN, unordered_set <va_t> *pSelectedAddresses = NULL);
-    void DumpDisassemblyHashMaps();
-    char *GetName(va_t address);
-    void DumpBlockInfo(va_t block_address);
+
+    BOOL Load();
+
+    multimap <va_t, va_t> *GetFunctionToBlock();
+    PBasicBlock GetBasicBlock(va_t address);
+    
+    char *GetSymbol(va_t address);
     char *GetInstructionHashStr(va_t address);
+
+    void DumpDisassemblyHashMaps();
+    void DumpBlockInfo(va_t block_address);
     void RemoveFromInstructionHashHash(va_t address);
+
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
     char *GetDisasmLines(unsigned long start_addr, unsigned long end_addr);
-    void BuildCodeReferenceMap(multimap <va_t, PMapInfo> *p_map_info_map);
 
     void LoadBlockToFunction();
-    multimap <va_t, va_t> *GetFunctionToBlock();
-    PBasicBlock GetBasicBlock(va_t address);
-    list <BLOCK> GetFunctionMemberBlocks(unsigned long FunctionAddress);
-    char *GetOriginalFilePath();
+    void ClearBlockToFunction();
     BOOL FixFunctionAddresses();
+    bool GetFunctionAddress(va_t address, va_t& function_address);
+    bool FindBlockFunctionMatch(va_t block, va_t function);
+
     list <va_t> *GetFunctionAddresses();
 
-    void ClearBlockToFunction()
-    {
-        m_blockToFunction.clear();
-        m_functionToBlock.clear();
-    }
-
-    bool GetFunctionAddress(va_t address, va_t& function_address)
-    {
-        multimap <va_t, va_t>::iterator it = m_blockToFunction.find(address);
-
-        if (it != m_blockToFunction.end())
-        {
-            function_address = it->second;
-            return true;
-        }
-        function_address = 0;
-        return false;
-    }
-
-    bool FindBlockFunctionMatch(va_t block, va_t function)
-    {
-        for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
-        {
-            if (it->second == function)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    FileInfo *GetClientFileInfo()
-    {
-        return &m_disassemblyHashMaps->file_info;
-    }
+    list <BLOCK> GetFunctionMemberBlocks(unsigned long FunctionAddress);
 };

@@ -231,7 +231,7 @@ char *SQLiteDisassemblyReader::ReadInstructionHash(int fileID, va_t address)
     return fingerPrintString;
 }
 
-char *SQLiteDisassemblyReader::ReadName(int fileID, va_t address)
+char *SQLiteDisassemblyReader::ReadSymbol(int fileID, va_t address)
 {
     char *name = NULL;
     ExecuteStatement(ReadRecordStringCallback, &name,
