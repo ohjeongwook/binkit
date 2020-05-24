@@ -46,8 +46,8 @@ public:
     char *ReadSymbol(int fileID, va_t address);
     va_t ReadBlockStartAddress(int fileID, va_t address);
 
-    static int ReadBasicBlockDataCallback(void *arg, int argc, char **argv, char **names);
-    void ReadBasicBlockInfo(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps);
+    static int ReadBasicBlockHashCallback(void *arg, int argc, char **argv, char **names);
+    void ReadBasicBlockHashes(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps);
 
     static int ReadControlFlowCallback(void *arg, int argc, char **argv, char **names);
     multimap <va_t, PControlFlow> *ReadControlFlow(int fileID, va_t address = 0, bool isFunction = false);

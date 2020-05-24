@@ -36,10 +36,9 @@ typedef struct _FileInfo_
 } FileInfo,  *PFileInfo;
 
 typedef struct _BasicBlock_ {
-	va_t StartAddress; //ea_t
+	va_t StartAddress;
 	va_t EndAddress;
 	char Flag; //Flag_t
-	//func_t get_func(current_addr)
 	va_t FunctionAddress;
 	char BlockType; // FUNCTION, UNKNOWN
 	int NameLen;
@@ -48,12 +47,6 @@ typedef struct _BasicBlock_ {
 	int CmdArrayLen;
 	char Data[0];
 } BasicBlock,  *PBasicBlock;
-
-typedef struct _CodeBlock_
-{
-	va_t StartAddress;
-	va_t EndAddress;
-} CodeBlock;
 
 typedef struct
 {

@@ -2,6 +2,7 @@
 #pragma warning(disable:4200)
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "Loader.h"
 #include "Log.h"
@@ -49,131 +50,48 @@ Loader::~Loader()
     m_disassemblyHashMaps.instructionHashMap.clear();
 }
 
-va_t *Loader::GetMappedAddresses(va_t address, int type, int *p_length)
+vector<va_t> *Loader::GetCodeReferences(va_t address, int type)
 {
-    va_t *addresses = NULL;
-    int current_size = 50;
-
-    addresses = (va_t*)malloc(sizeof(va_t)  *current_size);
-    int addresses_i = 0;
-
-    multimap <va_t, PControlFlow> *p_controlFlow;
-    if (m_disassemblyHashMaps.addressToControlFlowMap.size() > 0)
-    {
-        p_controlFlow = &m_disassemblyHashMaps.addressToControlFlowMap;
-    }
-    else
-    {
-        p_controlFlow = new multimap <va_t, PControlFlow>();
-        LoadControlFlow(p_controlFlow, address);
-    }
-
+    vector<va_t> *p_addresses = new vector<va_t>;
     multimap <va_t, PControlFlow>::iterator it;
-    for (it = p_controlFlow->find(address); it != p_controlFlow->end(); it++)
+    for (it = m_disassemblyHashMaps.addressToControlFlowMap.find(address); 
+        it != m_disassemblyHashMaps.addressToControlFlowMap.end();
+        it++
+    )
     {
         if (it->first != address)
             break;
+
         if (it->second->Type == type)
         {
-            //it->second->Dst
-            //TODO: add
-            if (current_size < addresses_i + 2)
-            {
-                current_size += 50;
-                addresses = (va_t*)realloc(addresses, sizeof(va_t)  *(current_size));
-            }
-            addresses[addresses_i] = it->second->Dst;
-            addresses_i++;
-            addresses[addresses_i] = NULL;
+            p_addresses->push_back(it->second->Dst);
         }
     }
 
-    p_controlFlow->clear();
-    free(p_controlFlow);
-
-    if (p_length)
-        *p_length = addresses_i;
-
-    if (addresses_i == 0)
-    {
-        free(addresses);
-        addresses = NULL;
-    }
-    return addresses;
+    return p_addresses;
 }
 
-list <va_t> *Loader::GetFunctionAddresses()
+vector<va_t> *Loader::GetFunctionAddresses()
 {
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
     unordered_set <va_t> functionAddresses;
-    unordered_map <va_t, short> addresses;
 
-    if (DoCrefFromCheck)
+    m_pdisassemblyReader->ReadFunctionAddressMap(m_fileID, functionAddresses);
+
+    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
     {
-        LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
-
-        for (auto& val: m_disassemblyHashMaps.addressToControlFlowMap)
+        if (val.second->Type == CALL)
         {
-            LogMessage(10, __FUNCTION__, "%X-%X(%s) ", val.first, val.second->Dst, ControlFlowTypesStr[val.second->Type]);
-            if (val.second->Type == CREF_FROM)
+            if (functionAddresses.find(val.second->Dst) == functionAddresses.end())
             {
-                unordered_map <va_t, short>::iterator iter = addresses.find(val.second->Dst);
-                if (iter != addresses.end())
-                {
-                    iter->second = FALSE;
-                }
-            }
-        }
-        LogMessage(10, __FUNCTION__, "%s\n", __FUNCTION__);
-
-        for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
-        {
-            addresses.insert(pair<va_t, short>(val.first, DoCrefFromCheck ? TRUE : FALSE));
-        }
-
-        LogMessage(10, __FUNCTION__, "addresses.size() = %u\n", addresses.size());
-        for (auto& val : addresses)
-        {
-            if (val.second)
-            {
-                LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_fileID, val.first);
-                functionAddresses.insert(val.first);
+                LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_fileID, val.second->Dst);
+                functionAddresses.insert(val.second->Dst);
             }
         }
     }
-    else
-    {
-        m_pdisassemblyReader->ReadFunctionAddressMap(m_fileID, functionAddresses);
-    }
-
-    if (DoCallCheck)
-    {
-        for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
-        {
-            if (val.second->Type == CALL)
-            {
-                if (functionAddresses.find(val.second->Dst) == functionAddresses.end())
-                {
-                    LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_fileID, val.second->Dst);
-                    functionAddresses.insert(val.second->Dst);
-                }
-            }
-        }
-    }
-
-    list <va_t> *p_functionAddressList = new list<va_t>;
-    if (p_functionAddressList)
-    {
-        for (auto& val : functionAddresses)
-        {
-            p_functionAddressList->push_back(val);
-            LogMessage(11, __FUNCTION__, "%s: ID = %d Function %X\n", __FUNCTION__, m_fileID, val);
-        }
-
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Returns(%u entries)\n", __FUNCTION__, m_fileID, p_functionAddressList->size());
-    }
-    return p_functionAddressList;
+ 
+    return new vector<va_t>(functionAddresses.begin(), functionAddresses.end());
 }
 
 char *Loader::GetInstructionHashStr(va_t address)
@@ -230,7 +148,7 @@ char *Loader::GetSymbol(va_t address)
     return Name;
 }
 
-va_t Loader::GetBlockAddress(va_t address)
+va_t Loader::GetBasicBlockStart(va_t address)
 {
     return m_pdisassemblyReader->ReadBlockStartAddress(m_fileID, address);
 }
@@ -250,7 +168,7 @@ BOOL Loader::LoadBasicBlock(va_t functionAddress)
             _snprintf(conditionStr, sizeof(conditionStr) - 1, "AND FunctionAddress = '%d'", functionAddress);
         }
 
-        m_pdisassemblyReader->ReadBasicBlockInfo(m_fileID, conditionStr, &m_disassemblyHashMaps);
+        m_pdisassemblyReader->ReadBasicBlockHashes(m_fileID, conditionStr, &m_disassemblyHashMaps);
     }
     return TRUE;
 }
@@ -307,9 +225,9 @@ void Loader::GenerateTwoLevelInstructionHash()
         if(m_disassemblyHashMaps.instructionHashMap.count(instructionHashMap_pIter->first)>1)
         {
             int addresses_number = 0;
-            va_t *addresses = GetMappedAddresses(instructionHashMap_pIter->second, CREF_FROM, &addresses_number);
+            va_t *addresses = GetCodeReferences(instructionHashMap_pIter->second, CREF_FROM, &addresses_number);
             if(!addresses)
-                addresses = GetMappedAddresses(instructionHashMap_pIter->second, CREF_TO, NULL);
+                addresses = GetCodeReferences(instructionHashMap_pIter->second, CREF_TO, NULL);
             if(addresses)
             {
                 int TwoLevelInstructionHashLength = 0;
@@ -373,7 +291,7 @@ PBasicBlock Loader::GetBasicBlock(va_t address)
     return m_pdisassemblyReader->ReadBasicBlock(m_fileID, address);
 }
 
-list <AddressRange> Loader::GetFunctionMemberBlocks(unsigned long functionAddress)
+list <AddressRange> Loader::GetFunctionBasicBlocks(unsigned long functionAddress)
 {
     list <AddressRange> addressRangeList;
     list <va_t> addressList;
@@ -390,31 +308,24 @@ list <AddressRange> Loader::GetFunctionMemberBlocks(unsigned long functionAddres
 
     for (va_t currentAddress: addressList)
     {
-        int addresses_number;
-        va_t *p_addresses = GetMappedAddresses(currentAddress, CREF_FROM, &addresses_number);
-        if (p_addresses && addresses_number > 0)
+        vector<va_t> *p_addresses = GetCodeReferences(currentAddress, CREF_FROM);
+        for(va_t address : *p_addresses)
         {
-            for (int i = 0; i < addresses_number; i++)
-            {
-                va_t address = p_addresses[i];
-                if (address)
-                {
-                    if (m_functionHeads.find(address) != m_functionHeads.end())
-                        continue;
+            if (m_functionHeads.find(address) != m_functionHeads.end())
+                continue;
 
-                    if (checkedAddresses.find(address) == checkedAddresses.end())
-                    {
-                        addressList.push_back(address);
-                        addressRange.Start = address;
-                        PBasicBlock pBasicBlock = GetBasicBlock(address);
-                        addressRange.End = pBasicBlock->EndAddress;
-                        addressRangeList.push_back(addressRange);
-                        checkedAddresses.insert(address);
-                    }
-                }
+            if (checkedAddresses.find(address) == checkedAddresses.end())
+            {
+                PBasicBlock pBasicBlock = GetBasicBlock(address);
+                addressRange.Start = address;                
+                addressRange.End = pBasicBlock->EndAddress;
+                addressRangeList.push_back(addressRange);
+
+                checkedAddresses.insert(address);
+                addressList.push_back(address);
             }
-            free(p_addresses);
         }
+        delete p_addresses;
     }
 
     return addressRangeList;
@@ -515,39 +426,36 @@ void Loader::LoadBlockFunctionMaps()
     int Count = 0;
 
     LogMessage(10, __FUNCTION__, "%s: ID = %d GetFunctionAddresses\n", __FUNCTION__);
-    list <va_t> *functionAddresses = GetFunctionAddresses();
-    if (functionAddresses)
+    vector <va_t> *p_functionAddresses = GetFunctionAddresses();
+    if (p_functionAddresses)
     {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_fileID, functionAddresses->size());
+        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_fileID, p_functionAddresses->size());
 
         unordered_map<va_t, va_t> addresses;
-        unordered_map<va_t, va_t> membership_hash;
+        unordered_map<va_t, va_t> membershipHash;
 
-        for (va_t address : *functionAddresses)
+        for (va_t functionAddress : *p_functionAddresses)
         {
-            list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(address);
-
-            for (auto& val : function_member_blocks)
+            for (auto& block : GetFunctionBasicBlocks(functionAddress))
             {
-                va_t addr = val.Start;
-                m_blockToFunction.insert(pair <va_t, va_t>(addr, address));
+                m_blockToFunction.insert(pair <va_t, va_t>(block.Start, functionAddress));
 
-                if (addresses.find(addr) == addresses.end())
+                if (addresses.find(block.Start) == addresses.end())
                 {
-                    addresses.insert(pair<va_t, va_t>(addr, 1));
+                    addresses.insert(pair<va_t, va_t>(block.Start, 1));
                 }
                 else
                 {
-                    addresses[addr] += 1;
+                    addresses[block.Start] += 1;
                 }
 
-                if (membership_hash.find(addr) == membership_hash.end())
+                if (membershipHash.find(block.Start) == membershipHash.end())
                 {
-                    membership_hash.insert(pair<va_t, va_t>(addr, address));
+                    membershipHash.insert(pair<va_t, va_t>(block.Start, functionAddress));
                 }
                 else
                 {
-                    membership_hash[addr] += address;
+                    membershipHash[block.Start] += functionAddress;
                 }
             }
         }
@@ -562,11 +470,11 @@ void Loader::LoadBlockFunctionMaps()
                     it2++
                     )
                 {
-                    unordered_map<va_t, va_t>::iterator current_membership_it = membership_hash.find(val.first);
+                    unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(val.first);
                     va_t parent = it2->second;
                     LogMessage(10, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parent);
-                    unordered_map<va_t, va_t>::iterator parent_membership_it = membership_hash.find(parent);
-                    if (current_membership_it != membership_hash.end() && parent_membership_it != membership_hash.end())
+                    unordered_map<va_t, va_t>::iterator parent_membership_it = membershipHash.find(parent);
+                    if (current_membership_it != membershipHash.end() && parent_membership_it != membershipHash.end())
                     {
                         if (current_membership_it->second == parent_membership_it->second)
                         {
@@ -582,8 +490,8 @@ void Loader::LoadBlockFunctionMaps()
                 {
                     va_t function_startAddress = val.first;
                     m_functionHeads.insert(function_startAddress);
-                    list <AddressRange> function_member_blocks = GetFunctionMemberBlocks(function_startAddress);
-                    unordered_map<va_t, va_t>::iterator function_start_membership_it = membership_hash.find(function_startAddress);
+                    list <AddressRange> function_member_blocks = GetFunctionBasicBlocks(function_startAddress);
+                    unordered_map<va_t, va_t>::iterator function_start_membership_it = membershipHash.find(function_startAddress);
 
                     for (list <AddressRange>::iterator it2 = function_member_blocks.begin();
                         it2 != function_member_blocks.end();
@@ -592,7 +500,7 @@ void Loader::LoadBlockFunctionMaps()
                     {
                         va_t addr = (*it2).Start;
 
-                        unordered_map<va_t, va_t>::iterator current_membership_it = membership_hash.find(addr);
+                        unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(addr);
 
                         if (function_start_membership_it->second != current_membership_it->second)
                             continue;
@@ -611,8 +519,8 @@ void Loader::LoadBlockFunctionMaps()
                 }
             }
         }
-        functionAddresses->clear();
-        delete functionAddresses;
+        p_functionAddresses->clear();
+        delete p_functionAddresses;
 
         for (auto& val : m_blockToFunction)
         {
@@ -698,20 +606,17 @@ void Loader::DumpDisassemblyHashMaps()
 
 void Loader::DumpBlockInfo(va_t blockAddress)
 {
-    int addresses_number;
     const char *type_descriptions[] = { "Cref From", "Cref To", "Call", "Dref From", "Dref To" };
     for (int i = 0; i < sizeof(types) / sizeof(int); i++)
     {
-        va_t *addresses = GetMappedAddresses(blockAddress, types[i], &addresses_number);
-        if (addresses)
+        LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_fileID, type_descriptions[i]);
+
+        vector<va_t> *p_addresses = GetCodeReferences(blockAddress, types[i]);
+        for(va_t address : *p_addresses)
         {
-            LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_fileID, type_descriptions[i]);
-            for (int j = 0; j < addresses_number; j++)
-            {
-                LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_fileID, addresses[j]);
-            }
-            LogMessage(10, __FUNCTION__, "\n");
+            LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_fileID, address);
         }
+        LogMessage(10, __FUNCTION__, "\n");
     }
     char *hexString = GetInstructionHashStr(blockAddress);
     if (hexString)

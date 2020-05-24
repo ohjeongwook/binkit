@@ -135,7 +135,7 @@ int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *c
 unsigned char *HexToBytesWithLengthAmble(char *HexBytes);
 typedef pair <va_t, unsigned char*> AddressInstructionHashAddress_Pair;
 
-int SQLiteDisassemblyReader::ReadBasicBlockDataCallback(void *arg, int argc, char **argv, char **names)
+int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, char **argv, char **names)
 {
     DisassemblyHashMaps *m_disassemblyHashMaps = (DisassemblyHashMaps*)arg;
     if (argv[1] && argv[1][0] != NULL)
@@ -156,9 +156,9 @@ int SQLiteDisassemblyReader::ReadBasicBlockDataCallback(void *arg, int argc, cha
     return 0;
 }
 
-void SQLiteDisassemblyReader::ReadBasicBlockInfo(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
+void SQLiteDisassemblyReader::ReadBasicBlockHashes(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
 {
-    ExecuteStatement(ReadBasicBlockDataCallback,
+    ExecuteStatement(ReadBasicBlockHashCallback,
         (void*)DisassemblyHashMaps,
         "SELECT StartAddress, InstructionHash, Name, BlockType FROM BasicBlock WHERE FileID = %u %s",
         fileID,

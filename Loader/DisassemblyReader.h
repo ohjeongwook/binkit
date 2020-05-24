@@ -28,14 +28,6 @@ public:
     {
     }
 
-    virtual void AddBasicBlock(PBasicBlock p_basic_block, int fileID = 0)
-    {
-    }
-
-    virtual void AddControlFlow(PControlFlow p_control_flow, int fileID = 0)
-    {
-    }
-
     virtual void ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
     {
     }
@@ -55,7 +47,7 @@ public:
         return 0;
     }
 
-    virtual void ReadBasicBlockInfo(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
+    virtual void ReadBasicBlockHashes(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
     {
         return;
     }

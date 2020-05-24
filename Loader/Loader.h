@@ -17,17 +17,19 @@ private:
     int m_fileID;
     string Identity;
     char* m_originalFilePath;
+
+    DisassemblyReader *m_pdisassemblyReader;
+    DisassemblyHashMaps m_disassemblyHashMaps;
+    
     multimap <va_t, va_t> m_blockToFunction;
     multimap <va_t, va_t> m_functionToBlock;
     unordered_set <va_t> m_functionHeads;
 
-    DisassemblyReader *m_pdisassemblyReader;
-    DisassemblyHashMaps m_disassemblyHashMaps;
-
     BOOL LoadBasicBlock(va_t functionAddress = 0);
     void LoadControlFlow(multimap <va_t, PControlFlow> *p_controlFlow, va_t address, bool IsFunction = false);    
-    list <va_t> *GetFunctionAddresses();
+    void RemoveFromInstructionHashHash(va_t address);
 
+    vector <va_t> *GetFunctionAddresses();
     void GenerateTwoLevelInstructionHash();
     void MergeBlocks();
 
@@ -42,19 +44,18 @@ public:
     string GetIdentity();
     char *GetOriginalFilePath();
 
-    va_t GetBlockAddress(va_t address);
+    va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
-    va_t *GetMappedAddresses(va_t address, int type, int *p_length);    
+    vector<va_t> *GetCodeReferences(va_t address, int type);
     char *GetSymbol(va_t address);    
     char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
     char *GetInstructionHashStr(va_t address);
-    void RemoveFromInstructionHashHash(va_t address);
 
     void ClearBlockFunctionMaps();
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsFunctionBlock(va_t block, va_t function);
-    list <AddressRange> GetFunctionMemberBlocks(unsigned long FunctionAddress);
+    list <AddressRange> GetFunctionBasicBlocks(unsigned long FunctionAddress);
     multimap <va_t, va_t> *GetFunctionToBlock();
 
     void DumpDisassemblyHashMaps();
