@@ -48,14 +48,14 @@ public:
 
     char *GetSymbol(va_t address);
     char *GetInstructionHashStr(va_t address);
+    void RemoveFromInstructionHashHash(va_t address);
+    char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
 
     void DumpDisassemblyHashMaps();
     void DumpBlockInfo(va_t blockAddress);
-    void RemoveFromInstructionHashHash(va_t address);
 
     va_t GetBlockAddress(va_t address);
     va_t *GetMappedAddresses(va_t address, int type, int *p_length);
-    char *GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
 
     void LoadBlockToFunction();
     void ClearBlockToFunction();

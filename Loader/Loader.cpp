@@ -179,35 +179,33 @@ list <va_t> *Loader::GetFunctionAddresses()
     return p_functionAddressList;
 }
 
-#undef USE_LEGACY_MAP_FOR_ADDRESS_MAP
 void Loader::RemoveFromInstructionHashHash(va_t address)
 {
-    unsigned char *InstructionHash = NULL;
+    unsigned char *p_instructionHash = NULL;
+    char *p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
 
-    char *InstructionHashStr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
-
-    if (InstructionHashStr)
+    if (p_instructionHashStr)
     {
-        InstructionHash = HexToBytesWithLengthAmble(InstructionHashStr);
+        p_instructionHash = HexToBytesWithLengthAmble(p_instructionHashStr);
     }
 
-    if (InstructionHash)
+    if (p_instructionHash)
     {
-        multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator instruction_hash_map_PIter;
-        for (instruction_hash_map_PIter = m_disassemblyHashMaps.instruction_hash_map.find(InstructionHash);
-            instruction_hash_map_PIter != m_disassemblyHashMaps.instruction_hash_map.end();
-            instruction_hash_map_PIter++
+        multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator it;
+        for (it = m_disassemblyHashMaps.instruction_hash_map.find(p_instructionHash);
+            it != m_disassemblyHashMaps.instruction_hash_map.end();
+            it++
             )
         {
-            if (!IsEqualByteWithLengthAmble(instruction_hash_map_PIter->first, InstructionHash))
+            if (!IsEqualByteWithLengthAmble(it->first, p_instructionHash))
                 break;
-            if (instruction_hash_map_PIter->second == address)
+            if (it->second == address)
             {
-                m_disassemblyHashMaps.instruction_hash_map.erase(instruction_hash_map_PIter);
+                m_disassemblyHashMaps.instruction_hash_map.erase(it);
                 break;
             }
         }
-        free(InstructionHash);
+        free(p_instructionHash);
     }
 }
 
