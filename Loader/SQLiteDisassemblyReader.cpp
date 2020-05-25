@@ -14,12 +14,15 @@ using namespace stdext;
 #include "SQLiteDisassemblyReader.h"
 #include "Log.h"
 
-SQLiteDisassemblyReader::SQLiteDisassemblyReader(const char *DatabaseName)
+SQLiteDisassemblyReader::SQLiteDisassemblyReader() : m_database(NULL)
 {
-    m_database = NULL;
-    if (DatabaseName)
+}
+
+SQLiteDisassemblyReader::SQLiteDisassemblyReader(string dataBasName): m_database(NULL)
+{
+    if (!dataBasName.empty())
     {
-        ConnectDatabase(DatabaseName);
+        Open(dataBasName);
     }
 }
 
@@ -28,20 +31,13 @@ SQLiteDisassemblyReader::~SQLiteDisassemblyReader()
     CloseDatabase();
 }
 
-bool SQLiteDisassemblyReader::Open(char *DatabaseName)
+bool SQLiteDisassemblyReader::Open(string dataBasName)
 {
-    m_databaseName = DatabaseName;
-    return ConnectDatabase(DatabaseName);
-}
-
-bool SQLiteDisassemblyReader::ConnectDatabase(const char *DatabaseName)
-{
-    //Database Setup
-    m_databaseName = DatabaseName;
-    int rc = sqlite3_open(DatabaseName, &m_database);
+    m_databaseName = dataBasName;
+    int rc = sqlite3_open(dataBasName.c_str(), &m_database);
     if (rc)
     {
-        printf("Opening Database [%s] Failed\n", DatabaseName);
+        printf("Opening Database [%s] Failed\n", dataBasName.c_str());
         sqlite3_close(m_database);
         m_database = NULL;
         return FALSE;

@@ -24,15 +24,15 @@ private:
     string m_databaseName;
 
 public:
-    SQLiteDisassemblyReader(const char *DatabaseName = NULL);
+    SQLiteDisassemblyReader();
+    SQLiteDisassemblyReader(string dataBasName);
     ~SQLiteDisassemblyReader();
 
 public:
     void Close();
-    bool Open(char *DatabaseName);
+    bool Open(string dataBasName);
     const char *GetDatabaseName();
     void CloseDatabase();
-    bool ConnectDatabase(const char *DatabaseName);
 
     void SetFileID(int fileId);
     int ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...);
