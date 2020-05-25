@@ -24,9 +24,6 @@
     <ClInclude Include="DisassemblyReader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Loader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="SQLiteDisassemblyReader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -42,11 +39,17 @@
     <ClInclude Include="..\Common\sqlite3.h">
       <Filter>Library</Filter>
     </ClInclude>
+    <ClInclude Include="BasicBlocks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Binaries.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Loader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -58,6 +61,15 @@
     </ClCompile>
     <ClCompile Include="..\Common\sqlite3.c">
       <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicBlocks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Binaries.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

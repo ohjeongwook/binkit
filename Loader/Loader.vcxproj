@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -156,9 +156,11 @@
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="..\Common\sqlite3.h" />
     <ClInclude Include="..\Common\Utility.h" />
+    <ClInclude Include="BasicBlocks.h" />
     <ClInclude Include="DisassemblyReader.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="Loader.h" />
+    <ClInclude Include="Functions.h" />
+    <ClInclude Include="Binaries.h" />
     <ClInclude Include="SQLiteDisassemblyReader.h" />
     <ClInclude Include="Structures.h" />
   </ItemGroup>
@@ -166,7 +168,9 @@
     <ClCompile Include="..\Common\Log.cpp" />
     <ClCompile Include="..\Common\sqlite3.c" />
     <ClCompile Include="..\Common\Utility.cpp" />
-    <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="BasicBlocks.cpp" />
+    <ClCompile Include="Functions.cpp" />
+    <ClCompile Include="Binaries.cpp" />
     <ClCompile Include="SQLiteDisassemblyReader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
