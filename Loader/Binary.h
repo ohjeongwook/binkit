@@ -7,6 +7,8 @@
 
 #include "Structures.h"
 #include "DisassemblyReader.h"
+#include "BasicBlocks.h"
+#include "Functions.h"
 
 using namespace std;
 using namespace stdext;
@@ -14,13 +16,16 @@ using namespace stdext;
 class Binary
 {
 private:
-    int m_fileID;
+    int m_fileId;
+    BasicBlocks m_basicBlocks;
+    Functions m_functions;
 
     DisassemblyReader* m_pdisassemblyReader;
 
 public:
-    Binary(DisassemblyReader* DisassemblyReader = NULL);
+    Binary();
     ~Binary();
-    void SetFileID(int FileID = 1);
+    void Open(string databaseFileName, int fileId = 1);
     int GetFileID();
+    void LoadBasicBlocks();
 };

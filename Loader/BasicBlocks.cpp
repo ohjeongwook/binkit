@@ -3,18 +3,8 @@
 
 const char* ControlFlowTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "Dref To" };
 
-BasicBlocks::BasicBlocks(va_t functionAddress)
+BasicBlocks::BasicBlocks(bool load)
 {
-    LoadBasicBlock(functionAddress);
-    LoadControlFlow(&(m_disassemblyHashMaps.addressToControlFlowMap), functionAddress, true);
-
-    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
-    {
-        if (val.second->Type == CREF_FROM)
-        {
-            m_disassemblyHashMaps.dstToSrcAddressMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
-        }
-    }
 }
 
 BasicBlocks::~BasicBlocks()
@@ -38,6 +28,20 @@ BasicBlocks::~BasicBlocks()
     }
     m_disassemblyHashMaps.addressToInstructionHashMap.clear();
     m_disassemblyHashMaps.instructionHashMap.clear();
+}
+
+void BasicBlocks::Load(va_t functionAddress)
+{
+    LoadBasicBlock(functionAddress);
+    LoadControlFlow(&(m_disassemblyHashMaps.addressToControlFlowMap), functionAddress, true);
+
+    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    {
+        if (val.second->Type == CREF_FROM)
+        {
+            m_disassemblyHashMaps.dstToSrcAddressMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
+        }
+    }
 }
 
 void BasicBlocks::LoadControlFlow(multimap <va_t, PControlFlow>* p_controlFlow, va_t address, bool isFunction)

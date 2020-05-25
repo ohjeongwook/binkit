@@ -24,8 +24,10 @@ private:
     void RemoveFromInstructionHashHash(va_t address);
 
 public:
-    BasicBlocks(va_t functionAddress = 0);
+    BasicBlocks(bool load = false);
     ~BasicBlocks();
+
+    void Load(va_t functionAddress = 0);
     va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
     string GetSymbol(va_t address);
