@@ -122,9 +122,9 @@ void BasicBlocks::MergeBlocks()
                         NumberOfChildren);
                     if (NumberOfChildren == 1)
                         bHasOnlyOneChild = TRUE;
-                    multimap <va_t, PControlFlow>::iterator next_iter = iter;
-                    next_iter++;
-                    if (next_iter == m_disassemblyHashMaps.addressToControlFlowMap.end())
+                    multimap <va_t, PControlFlow>::iterator nextIt = iter;
+                    nextIt++;
+                    if (nextIt == m_disassemblyHashMaps.addressToControlFlowMap.end())
                     {
                         last_iter = iter;
                         bHasOnlyOneChild = TRUE;
@@ -134,7 +134,7 @@ void BasicBlocks::MergeBlocks()
             }
             if (bHasOnlyOneChild)
             {
-                int NumberOfParents = 0;
+                int numberOfParents = 0;
                 for (child_iter = m_disassemblyHashMaps.addressToControlFlowMap.find(last_iter->second->Dst);
                     child_iter != m_disassemblyHashMaps.addressToControlFlowMap.end() && child_iter->first == last_iter->second->Dst;
                     child_iter++)
@@ -144,10 +144,10 @@ void BasicBlocks::MergeBlocks()
                         LogMessage(10, __FUNCTION__, "%s: ID = %d Found %X -> %X\n",
                             __FUNCTION__, m_fileID,
                             child_iter->second->Dst, child_iter->first);
-                        NumberOfParents++;
+                        numberOfParents++;
                     }
                 }
-                if (NumberOfParents == 0)
+                if (numberOfParents == 0)
                 {
                     LogMessage(10, __FUNCTION__, "%s: ID = %d Found Mergable Nodes %X -> %X\n",
                         __FUNCTION__, m_fileID,
