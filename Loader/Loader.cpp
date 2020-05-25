@@ -393,7 +393,7 @@ int Loader::GetFileID()
 
 multimap <va_t, va_t> *Loader::GetFunctionToBlock()
 {
-    LogMessage(10, __FUNCTION__, "LoadFunctionMembersMap\n");
+    LogMessage(10, __FUNCTION__, "GetFunctionToBlock\n");
     return &m_functionToBlock;
 }
 
