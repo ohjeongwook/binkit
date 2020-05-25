@@ -9,35 +9,10 @@ using namespace stdext;
 
 #define DEBUG_LEVEL 0
 
-Binaries::Binaries(DisassemblyReader* p_disassemblyReader) :
-    m_originalFilePath(NULL),
-    m_fileID(0)
+Binaries::Binaries()
 {
-    m_pdisassemblyReader = p_disassemblyReader;
 }
 
 Binaries::~Binaries()
 {
 }
-
-string Binaries::GetOriginalFilePath()
-{
-    return m_originalFilePath;
-}
-
-/*
-FunctionAddress = 0 : Retrieve All Functions
-    else			: Retrieve That Specific Function
-*/
-
-void Binaries::SetFileID(int fileID)
-{
-    m_fileID = fileID;
-    m_originalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
-}
-
-int Binaries::GetFileID()
-{
-    return m_fileID;
-}
-

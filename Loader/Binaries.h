@@ -13,16 +13,7 @@ using namespace stdext;
 
 class Binaries
 {
-private:
-    int m_fileID;
-    string m_originalFilePath;
-
-    DisassemblyReader *m_pdisassemblyReader;
-
 public:
-    Binaries(DisassemblyReader *DisassemblyReader = NULL);
+    Binaries();
     ~Binaries();
-    void SetFileID(int FileID = 1);
-    int GetFileID();
-    string GetOriginalFilePath();
 };

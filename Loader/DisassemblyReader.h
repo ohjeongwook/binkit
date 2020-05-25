@@ -9,6 +9,9 @@ using namespace stdext;
 
 class DisassemblyReader
 {
+protected:
+    int m_fileId;
+
 public:
     virtual void SetFileInfo(FileInfo *p_file_info)
     {
@@ -26,6 +29,11 @@ public:
 
     virtual void Close()
     {
+    }
+    
+    virtual void SetFileID(int fileId)
+    {
+        m_fileId = fileId;
     }
 
     virtual void ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
@@ -63,7 +71,7 @@ public:
         return ret;
     }
 
-    virtual string GetOriginalFilePath(int fileID)
+    virtual string GetOriginalFilePath()
     {
         return NULL;
     }

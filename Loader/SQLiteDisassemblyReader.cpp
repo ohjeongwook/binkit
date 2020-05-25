@@ -154,12 +154,12 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     return 0;
 }
 
-void SQLiteDisassemblyReader::ReadBasicBlockHashes(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
+void SQLiteDisassemblyReader::ReadBasicBlockHashes(char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
 {
     ExecuteStatement(ReadBasicBlockHashCallback,
         (void*)DisassemblyHashMaps,
         "SELECT StartAddress, InstructionHash, Name, BlockType FROM BasicBlock WHERE FileID = %u %s",
-        fileID,
+        m_fileId,
         conditionStr);
 }
 
@@ -209,33 +209,33 @@ int SQLiteDisassemblyReader::ReadFunctionAddressesCallback(void *arg, int argc, 
     return 0;
 }
 
-void SQLiteDisassemblyReader::ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
+void SQLiteDisassemblyReader::ReadFunctionAddressMap(unordered_set <va_t>& functionAddressMap)
 {
-    ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", fileID, FUNCTION_BLOCK);
+    ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", m_fileId, FUNCTION_BLOCK);
 }
 
-char *SQLiteDisassemblyReader::ReadInstructionHash(int fileID, va_t address)
+char *SQLiteDisassemblyReader::ReadInstructionHash(va_t address)
 {
     char *fingerPrintString = NULL;
 
-    ExecuteStatement(ReadRecordStringCallback, &fingerPrintString, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", fileID, address);
+    ExecuteStatement(ReadRecordStringCallback, &fingerPrintString, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return fingerPrintString;
 }
 
-string SQLiteDisassemblyReader::ReadSymbol(int fileID, va_t address)
+string SQLiteDisassemblyReader::ReadSymbol(va_t address)
 {
     string name;
     ExecuteStatement(ReadRecordStringCallback, &name,
-        "SELECT Name FROM BasicBlock WHERE FileID = %u and StartAddress = %u", fileID, address);
+        "SELECT Name FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return name;
 }
 
-va_t SQLiteDisassemblyReader::ReadBlockStartAddress(int fileID, va_t address)
+va_t SQLiteDisassemblyReader::ReadBlockStartAddress(va_t address)
 {
     va_t blockAddress;
     ExecuteStatement(ReadRecordIntegerCallback, &blockAddress,
         "SELECT StartAddress FROM BasicBlock WHERE FileID = %u and StartAddress <=  %u  and %u <=  EndAddress LIMIT 1",
-        fileID, address, address);
+        m_fileId, address, address);
     return blockAddress;
 }
 
@@ -260,26 +260,26 @@ int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char *
     return 0;
 }
 
-multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(int fileID, va_t address, bool isFunction)
+multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(va_t address, bool isFunction)
 {
     multimap <va_t, PControlFlow> *p_controlFlow = new multimap <va_t, PControlFlow>();
     if (address == 0)
     {
         ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
             "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow WHERE FileID = %u",
-            fileID);
+            m_fileId);
     }
     else
     {
         if (isFunction)
         {
-            p_controlFlow = ReadControlFlow(fileID, address, isFunction);
+            p_controlFlow = ReadControlFlow(address, isFunction);
 
             ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
-                fileID, address);
+                m_fileId, address);
         }
         else
         {
@@ -287,7 +287,7 @@ multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(int file
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
-                fileID, address);
+                m_fileId, address);
         }
     }
 
@@ -310,32 +310,32 @@ int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int 
     return 0;
 }
 
-list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(int fileID, va_t functionAddress)
+list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(va_t functionAddress)
 {
     list<AddressRange> addressRangeList;
 
     ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
         "SELECT StartAddress, EndAddress FROM BasicBlock WHERE FileID = '%d' AND FunctionAddress='%d'"
         "ORDER BY ID ASC",
-        fileID, functionAddress);
+        m_fileId, functionAddress);
 
     return addressRangeList;
 }
 
-string SQLiteDisassemblyReader::GetOriginalFilePath(int fileID)
+string SQLiteDisassemblyReader::GetOriginalFilePath()
 {
     string originalFilePath;
     ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
-        "SELECT OriginalFilePath FROM FileInfo WHERE id = %u", fileID);
+        "SELECT OriginalFilePath FROM FileInfo WHERE id = %u", m_fileId);
 
     return originalFilePath;
 }
 
-string SQLiteDisassemblyReader::ReadDisasmLine(int fileID, va_t startAddress)
+string SQLiteDisassemblyReader::ReadDisasmLine(va_t startAddress)
 {
     string disasmLines;
     ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
-        fileID, startAddress);
+        m_fileId, startAddress);
     return disasmLines;
 }
 
@@ -358,12 +358,12 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
     return 0;
 }
 
-PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(int fileID, va_t address)
+PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
 {
     PBasicBlock p_basic_block = (PBasicBlock)malloc(sizeof(BasicBlock));
     ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
         "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
-        fileID,
+        m_fileId,
         address);
 
     return p_basic_block;

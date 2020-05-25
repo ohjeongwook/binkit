@@ -48,6 +48,9 @@
     <ClInclude Include="Binaries.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Binary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Binaries.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Binary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
