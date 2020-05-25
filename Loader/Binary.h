@@ -15,7 +15,6 @@ class Binary
 {
 private:
     int m_fileID;
-    string m_originalFilePath;
 
     DisassemblyReader* m_pdisassemblyReader;
 
@@ -24,5 +23,4 @@ public:
     ~Binary();
     void SetFileID(int FileID = 1);
     int GetFileID();
-    string GetOriginalFilePath();
 };
