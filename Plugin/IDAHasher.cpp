@@ -18,13 +18,33 @@
 
 using namespace std;
 
+void SaveAnalysis(const char* output_file_path);
+
+static error_t idaapi save_ida_hasher_analysis(idc_value_t* argv, idc_value_t* res)
+{
+    SaveAnalysis(argv[0].c_str());
+    res->num = 0;
+    return eOk;
+}
+static const char save_ida_hasher_analysis_args[] = { VT_STR, 0 };
+static const ext_idcfunc_t save_ida_hasher_analysis_desc = {
+    "SaveIDAHasherAnalysis",
+    save_ida_hasher_analysis,
+    save_ida_hasher_analysis_args,
+    NULL,
+    0,
+    0
+};
+
 int idaapi init(void)
 {
+    add_idc_func(save_ida_hasher_analysis_desc);
     return PLUGIN_OK;
 }
 
 void idaapi term(void)
 {
+    del_idc_func(save_ida_hasher_analysis_desc.name);
 }
 
 bool IsNumber(char *data)
@@ -120,32 +140,14 @@ bool FileWriterWrapper(PVOID Context, BYTE Type, PBYTE Data, DWORD Length)
     return Status;
 }
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-void SaveIDAAnalysis(bool ask_file_path)
+void SaveAnalysis(const char *output_file_path)
 {
     long start_tick = GetTickCount();
+    LogMessage(1, __FUNCTION__, "output_file_path = [%s]\n", output_file_path);
 
-    char orignal_file_path[1024] = { 0, };
-    char root_file_path[1024] = { 0, };
-    char *input_file_path = NULL;
-    get_input_file_path(orignal_file_path, sizeof(orignal_file_path) - 1);
-    get_root_filename(root_file_path, sizeof(root_file_path) - 1);
-
-    if (ask_file_path)
+    if (output_file_path)
     {
-        input_file_path = ask_file(true, "*.db", "Select DB File to Output");
-        if (input_file_path == NULL)
-        {
-            LogMessage(1, __FUNCTION__, "input_file_path == NULL\n");
-            return;
-        }
-    }
-
-    LogMessage(1, __FUNCTION__, "input_file_path = [%s]\n", input_file_path);
-
-    if (input_file_path)
-    {
-        SQLiteDisassemblyStorage disassemblyStorage(input_file_path);
+        SQLiteDisassemblyStorage disassemblyStorage(output_file_path);
         IDAAnalyzer idaAnalyzer = IDAAnalyzer(&disassemblyStorage);
         idaAnalyzer.Analyze(0, 0, false);
         disassemblyStorage.Close();
@@ -165,7 +167,19 @@ bool idaapi run(size_t arg)
         return false;
     }
 
-    SaveIDAAnalysis(true);
+    char orignal_file_path[1024] = { 0, };
+    char root_file_path[1024] = { 0, };
+    get_input_file_path(orignal_file_path, sizeof(orignal_file_path) - 1);
+    get_root_filename(root_file_path, sizeof(root_file_path) - 1);
+
+    char* output_file_path = ask_file(true, "*.db", "Select DB File to Output");
+    if (output_file_path == NULL)
+    {
+        LogMessage(1, __FUNCTION__, "output_file_path == NULL\n");
+        return false;
+    }
+
+    SaveAnalysis(output_file_path);
     return true;
 }
 
