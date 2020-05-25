@@ -1,9 +1,5 @@
 #pragma warning(disable:4996)
 #pragma warning(disable:4200)
-#include <string>
-#include <unordered_set>
-#include <vector>
-
 #include "Binaries.h"
 #include "DisassemblyReader.h"
 #include "Utility.h"
@@ -38,11 +34,6 @@ void Binaries::SetFileID(int fileID)
 {
     m_fileID = fileID;
     m_originalFilePath = m_pdisassemblyReader->GetOriginalFilePath(m_fileID);
-}
-
-string Binaries::GetIdentity()
-{
-    return Identity;
 }
 
 int Binaries::GetFileID()
