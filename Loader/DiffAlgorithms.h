@@ -5,5 +5,5 @@
 class DiffAlgorithms
 {
 public:
-    void DoInstructionHashMatch(BasicBlocks& srcBasicBlocks, BasicBlocks& targetBasicBlocks);
+    vector<MatchData> DoInstructionHashMatch(BasicBlocks& srcBasicBlocks, BasicBlocks& targetBasicBlocks);
 };

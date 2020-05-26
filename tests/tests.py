@@ -51,10 +51,9 @@ class Tests:
         diff_alrogithms = pybinkit.DiffAlgorithms()
         basic_block0 = self.binaries[0].get_basic_blocks()
         basic_block1 = self.binaries[1].get_basic_blocks()
-        diff_alrogithms.do_instruction_hash_match(basic_block0, basic_block1)
-        #print(self.binaries[0], self.binaries[1]        
-        #instruction_hashes = basic_block.get_instruction_hashes()
-        #print(instruction_hashes)
+        matches = diff_alrogithms.do_instruction_hash_match(basic_block0, basic_block1)
+        for match in matches:
+            print('%x - %x vs %s - match_rate: %d' % (match.type, match.original_address, match.patched_address, match.type))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
