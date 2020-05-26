@@ -17,11 +17,8 @@ private:
     DisassemblyReader* m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
 
-    BOOL LoadBasicBlock(va_t functionAddress = 0);
-    void LoadControlFlow(multimap <va_t, PControlFlow>* p_controlFlow, va_t address, bool IsFunction = false);
-
+    void MergeBlocks();
     void RemoveFromInstructionHashHash(va_t address);
-
 public:
     BasicBlocks(DisassemblyReader* p_disassemblyReader = NULL, bool load = false);
     ~BasicBlocks();
@@ -33,8 +30,7 @@ public:
     string GetSymbol(va_t address);
     string GetDisasmLines(unsigned long startAddress, unsigned long endAddress);
     vector<va_t>* GetCodeReferences(va_t address, int type);
-    void MergeBlocks();
-    char* GetInstructionHashStr(va_t address);
-    void DumpBlockInfo(va_t blockAddress);
+    string GetInstructionHashStr(va_t address);
     void GenerateTwoLevelInstructionHash();
+    void DumpBlockInfo(va_t blockAddress);
 };

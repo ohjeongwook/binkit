@@ -60,9 +60,9 @@ public:
         return;
     }
 
-    virtual multimap <va_t, PControlFlow> *ReadControlFlow(va_t address = 0, bool isFunction = false)
+    virtual void ReadControlFlow(multimap <va_t, PControlFlow>& addressToControlFlowMap, va_t address = 0, bool isFunction = false)
     {
-        return NULL;
+        return;
     }
 
     virtual list<AddressRange> ReadFunctionMemberAddresses(va_t functionAddress)

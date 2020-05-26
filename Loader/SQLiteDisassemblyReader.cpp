@@ -249,12 +249,11 @@ int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char *
     return 0;
 }
 
-multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(va_t address, bool isFunction)
+void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &addressToControlFlowMap, va_t address, bool isFunction)
 {
-    multimap <va_t, PControlFlow> *p_controlFlow = new multimap <va_t, PControlFlow>();
     if (address == 0)
     {
-        ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+        ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
             "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow WHERE FileID = %u",
             m_fileId);
     }
@@ -262,9 +261,9 @@ multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(va_t add
     {
         if (isFunction)
         {
-            p_controlFlow = ReadControlFlow(address, isFunction);
+            ReadControlFlow(addressToControlFlowMap, address, isFunction);
 
-            ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+            ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
@@ -272,15 +271,13 @@ multimap <va_t, PControlFlow> *SQLiteDisassemblyReader::ReadControlFlow(va_t add
         }
         else
         {
-            ExecuteStatement(ReadControlFlowCallback, (void*)p_controlFlow,
+            ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
                 m_fileId, address);
         }
     }
-
-    return p_controlFlow;
 }
 
 int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names)

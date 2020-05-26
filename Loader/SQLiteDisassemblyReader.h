@@ -49,7 +49,7 @@ public:
     void ReadBasicBlockHashes(char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps);
 
     static int ReadControlFlowCallback(void *arg, int argc, char **argv, char **names);
-    multimap <va_t, PControlFlow> *ReadControlFlow(va_t address = 0, bool isFunction = false);
+    void ReadControlFlow(multimap <va_t, PControlFlow>& addressToControlFlowMap, va_t address = 0, bool isFunction = false);
 
     static int ReadFunctionMemberAddressesCallback(void *arg, int argc, char **argv, char **names);
     list<AddressRange> ReadFunctionMemberAddresses(va_t functionAddress);

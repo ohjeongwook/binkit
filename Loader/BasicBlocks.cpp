@@ -35,7 +35,7 @@ BasicBlocks::~BasicBlocks()
     m_disassemblyHashMaps.instructionHashMap.clear();
 }
 
-BOOL BasicBlocks::LoadBasicBlock(va_t functionAddress)
+void BasicBlocks::Load(va_t functionAddress)
 {
     char conditionStr[50] = { 0, };
     if (functionAddress)
@@ -43,26 +43,8 @@ BOOL BasicBlocks::LoadBasicBlock(va_t functionAddress)
         int ret = _snprintf_s(conditionStr, _countof(conditionStr), _TRUNCATE, "AND FunctionAddress = '%d'", functionAddress);
     }
     m_pdisassemblyReader->ReadBasicBlockHashes(conditionStr, &m_disassemblyHashMaps);
-    return TRUE;
-}
 
-void BasicBlocks::LoadControlFlow(multimap <va_t, PControlFlow>* p_controlFlow, va_t address, bool isFunction)
-{
-    if (address == 0)
-    {
-        p_controlFlow = m_pdisassemblyReader->ReadControlFlow();
-    }
-    else
-    {
-        p_controlFlow = m_pdisassemblyReader->ReadControlFlow(address, isFunction);
-    }
-}
-
-void BasicBlocks::Load(va_t functionAddress)
-{
-    LoadBasicBlock(functionAddress);
-    LoadControlFlow(&(m_disassemblyHashMaps.addressToControlFlowMap), functionAddress, true);
-
+    m_pdisassemblyReader->ReadControlFlow(m_disassemblyHashMaps.addressToControlFlowMap, functionAddress, true);
     for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
     {
         if (val.second->Type == CREF_FROM)
@@ -198,22 +180,21 @@ void BasicBlocks::MergeBlocks()
     }
 }
 
-char* BasicBlocks::GetInstructionHashStr(va_t address)
+string BasicBlocks::GetInstructionHashStr(va_t address)
 {
     if (m_disassemblyHashMaps.addressToInstructionHashMap.size() > 0)
     {
-        multimap <va_t, unsigned char*>::iterator addressToInstructionHashMap_PIter = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
-        if (addressToInstructionHashMap_PIter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
+        multimap <va_t, unsigned char*>::iterator it = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
+        if (it != m_disassemblyHashMaps.addressToInstructionHashMap.end())
         {
-            return BytesWithLengthAmbleToHex(addressToInstructionHashMap_PIter->second);
+            return BytesWithLengthAmbleToHex(it->second);
         }
     }
     else
     {
-        char* InstructionHashPtr = m_pdisassemblyReader->ReadInstructionHash(address);
-        return InstructionHashPtr;
+        return m_pdisassemblyReader->ReadInstructionHash(address);
     }
-    return NULL;
+    return {};
 }
 
 void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
@@ -262,11 +243,10 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
         }
         LogMessage(10, __FUNCTION__, "\n");
     }
-    char* hexString = GetInstructionHashStr(blockAddress);
-    if (hexString)
+    string hexString = GetInstructionHashStr(blockAddress);
+    if (!hexString.empty())
     {
-        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, hexString);
-        free(hexString);
+        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, hexString.c_str());
     }
 }
 
