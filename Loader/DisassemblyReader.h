@@ -36,36 +36,36 @@ public:
         m_fileId = fileId;
     }
 
-    virtual void ReadFunctionAddressMap(int fileID, unordered_set <va_t>& functionAddressMap)
+    virtual void ReadFunctionAddressMap(unordered_set <va_t>& functionAddressMap)
     {
     }
 
-    virtual char *ReadInstructionHash(int fileID, va_t address)
-    {
-        return NULL;
-    }
-
-    virtual string ReadSymbol(int fileID, va_t address)
+    virtual char *ReadInstructionHash(va_t address)
     {
         return NULL;
     }
 
-    virtual va_t ReadBlockStartAddress(int fileID, va_t address)
+    virtual string ReadSymbol(va_t address)
+    {
+        return NULL;
+    }
+
+    virtual va_t ReadBlockStartAddress(va_t address)
     {
         return 0;
     }
 
-    virtual void ReadBasicBlockHashes(int fileID, char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
+    virtual void ReadBasicBlockHashes(char* conditionStr, DisassemblyHashMaps* DisassemblyHashMaps)
     {
         return;
     }
 
-    virtual multimap <va_t, PControlFlow> *ReadControlFlow(int fileID, va_t address = 0, bool isFunction = false)
+    virtual multimap <va_t, PControlFlow> *ReadControlFlow(va_t address = 0, bool isFunction = false)
     {
         return NULL;
     }
 
-    virtual list<AddressRange> ReadFunctionMemberAddresses(int fileID, va_t functionAddress)
+    virtual list<AddressRange> ReadFunctionMemberAddresses(va_t functionAddress)
     {
         list<AddressRange> ret;
         return ret;
@@ -76,17 +76,17 @@ public:
         return NULL;
     }
 
-    virtual string ReadDisasmLine(int fileID, va_t startAddress)
+    virtual string ReadDisasmLine(va_t startAddress)
     {
         return NULL;
     }
 
-    virtual BasicBlock *ReadBasicBlock(int fileID, va_t address)
+    virtual BasicBlock *ReadBasicBlock(va_t address)
     {
         return NULL;
     }
 
-    virtual void UpdateBasicBlock(int fileID, va_t address1, va_t address2)
+    virtual void UpdateBasicBlock(va_t address1, va_t address2)
     {
     }
 };
