@@ -11,7 +11,7 @@ vector<va_t>* Functions::GetFunctionAddresses()
     int DoCallCheck = TRUE;
     unordered_set <va_t> functionAddresses;
 
-    m_pdisassemblyReader->ReadFunctionAddressMap(m_fileID, functionAddresses);
+    m_pdisassemblyReader->ReadFunctionAddressMap(functionAddresses);
 
     for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
     {
@@ -19,7 +19,7 @@ vector<va_t>* Functions::GetFunctionAddresses()
         {
             if (functionAddresses.find(val.second->Dst) == functionAddresses.end())
             {
-                LogMessage(10, __FUNCTION__, "%s: ID = %d Function %X (by Call Recognition)\n", __FUNCTION__, m_fileID, val.second->Dst);
+                LogMessage(10, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, val.second->Dst);
                 functionAddresses.insert(val.second->Dst);
             }
         }
@@ -76,7 +76,7 @@ void Functions::LoadBlockFunctionMaps()
     vector <va_t>* p_functionAddresses = GetFunctionAddresses();
     if (p_functionAddresses)
     {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d Function %u entries\n", __FUNCTION__, m_fileID, p_functionAddresses->size());
+        LogMessage(10, __FUNCTION__, "%s: Function %u entries\n", __FUNCTION__, p_functionAddresses->size());
 
         unordered_map<va_t, va_t> addresses;
         unordered_map<va_t, va_t> membershipHash;
@@ -174,7 +174,7 @@ void Functions::LoadBlockFunctionMaps()
             m_functionToBlock.insert(pair<va_t, va_t>(val.second, val.first));
         }
 
-        LogMessage(10, __FUNCTION__, "%s: ID = %d m_blockToFunction %u entries\n", __FUNCTION__, m_fileID, m_blockToFunction.size());
+        LogMessage(10, __FUNCTION__, "%s: m_blockToFunction %u entries\n", __FUNCTION__, m_blockToFunction.size());
     }
 }
 
@@ -199,7 +199,7 @@ BOOL Functions::FixFunctionAddresses()
         //FunctionAddress: val.second
         LogMessage(10, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
 
-        m_pdisassemblyReader->UpdateBasicBlock(m_fileID, val.first, val.second);
+        m_pdisassemblyReader->UpdateBasicBlock(val.first, val.second);
         is_fixed = TRUE;
     }
 

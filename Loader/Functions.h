@@ -15,7 +15,6 @@ using namespace stdext;
 class Functions
 {
 private:
-    int m_fileID;
     DisassemblyReader* m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
     BasicBlocks* m_pbasicBlocks;
