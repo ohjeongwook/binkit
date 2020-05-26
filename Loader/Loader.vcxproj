@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="..\Common\sqlite3.h" />
+    <ClInclude Include="..\Common\StorageDataStructures.h" />
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="BasicBlocks.h" />
     <ClInclude Include="Binary.h" />
