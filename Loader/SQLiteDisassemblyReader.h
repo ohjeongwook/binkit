@@ -9,9 +9,6 @@
 
 using namespace std;
 
-typedef unsigned char BYTE;
-typedef unsigned char *PBYTE;
-
 #define FILE_INFO_TABLE "FileInfo"
 #define MAP_INFO_TABLE "ControlFlow"
 #define CREATE_MAP_INFO_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "MAP_INFO_TABLE"Index ON "MAP_INFO_TABLE" (SrcBlock)"
