@@ -10,6 +10,7 @@ using namespace stdext;
 
 Binary::Binary() :
     m_fileId(0),
+    m_pbasicBlocks(NULL),
     m_pfunctions(NULL)
 {
 }
@@ -33,9 +34,20 @@ int Binary::GetFileID()
     return m_fileId;
 }
 
-BasicBlocks* Binary::LoadBasicBlocks()
+BasicBlocks* Binary::GetBasicBlocks()
 {
-    BasicBlocks *p_basicBlocks = new BasicBlocks(m_pdisassemblyReader);
-    p_basicBlocks->Load();
-    return p_basicBlocks;
+    if (!m_pbasicBlocks)
+    {
+        m_pbasicBlocks = new BasicBlocks(m_pdisassemblyReader, true);
+    }
+    return m_pbasicBlocks;
+}
+
+Functions* Binary::GetFunctions()
+{
+    if (!m_pfunctions)
+    {
+        m_pfunctions = new Functions(m_pdisassemblyReader, m_pbasicBlocks);
+    }
+    return m_pfunctions;
 }

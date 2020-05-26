@@ -17,6 +17,7 @@ class Binary
 {
 private:
     int m_fileId;
+    BasicBlocks* m_pbasicBlocks;
     Functions *m_pfunctions;
 
     DisassemblyReader* m_pdisassemblyReader;
@@ -26,5 +27,6 @@ public:
     ~Binary();
     void Open(string databaseFileName, int fileId = 0);
     int GetFileID();
-    BasicBlocks* LoadBasicBlocks();
+    BasicBlocks* GetBasicBlocks();
+    Functions* GetFunctions();
 };
