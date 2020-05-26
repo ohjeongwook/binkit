@@ -1,5 +1,7 @@
+*.user
+*.pyd
+*.db
 libs/
 .vs/
 x64/
-*.user
 Loader/Debug/
