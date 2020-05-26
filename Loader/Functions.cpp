@@ -3,71 +3,35 @@
 Functions::Functions(BasicBlocks* p_basicBlocks)
 {
     m_pbasicBlocks = p_basicBlocks;
+    Load();
 }
 
-vector<va_t>* Functions::GetFunctionAddresses()
+Functions::~Functions()
+{
+    m_blockToFunction.clear();
+    m_functionToBlock.clear();
+}
+
+vector<va_t> *Functions::GetFunctionAddresses()
 {
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
     unordered_set <va_t> functionAddresses;
 
     m_pdisassemblyReader->ReadFunctionAddressMap(functionAddresses);
-
-    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    for (va_t callTarget : m_pbasicBlocks->GetCallTargets())
     {
-        if (val.second->Type == CALL)
+        if (functionAddresses.find(callTarget) == functionAddresses.end())
         {
-            if (functionAddresses.find(val.second->Dst) == functionAddresses.end())
-            {
-                LogMessage(10, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, val.second->Dst);
-                functionAddresses.insert(val.second->Dst);
-            }
+            LogMessage(10, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, callTarget);
+            functionAddresses.insert(callTarget);
         }
     }
 
     return new vector<va_t>(functionAddresses.begin(), functionAddresses.end());
 }
 
-list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddress)
-{
-    list <AddressRange> addressRangeList;
-    list <va_t> addressList;
-    unordered_set <va_t> checkedAddresses;
-    addressList.push_back(functionAddress);
-
-    AddressRange addressRange;
-    addressRange.Start = functionAddress;
-    PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(functionAddress);
-    addressRange.End = pBasicBlock->EndAddress;
-    addressRangeList.push_back(addressRange);
-
-    checkedAddresses.insert(functionAddress);
-
-    for (va_t currentAddress : addressList)
-    {
-        vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
-        for (va_t address : addresses)
-        {
-            if (m_functionHeads.find(address) != m_functionHeads.end())
-                continue;
-
-            if (checkedAddresses.find(address) == checkedAddresses.end())
-            {
-                PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(address);
-                addressRange.Start = address;
-                addressRange.End = pBasicBlock->EndAddress;
-                addressRangeList.push_back(addressRange);
-
-                checkedAddresses.insert(address);
-                addressList.push_back(address);
-            }
-        }
-    }
-
-    return addressRangeList;
-}
-
-void Functions::LoadBlockFunctionMaps()
+void Functions::Load()
 {
     int Count = 0;
 
@@ -88,7 +52,7 @@ void Functions::LoadBlockFunctionMaps()
 
                 if (addresses.find(block.Start) == addresses.end())
                 {
-                    addresses.insert(pair<va_t, va_t>(block.Start, (va_t) 1));
+                    addresses.insert(pair<va_t, va_t>(block.Start, (va_t)1));
                 }
                 else
                 {
@@ -111,15 +75,12 @@ void Functions::LoadBlockFunctionMaps()
             if (val.second > 1)
             {
                 bool function_start = true;
-                for (multimap<va_t, va_t>::iterator it2 = m_disassemblyHashMaps.dstToSrcAddressMap.find(val.first);
-                    it2 != m_disassemblyHashMaps.dstToSrcAddressMap.end() && it2->first == val.first;
-                    it2++
-                    )
+                for(va_t parentAddress: m_pbasicBlocks->GetParents(val.first))
                 {
                     unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(val.first);
-                    va_t parent = it2->second;
-                    LogMessage(10, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parent);
-                    unordered_map<va_t, va_t>::iterator parent_membership_it = membershipHash.find(parent);
+                    LogMessage(10, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parentAddress);
+
+                    unordered_map<va_t, va_t>::iterator parent_membership_it = membershipHash.find(parentAddress);
                     if (current_membership_it != membershipHash.end() && parent_membership_it != membershipHash.end())
                     {
                         if (current_membership_it->second == parent_membership_it->second)
@@ -177,17 +138,51 @@ void Functions::LoadBlockFunctionMaps()
     }
 }
 
-void Functions::ClearBlockFunctionMaps()
+
+list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddress)
 {
-    m_blockToFunction.clear();
-    m_functionToBlock.clear();
+    list <AddressRange> addressRangeList;
+    list <va_t> addressList;
+    unordered_set <va_t> checkedAddresses;
+    addressList.push_back(functionAddress);
+
+    AddressRange addressRange;
+    addressRange.Start = functionAddress;
+    PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(functionAddress);
+    addressRange.End = pBasicBlock->EndAddress;
+    addressRangeList.push_back(addressRange);
+
+    checkedAddresses.insert(functionAddress);
+
+    for (va_t currentAddress : addressList)
+    {
+        vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
+        for (va_t address : addresses)
+        {
+            if (m_functionHeads.find(address) != m_functionHeads.end())
+                continue;
+
+            if (checkedAddresses.find(address) == checkedAddresses.end())
+            {
+                PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(address);
+                addressRange.Start = address;
+                addressRange.End = pBasicBlock->EndAddress;
+                addressRangeList.push_back(addressRange);
+
+                checkedAddresses.insert(address);
+                addressList.push_back(address);
+            }
+        }
+    }
+
+    return addressRangeList;
 }
 
 BOOL Functions::FixFunctionAddresses()
 {
     BOOL is_fixed = FALSE;
     LogMessage(10, __FUNCTION__, "%s", __FUNCTION__);
-    LoadBlockFunctionMaps();
+    Load();
 
     if (m_pdisassemblyReader)
         m_pdisassemblyReader->BeginTransaction();
@@ -204,8 +199,6 @@ BOOL Functions::FixFunctionAddresses()
 
     if (m_pdisassemblyReader)
         m_pdisassemblyReader->EndTransaction();
-
-    ClearBlockFunctionMaps();
 
     return is_fixed;
 }

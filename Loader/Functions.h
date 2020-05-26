@@ -16,19 +16,20 @@ class Functions
 {
 private:
     DisassemblyReader* m_pdisassemblyReader;
-    DisassemblyHashMaps m_disassemblyHashMaps;
     BasicBlocks* m_pbasicBlocks;
 
     multimap <va_t, va_t> m_blockToFunction;
     multimap <va_t, va_t> m_functionToBlock;
     unordered_set <va_t> m_functionHeads;
 
+    void Load();
+
 public:
     Functions(BasicBlocks *p_basicBlocks = NULL);
-    vector <va_t>* GetFunctionAddresses();
+    ~Functions();
+
+    vector<va_t> *GetFunctionAddresses();
     list <AddressRange> GetFunctionBasicBlocks(unsigned long FunctionAddress);
-    void LoadBlockFunctionMaps();
-    void ClearBlockFunctionMaps();
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsFunctionBlock(va_t block, va_t function);
