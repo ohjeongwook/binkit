@@ -45,8 +45,8 @@ list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddr
 
     for (va_t currentAddress : addressList)
     {
-        vector<va_t>* p_addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
-        for (va_t address : *p_addresses)
+        vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
+        for (va_t address : addresses)
         {
             if (m_functionHeads.find(address) != m_functionHeads.end())
                 continue;
@@ -62,7 +62,6 @@ list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddr
                 addressList.push_back(address);
             }
         }
-        delete p_addresses;
     }
 
     return addressRangeList;
