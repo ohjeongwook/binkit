@@ -3,13 +3,18 @@
 
 const char* ControlFlowTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "Dref To" };
 
-BasicBlocks::BasicBlocks(bool load)
+BasicBlocks::BasicBlocks(DisassemblyReader* p_disassemblyReader, bool load)
 {
+    m_pdisassemblyReader = p_disassemblyReader;
+
+    if (load)
+    {
+        Load();
+    }
 }
 
 BasicBlocks::~BasicBlocks()
 {
-
     m_disassemblyHashMaps.symbolMap.clear();
 
     for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
@@ -30,6 +35,29 @@ BasicBlocks::~BasicBlocks()
     m_disassemblyHashMaps.instructionHashMap.clear();
 }
 
+BOOL BasicBlocks::LoadBasicBlock(va_t functionAddress)
+{
+    char conditionStr[50] = { 0, };
+    if (functionAddress)
+    {
+        int ret = _snprintf_s(conditionStr, _countof(conditionStr), _TRUNCATE, "AND FunctionAddress = '%d'", functionAddress);
+    }
+    m_pdisassemblyReader->ReadBasicBlockHashes(conditionStr, &m_disassemblyHashMaps);
+    return TRUE;
+}
+
+void BasicBlocks::LoadControlFlow(multimap <va_t, PControlFlow>* p_controlFlow, va_t address, bool isFunction)
+{
+    if (address == 0)
+    {
+        p_controlFlow = m_pdisassemblyReader->ReadControlFlow();
+    }
+    else
+    {
+        p_controlFlow = m_pdisassemblyReader->ReadControlFlow(address, isFunction);
+    }
+}
+
 void BasicBlocks::Load(va_t functionAddress)
 {
     LoadBasicBlock(functionAddress);
@@ -44,36 +72,43 @@ void BasicBlocks::Load(va_t functionAddress)
     }
 }
 
-void BasicBlocks::LoadControlFlow(multimap <va_t, PControlFlow>* p_controlFlow, va_t address, bool isFunction)
+vector<va_t> BasicBlocks::GetAddresses()
 {
-    if (address == 0)
+    vector<va_t> addresses;
+    for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
     {
-        p_controlFlow = m_pdisassemblyReader->ReadControlFlow(m_fileID);
+        addresses.push_back(val.first);
     }
-    else
-    {
-        p_controlFlow = m_pdisassemblyReader->ReadControlFlow(m_fileID, address, isFunction);
-    }
+
+    return addresses;
 }
 
 va_t BasicBlocks::GetBasicBlockStart(va_t address)
 {
-    return m_pdisassemblyReader->ReadBlockStartAddress(m_fileID, address);
+    return m_pdisassemblyReader->ReadBlockStartAddress(address);
 }
 
 PBasicBlock BasicBlocks::GetBasicBlock(va_t address)
 {
-    return m_pdisassemblyReader->ReadBasicBlock(m_fileID, address);
+    return m_pdisassemblyReader->ReadBasicBlock(address);
 }
 
 string BasicBlocks::GetSymbol(va_t address)
 {
-    return m_pdisassemblyReader->ReadSymbol(m_fileID, address);
+    for (multimap <va_t, string>::iterator it = m_disassemblyHashMaps.addressToSymbolMap.find(address);
+        it != m_disassemblyHashMaps.addressToSymbolMap.end();
+        it++
+        )
+    {
+        return it->second;
+    }
+
+    return {};
 }
 
 string BasicBlocks::GetDisasmLines(unsigned long startAddress, unsigned long endAddress)
 {
-    return m_pdisassemblyReader->ReadDisasmLine(m_fileID, startAddress);
+    return m_pdisassemblyReader->ReadDisasmLine(startAddress);
 }
 
 vector<va_t>* BasicBlocks::GetCodeReferences(va_t address, int type)
@@ -120,8 +155,8 @@ void BasicBlocks::MergeBlocks()
                 }
                 else
                 {
-                    LogMessage(10, __FUNCTION__, "%s: ID = %d Number Of Children for %X  = %u\n",
-                        __FUNCTION__, m_fileID,
+                    LogMessage(10, __FUNCTION__, "%s:Number Of Children for %X  = %u\n",
+                        __FUNCTION__,
                         last_iter->first,
                         NumberOfChildren);
                     if (NumberOfChildren == 1)
@@ -145,16 +180,16 @@ void BasicBlocks::MergeBlocks()
                 {
                     if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)
                     {
-                        LogMessage(10, __FUNCTION__, "%s: ID = %d Found %X -> %X\n",
-                            __FUNCTION__, m_fileID,
+                        LogMessage(10, __FUNCTION__, "%s:Found %X -> %X\n",
+                            __FUNCTION__,
                             child_iter->second->Dst, child_iter->first);
                         numberOfParents++;
                     }
                 }
                 if (numberOfParents == 0)
                 {
-                    LogMessage(10, __FUNCTION__, "%s: ID = %d Found Mergable Nodes %X -> %X\n",
-                        __FUNCTION__, m_fileID,
+                    LogMessage(10, __FUNCTION__, "%s: Found Mergable Nodes %X -> %X\n",
+                        __FUNCTION__, 
                         last_iter->first, last_iter->second->Dst);
                 }
             }
@@ -175,7 +210,7 @@ char* BasicBlocks::GetInstructionHashStr(va_t address)
     }
     else
     {
-        char* InstructionHashPtr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
+        char* InstructionHashPtr = m_pdisassemblyReader->ReadInstructionHash(address);
         return InstructionHashPtr;
     }
     return NULL;
@@ -184,7 +219,7 @@ char* BasicBlocks::GetInstructionHashStr(va_t address)
 void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
 {
     unsigned char* p_instructionHash = NULL;
-    char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(m_fileID, address);
+    char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
 
     if (p_instructionHashStr)
     {
@@ -211,21 +246,6 @@ void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
     }
 }
 
-BOOL BasicBlocks::LoadBasicBlock(va_t functionAddress)
-{
-    if (m_disassemblyHashMaps.instructionHashMap.size() == 0)
-    {
-        char conditionStr[50] = { 0, };
-        if (functionAddress)
-        {
-            int ret = _snprintf_s(conditionStr, _countof(conditionStr), _TRUNCATE, "AND FunctionAddress = '%d'", functionAddress);
-        }
-
-        m_pdisassemblyReader->ReadBasicBlockHashes(m_fileID, conditionStr, &m_disassemblyHashMaps);
-    }
-    return TRUE;
-}
-
 void BasicBlocks::DumpBlockInfo(va_t blockAddress)
 {
     int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
@@ -233,19 +253,19 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
 
     for (int i = 0; i < sizeof(types) / sizeof(int); i++)
     {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d %s: ", __FUNCTION__, m_fileID, type_descriptions[i]);
+        LogMessage(10, __FUNCTION__, "%s: %s: ", __FUNCTION__, type_descriptions[i]);
 
         vector<va_t>* p_addresses = GetCodeReferences(blockAddress, types[i]);
         for (va_t address : *p_addresses)
         {
-            LogMessage(10, __FUNCTION__, "%s: ID = %d %X ", __FUNCTION__, m_fileID, address);
+            LogMessage(10, __FUNCTION__, "%s: %X ", __FUNCTION__, address);
         }
         LogMessage(10, __FUNCTION__, "\n");
     }
     char* hexString = GetInstructionHashStr(blockAddress);
     if (hexString)
     {
-        LogMessage(10, __FUNCTION__, "%s: ID = %d instruction_hash: %s\n", __FUNCTION__, m_fileID, hexString);
+        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, hexString);
         free(hexString);
     }
 }

@@ -14,7 +14,6 @@ using namespace stdext;
 class BasicBlocks
 {
 private:
-    int m_fileID;
     DisassemblyReader* m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
 
@@ -24,10 +23,11 @@ private:
     void RemoveFromInstructionHashHash(va_t address);
 
 public:
-    BasicBlocks(bool load = false);
+    BasicBlocks(DisassemblyReader* p_disassemblyReader = NULL, bool load = false);
     ~BasicBlocks();
 
     void Load(va_t functionAddress = 0);
+    vector<va_t> GetAddresses();
     va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
     string GetSymbol(va_t address);
