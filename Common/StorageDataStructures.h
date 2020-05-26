@@ -41,11 +41,8 @@ typedef struct _BasicBlock_ {
 	char Flag; //Flag_t
 	va_t FunctionAddress;
 	char BlockType; // FUNCTION, UNKNOWN
-	int NameLen;
-	int DisasmLinesLen;
-	int InstructionHashLen;
-	int CmdArrayLen;
-	char Data[0];
+	string Name;
+	string InstructionHash;
 } BasicBlock,  *PBasicBlock;
 
 typedef struct

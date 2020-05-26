@@ -336,7 +336,8 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
     p_basic_block->Flag = strtoul10(argv[2]);
     p_basic_block->FunctionAddress = strtoul10(argv[3]);
     p_basic_block->BlockType = strtoul10(argv[4]);
-    p_basic_block->InstructionHashLen = strlen(argv[5]);
+    p_basic_block->Name = argv[5];
+    p_basic_block->InstructionHash = argv[6];
 
     LogMessage(0, __FUNCTION__, "%X Block Type: %d\n", p_basic_block->StartAddress, p_basic_block->BlockType);
 
@@ -349,9 +350,9 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
 
 PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
 {
-    PBasicBlock p_basic_block = (PBasicBlock)malloc(sizeof(BasicBlock));
+    PBasicBlock p_basic_block = (PBasicBlock) malloc(sizeof(BasicBlock));
     ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
-        "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
+        "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, Name, InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
         m_fileId,
         address);
 
