@@ -17,15 +17,14 @@ class Binary
 {
 private:
     int m_fileId;
-    BasicBlocks m_basicBlocks;
-    Functions m_functions;
+    Functions *m_pfunctions;
 
     DisassemblyReader* m_pdisassemblyReader;
 
 public:
     Binary();
     ~Binary();
-    void Open(string databaseFileName, int fileId = 1);
+    void Open(string databaseFileName, int fileId = 0);
     int GetFileID();
-    void LoadBasicBlocks();
+    BasicBlocks* LoadBasicBlocks();
 };

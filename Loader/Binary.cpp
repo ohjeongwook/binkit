@@ -9,7 +9,8 @@ using namespace std;
 using namespace stdext;
 
 Binary::Binary() :
-    m_fileId(0)
+    m_fileId(0),
+    m_pfunctions(NULL)
 {
 }
 
@@ -32,7 +33,9 @@ int Binary::GetFileID()
     return m_fileId;
 }
 
-void Binary::LoadBasicBlocks()
+BasicBlocks* Binary::LoadBasicBlocks()
 {
-    m_basicBlocks.Load();
+    BasicBlocks *p_basicBlocks = new BasicBlocks(m_pdisassemblyReader);
+    p_basicBlocks->Load();
+    return p_basicBlocks;
 }
