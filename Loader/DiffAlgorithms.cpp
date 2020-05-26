@@ -1,9 +1,9 @@
 #include "Structures.h"
 #include "DiffAlgorithms.h"
 
-void DiffAlgorithms::DoInstructionHashMatch(BasicBlocks &srcBasicBlocks, BasicBlocks &targetBasicBlocks)
+vector<MatchData> DiffAlgorithms::DoInstructionHashMatch(BasicBlocks &srcBasicBlocks, BasicBlocks &targetBasicBlocks)
 {
-	//MATCHMAP* p_match_map = new MATCHMAP;
+	vector<MatchData> matchDataList;
 
 	InstructionHashMap *p_srcInstructionHashMap = srcBasicBlocks.GetInstructionHashes();
 	InstructionHashMap* p_targetInstructionHashMap = targetBasicBlocks.GetInstructionHashes();
@@ -20,13 +20,15 @@ void DiffAlgorithms::DoInstructionHashMatch(BasicBlocks &srcBasicBlocks, BasicBl
 				MatchData match_data;
 				memset(&match_data, 0, sizeof(MatchData));
 				match_data.Type = INSTRUCTION_HASH_MATCH;
-				match_data.Addresses[0] = val.second;
-				match_data.Addresses[1] = patchedInstructionHashIt->second;
+				match_data.OriginalAddress = val.second;
+				match_data.PatchedAddress = patchedInstructionHashIt->second;
 				match_data.MatchRate = 100;
 
-				LogMessage(0, __FUNCTION__, "%X-%X: %d%%\n", match_data.Addresses[0], match_data.Addresses[1], match_data.MatchRate);
-				// p_match_map->insert(MatchMap_Pair(match_data.Addresses[0], match_data));
+				LogMessage(0, __FUNCTION__, "%X-%X: %d%%\n", match_data.OriginalAddress, match_data.PatchedAddress, match_data.MatchRate);
+				matchDataList.push_back(match_data);
 			}
 		}
 	}
+
+	return matchDataList;
 }

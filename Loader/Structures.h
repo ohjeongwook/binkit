@@ -100,8 +100,9 @@ typedef struct _MatchData_ {
     short Type;
     short SubType;
     short Status;
-    va_t Addresses[2];
+    va_t OriginalAddress;
+    va_t PatchedAddress;
     short MatchRate;
-    va_t UnpatchedParentAddress;
+    va_t OriginalParentAddress;
     va_t PatchedParentAddress;
 } MatchData;

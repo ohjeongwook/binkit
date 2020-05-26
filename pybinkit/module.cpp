@@ -6,6 +6,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
 
+#include "Structures.h"
 #include "Binary.h"
 #include "DiffAlgorithms.h"
 
@@ -35,4 +36,26 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch);
+
+    /*
+        typedef struct _MatchData_ {
+            short Type;
+            short SubType;
+            short Status;
+            va_t Addresses[2];
+            short MatchRate;
+            va_t UnpatchedParentAddress;
+            va_t PatchedParentAddress;
+        } MatchData;
+    */
+    py::class_<MatchData>(m, "MatchData")
+        .def(py::init())
+        .def_readwrite("type", &MatchData::Type)
+        .def_readwrite("sub_type", &MatchData::SubType)
+        .def_readwrite("status", &MatchData::Status)
+        .def_readonly("original_address", &MatchData::OriginalAddress)
+        .def_readonly("patched_address", &MatchData::PatchedAddress)
+        .def_readwrite("match_rate", &MatchData::MatchRate)
+        .def_readwrite("original_parent_address", &MatchData::OriginalParentAddress)
+        .def_readwrite("patched_parent_address", &MatchData::PatchedParentAddress);
 }
