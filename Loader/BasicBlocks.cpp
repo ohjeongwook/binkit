@@ -93,9 +93,9 @@ string BasicBlocks::GetDisasmLines(unsigned long startAddress, unsigned long end
     return m_pdisassemblyReader->ReadDisasmLine(startAddress);
 }
 
-vector<va_t>* BasicBlocks::GetCodeReferences(va_t address, int type)
+vector<va_t> BasicBlocks::GetCodeReferences(va_t address, int type)
 {
-    vector<va_t>* p_addresses = new vector<va_t>;
+    vector<va_t> addresses;
     multimap <va_t, PControlFlow>::iterator it;
     for (it = m_disassemblyHashMaps.addressToControlFlowMap.find(address);
         it != m_disassemblyHashMaps.addressToControlFlowMap.end();
@@ -107,11 +107,11 @@ vector<va_t>* BasicBlocks::GetCodeReferences(va_t address, int type)
 
         if (it->second->Type == type)
         {
-            p_addresses->push_back(it->second->Dst);
+            addresses.push_back(it->second->Dst);
         }
     }
 
-    return p_addresses;
+    return addresses;
 }
 
 void BasicBlocks::MergeBlocks()
@@ -180,7 +180,7 @@ void BasicBlocks::MergeBlocks()
     }
 }
 
-string BasicBlocks::GetInstructionHashStr(va_t address)
+string BasicBlocks::GetInstructionHash(va_t address)
 {
     if (m_disassemblyHashMaps.addressToInstructionHashMap.size() > 0)
     {
@@ -236,14 +236,14 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
     {
         LogMessage(10, __FUNCTION__, "%s: %s: ", __FUNCTION__, type_descriptions[i]);
 
-        vector<va_t>* p_addresses = GetCodeReferences(blockAddress, types[i]);
-        for (va_t address : *p_addresses)
+        vector<va_t> addresses = GetCodeReferences(blockAddress, types[i]);
+        for (va_t address : addresses)
         {
             LogMessage(10, __FUNCTION__, "%s: %X ", __FUNCTION__, address);
         }
         LogMessage(10, __FUNCTION__, "\n");
     }
-    string hexString = GetInstructionHashStr(blockAddress);
+    string hexString = GetInstructionHash(blockAddress);
     if (!hexString.empty())
     {
         LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, hexString.c_str());
