@@ -29,7 +29,7 @@ public:
     ~Functions();
 
     vector<va_t> *GetAddresses();
-    list <AddressRange> GetFunctionBasicBlocks(unsigned long FunctionAddress);
+    vector <va_t> GetFunctionBasicBlocks(va_t FunctionAddress);
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
     bool IsInFunction(va_t block, va_t function);
     multimap <va_t, va_t>* GetFunctionToBlock();

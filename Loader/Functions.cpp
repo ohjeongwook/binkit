@@ -5,7 +5,7 @@ Functions::Functions(DisassemblyReader* p_disassemblyReader, BasicBlocks* p_basi
     m_pdisassemblyReader = p_disassemblyReader;
     m_pbasicBlocks = p_basicBlocks;
     Load();
-    UpdateFunctionAddressesInStorage()
+    UpdateFunctionAddressesInStorage();
 }
 
 Functions::~Functions()
@@ -48,26 +48,26 @@ void Functions::Load()
 
         for (va_t functionAddress : *p_functionAddresses)
         {
-            for (auto& block : GetFunctionBasicBlocks(functionAddress))
+            for (va_t address : GetFunctionBasicBlocks(functionAddress))
             {
-                m_blockToFunction.insert(pair <va_t, va_t>(block.Start, functionAddress));
+                m_blockToFunction.insert(pair <va_t, va_t>(address, functionAddress));
 
-                if (addresses.find(block.Start) == addresses.end())
+                if (addresses.find(address) == addresses.end())
                 {
-                    addresses.insert(pair<va_t, va_t>(block.Start, (va_t)1));
+                    addresses.insert(pair<va_t, va_t>(address, (va_t)1));
                 }
                 else
                 {
-                    addresses[block.Start] += 1;
+                    addresses[address] += 1;
                 }
 
-                if (membershipHash.find(block.Start) == membershipHash.end())
+                if (membershipHash.find(address) == membershipHash.end())
                 {
-                    membershipHash.insert(pair<va_t, va_t>(block.Start, functionAddress));
+                    membershipHash.insert(pair<va_t, va_t>(address, functionAddress));
                 }
                 else
                 {
-                    membershipHash[block.Start] += functionAddress;
+                    membershipHash[address] += functionAddress;
                 }
             }
         }
@@ -99,31 +99,25 @@ void Functions::Load()
                 {
                     va_t functionStartAddress = val.first;
                     m_functionAddresses.insert(functionStartAddress);
-                    list <AddressRange> function_member_blocks = GetFunctionBasicBlocks(functionStartAddress);
                     unordered_map<va_t, va_t>::iterator function_start_membership_it = membershipHash.find(functionStartAddress);
 
-                    for (list <AddressRange>::iterator it2 = function_member_blocks.begin();
-                        it2 != function_member_blocks.end();
-                        it2++
-                        )
+                    for(va_t address : GetFunctionBasicBlocks(functionStartAddress))
                     {
-                        va_t addr = (*it2).Start;
+                        unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(address);
 
-                        unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(addr);
-
-                        if (function_start_membership_it->second != current_membership_it->second)
+                        if (current_membership_it == membershipHash.end() || function_start_membership_it->second != current_membership_it->second)
                             continue;
 
-                        for (multimap <va_t, va_t>::iterator a2f_it = m_blockToFunction.find(addr);
-                            a2f_it != m_blockToFunction.end() && a2f_it->first == addr;
+                        for (multimap <va_t, va_t>::iterator a2f_it = m_blockToFunction.find(address);
+                            a2f_it != m_blockToFunction.end() && a2f_it->first == address;
                             a2f_it++
                             )
                         {
                             LogMessage(10, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
                             a2f_it = m_blockToFunction.erase(a2f_it);
                         }
-                        m_blockToFunction.insert(pair <va_t, va_t>(addr, functionStartAddress));
-                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", addr, functionStartAddress);
+                        m_blockToFunction.insert(pair <va_t, va_t>(address, functionStartAddress));
+                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", address, functionStartAddress);
                     }
                 }
             }
@@ -141,43 +135,39 @@ void Functions::Load()
 }
 
 
-list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddress)
+vector<va_t> Functions::GetFunctionBasicBlocks(va_t functionAddress)
 {
-    list <AddressRange> addressRangeList;
-    list <va_t> addressList;
+    vector<va_t> basicBlockAddresses;
     unordered_set <va_t> checkedAddresses;
-    addressList.push_back(functionAddress);
-
-    AddressRange addressRange;
-    addressRange.Start = functionAddress;
-    PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(functionAddress);
-    addressRange.End = pBasicBlock->EndAddress;
-    addressRangeList.push_back(addressRange);
-
+    basicBlockAddresses.push_back(functionAddress);
     checkedAddresses.insert(functionAddress);
+    vector<va_t> newBasicBlockAddresses;
 
-    for (va_t currentAddress : addressList)
+    newBasicBlockAddresses.push_back(functionAddress);
+    while (newBasicBlockAddresses.size() > 0)
     {
-        vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
-        for (va_t address : addresses)
+        vector<va_t> currentNewBasicBlockAddresses;
+        for (va_t currentAddress : newBasicBlockAddresses)
         {
-            if (m_functionAddresses.find(address) != m_functionAddresses.end())
-                continue;
-
-            if (checkedAddresses.find(address) == checkedAddresses.end())
+            vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
+            for (va_t address : addresses)
             {
-                PBasicBlock pBasicBlock = m_pbasicBlocks->GetBasicBlock(address);
-                addressRange.Start = address;
-                addressRange.End = pBasicBlock->EndAddress;
-                addressRangeList.push_back(addressRange);
+                if (m_functionAddresses.find(address) != m_functionAddresses.end())
+                    continue;
 
-                checkedAddresses.insert(address);
-                addressList.push_back(address);
+                if (checkedAddresses.find(address) == checkedAddresses.end())
+                {
+                    checkedAddresses.insert(address);
+                    basicBlockAddresses.push_back(address);
+                    currentNewBasicBlockAddresses.push_back(address);
+                }
             }
         }
+
+        newBasicBlockAddresses = currentNewBasicBlockAddresses;
     }
 
-    return addressRangeList;
+    return basicBlockAddresses;
 }
 
 BOOL Functions::UpdateFunctionAddressesInStorage()
