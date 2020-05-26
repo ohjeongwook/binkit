@@ -159,6 +159,7 @@
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="BasicBlocks.h" />
     <ClInclude Include="Binary.h" />
+    <ClInclude Include="DiffAlgorithms.h" />
     <ClInclude Include="DisassemblyReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Functions.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="BasicBlocks.cpp" />
     <ClCompile Include="Binary.cpp" />
+    <ClCompile Include="DiffAlgorithms.cpp" />
     <ClCompile Include="Functions.cpp" />
     <ClCompile Include="Binaries.cpp" />
     <ClCompile Include="SQLiteDisassemblyReader.cpp" />

@@ -32,7 +32,8 @@ public:
     vector<va_t> GetCodeReferences(va_t address, int type);
     vector<va_t> GetParents(va_t address);
     vector<va_t> GetCallTargets();
-    string GetInstructionHash(va_t address);
+    InstructionHashMap *GetInstructionHashes();
+    vector<unsigned char> GetInstructionHash(va_t address);
     void GenerateTwoLevelInstructionHash();
     void DumpBlockInfo(va_t blockAddress);
 };

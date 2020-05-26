@@ -224,7 +224,7 @@ vector<unsigned char> BasicBlocks::GetInstructionHash(va_t address)
     return {};
 }
 
-InstructionHashMap * BasicBlocks::GetInstructionHashes()
+InstructionHashMap *BasicBlocks::GetInstructionHashes()
 {
     return &(m_disassemblyHashMaps.instructionHashMap);
 }
@@ -239,7 +239,7 @@ void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
         instructionHash = HexToBytes(p_instructionHashStr);
     }
 
-    for (multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash);
+    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash);
         it != m_disassemblyHashMaps.instructionHashMap.end(); it++
     )
     {
@@ -281,7 +281,7 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
 void BasicBlocks::GenerateTwoLevelInstructionHash()
 {
     /*
-    multimap <unsigned char *, va_t, InstructionHashEqu>::iterator instructionHashMap_pIter;
+    multimap <unsigned char *, va_t>::iterator instructionHashMap_pIter;
     for (instructionHashMap_pIter = m_disassemblyHashMaps.instructionHashMap.begin();
         instructionHashMap_pIter != m_disassemblyHashMaps.instructionHashMap.end();
         instructionHashMap_pIter++)
