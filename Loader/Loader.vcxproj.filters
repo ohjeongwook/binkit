@@ -16,6 +16,9 @@
     <Filter Include="Library">
       <UniqueIdentifier>{f320162a-2313-4cf7-bd8d-eb551a0fc235}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Algorithms">
+      <UniqueIdentifier>{2700885f-13d1-4044-8375-e484d9ce93d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -54,6 +57,9 @@
     <ClInclude Include="..\Common\StorageDataStructures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DiffAlgorithms.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
@@ -79,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="Binary.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DiffAlgorithms.cpp">
+      <Filter>Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

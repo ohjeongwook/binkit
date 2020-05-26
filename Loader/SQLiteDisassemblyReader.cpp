@@ -135,7 +135,9 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     if (argv[1] && argv[1][0] != NULL)
     {
         va_t address = strtoul10(argv[0]);
-        m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, HexToBytes(argv[1])));
+        vector<unsigned char> bytes(HexToBytes(argv[1]));
+        m_disassemblyHashMaps->instructionHashMap.insert(pair <vector<unsigned char>, va_t>(bytes, address));
+        m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, bytes));
 
         if (strtoul10(argv[3]) == 1 && strlen(argv[2]) > 0)
         {
