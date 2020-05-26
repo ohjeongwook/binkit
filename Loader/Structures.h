@@ -1,7 +1,11 @@
 #pragma once
 #include "StorageDataStructures.h"
+#include <vector>
 
-class hash_compare_instruction_hash
+using namespace std;
+using namespace stdext;
+
+class InstructionHashEqu
 {
 public:
     enum
@@ -9,38 +13,77 @@ public:
         bucket_size = 400000,
         min_buckets = 4000
     };
-public:
-    size_t operator() (/*[in]*/ const unsigned char* Bytes) const
-    {
-        size_t Key = 0;
-        for (int i = 0; i < *(unsigned short*)Bytes; i++)
-        {
-            Key += Bytes[sizeof(short) + i];
-        }
-        return  Key;
-    }
-public:
-    bool operator() (/*[in]*/const unsigned char* Bytes01,/*[in]*/ const unsigned char* Bytes02) const
-    {
-        if (Bytes01 == Bytes02)
-        {
-            return 0;
-        }
 
-        if (*(unsigned short*)Bytes01 == *(unsigned short*)Bytes02)
+    size_t operator() (const vector<unsigned char> bytes) const
+    {
+        size_t key = 0;
+        for(unsigned char byte : bytes)
         {
-            return (memcmp(Bytes01 + sizeof(unsigned short), Bytes02 + sizeof(unsigned short), *(unsigned short*)Bytes01) < 0);
+            key += byte;
         }
-        return (*(unsigned short*)Bytes01 > * (unsigned short*)Bytes02);
+        return key;
+    }
+
+    bool operator() (const vector<unsigned char> bytes01, const vector<unsigned char> bytes02) const
+    {
+        return (bytes01 == bytes02);
     }
 };
 
 void LogMessage(int level, const char* function_name, const char* format, ...);
 
+class InstructionHashMap
+{
+private:
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu> m_instructionHashMap;
+
+public:
+
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator begin()
+    {
+        return m_instructionHashMap.begin();
+    }
+
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator end()
+    {
+        return m_instructionHashMap.end();
+    }
+
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator find(vector<unsigned char> p_instructionHash)
+    {
+        return m_instructionHashMap.find(p_instructionHash);
+    }
+
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator insert(pair<vector<unsigned char>, va_t> values)
+    {
+        return m_instructionHashMap.insert(values);
+    }
+
+    multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator erase(multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator it)
+    {
+        return m_instructionHashMap.erase(it);
+    }
+
+    void clear()
+    {
+        return m_instructionHashMap.clear();
+    }
+
+    int count(vector<unsigned char> const instructionHash)
+    {
+        return m_instructionHashMap.count(instructionHash);
+    }
+
+    int size()
+    {
+        return m_instructionHashMap.size();
+    }
+};
+
 typedef struct _DisassemblyHashMaps_ {
     FileInfo file_info;
-    multimap <unsigned char*, va_t, hash_compare_instruction_hash> instructionHashMap;
-    multimap <va_t, unsigned char*> addressToInstructionHashMap;
+    InstructionHashMap instructionHashMap;
+    multimap <va_t, vector<unsigned char>> addressToInstructionHashMap;
     multimap <string, va_t> symbolMap;
     multimap <va_t, string> addressToSymbolMap;
     multimap <va_t, PControlFlow> addressToControlFlowMap;
@@ -61,3 +104,15 @@ typedef struct _DisassemblyHashMaps_ {
         LogMessage(10, __FUNCTION__, "instructionHashMap = %u\n", instructionHashMap.size());
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
+
+enum { NAME_MATCH, INSTRUCTION_HASH_MATCH, TWO_LEVEL_INSTRUCTION_HASH_MATCH, TREE_MATCH, INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH, FUNCTION_MATCH };
+
+typedef struct _MatchData_ {
+    short Type;
+    short SubType;
+    short Status;
+    va_t Addresses[2];
+    short MatchRate;
+    va_t UnpatchedParentAddress;
+    va_t PatchedParentAddress;
+} MatchData;

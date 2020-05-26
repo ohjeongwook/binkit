@@ -23,14 +23,6 @@ BasicBlocks::~BasicBlocks()
             delete val.second;
     }
     m_disassemblyHashMaps.addressToControlFlowMap.clear();
-
-    for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
-    {
-        if (val.second)
-        {
-            free(val.second);
-        }
-    }
     m_disassemblyHashMaps.addressToInstructionHashMap.clear();
     m_disassemblyHashMaps.instructionHashMap.clear();
 }
@@ -210,50 +202,55 @@ void BasicBlocks::MergeBlocks()
     }
 }
 
-string BasicBlocks::GetInstructionHash(va_t address)
+vector<unsigned char> BasicBlocks::GetInstructionHash(va_t address)
 {
     if (m_disassemblyHashMaps.addressToInstructionHashMap.size() > 0)
     {
-        multimap <va_t, unsigned char*>::iterator it = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
+        multimap <va_t, vector<unsigned char>>::iterator it = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
         if (it != m_disassemblyHashMaps.addressToInstructionHashMap.end())
         {
-            return BytesWithLengthAmbleToHex(it->second);
+            return it->second;
         }
     }
     else
     {
-        return m_pdisassemblyReader->ReadInstructionHash(address);
+        char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
+
+        if (p_instructionHashStr)
+        {
+            return HexToBytes(p_instructionHashStr);
+        }
     }
     return {};
 }
 
+InstructionHashMap * BasicBlocks::GetInstructionHashes()
+{
+    return &(m_disassemblyHashMaps.instructionHashMap);
+}
+
 void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
 {
-    unsigned char* p_instructionHash = NULL;
+    vector<unsigned char> instructionHash;
     char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
 
     if (p_instructionHashStr)
     {
-        p_instructionHash = HexToBytesWithLengthAmble(p_instructionHashStr);
+        instructionHash = HexToBytes(p_instructionHashStr);
     }
 
-    if (p_instructionHash)
+    for (multimap <vector<unsigned char>, va_t, InstructionHashEqu>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash);
+        it != m_disassemblyHashMaps.instructionHashMap.end(); it++
+    )
     {
-        multimap <unsigned char*, va_t, hash_compare_instruction_hash>::iterator it;
-        for (it = m_disassemblyHashMaps.instructionHashMap.find(p_instructionHash);
-            it != m_disassemblyHashMaps.instructionHashMap.end();
-            it++
-            )
+        if (it->first != instructionHash)
+            break;
+
+        if (it->second == address)
         {
-            if (!IsEqualByteWithLengthAmble(it->first, p_instructionHash))
-                break;
-            if (it->second == address)
-            {
-                m_disassemblyHashMaps.instructionHashMap.erase(it);
-                break;
-            }
+            m_disassemblyHashMaps.instructionHashMap.erase(it);
+            break;
         }
-        free(p_instructionHash);
     }
 }
 
@@ -273,17 +270,18 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
         }
         LogMessage(10, __FUNCTION__, "\n");
     }
-    string hexString = GetInstructionHash(blockAddress);
-    if (!hexString.empty())
+    vector<unsigned char> instructionHash = GetInstructionHash(blockAddress);
+
+    if (!instructionHash.empty())
     {
-        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, hexString.c_str());
+        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, BytesToHexString(instructionHash).c_str());
     }
 }
 
 void BasicBlocks::GenerateTwoLevelInstructionHash()
 {
     /*
-    multimap <unsigned char *, va_t, hash_compare_instruction_hash>::iterator instructionHashMap_pIter;
+    multimap <unsigned char *, va_t, InstructionHashEqu>::iterator instructionHashMap_pIter;
     for (instructionHashMap_pIter = m_disassemblyHashMaps.instructionHashMap.begin();
         instructionHashMap_pIter != m_disassemblyHashMaps.instructionHashMap.end();
         instructionHashMap_pIter++)

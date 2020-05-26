@@ -127,7 +127,7 @@ int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *c
     return SQLITE_ERROR;
 }
 
-unsigned char *HexToBytesWithLengthAmble(char *HexBytes);
+vector<unsigned char> HexToBytes(char *hexBytesString);
 
 int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, char **argv, char **names)
 {
@@ -135,12 +135,7 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     if (argv[1] && argv[1][0] != NULL)
     {
         va_t address = strtoul10(argv[0]);
-        unsigned char *instructionHashStr = HexToBytesWithLengthAmble(argv[1]);
-
-        if (instructionHashStr)
-        {
-            m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, unsigned char*>(address, instructionHashStr));
-        }
+        m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, HexToBytes(argv[1])));
 
         if (strtoul10(argv[3]) == 1 && strlen(argv[2]) > 0)
         {
