@@ -20,15 +20,15 @@ private:
 
     multimap <va_t, va_t> m_blockToFunction;
     multimap <va_t, va_t> m_functionToBlock;
-    unordered_set <va_t> m_functionHeads;
+    unordered_set <va_t> m_functionAddresses;
 
     void Load();
 
 public:
-    Functions(BasicBlocks *p_basicBlocks = NULL);
+    Functions(DisassemblyReader* p_disassemblyReader = NULL, BasicBlocks *p_basicBlocks = NULL);
     ~Functions();
 
-    vector<va_t> *GetFunctionAddresses();
+    vector<va_t> * GetAddresses();
     list <AddressRange> GetFunctionBasicBlocks(unsigned long FunctionAddress);
     BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);

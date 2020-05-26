@@ -1,7 +1,8 @@
 #include "Functions.h"
 
-Functions::Functions(BasicBlocks* p_basicBlocks)
+Functions::Functions(DisassemblyReader* p_disassemblyReader, BasicBlocks* p_basicBlocks)
 {
+    m_pdisassemblyReader = p_disassemblyReader;
     m_pbasicBlocks = p_basicBlocks;
     Load();
 }
@@ -12,7 +13,7 @@ Functions::~Functions()
     m_functionToBlock.clear();
 }
 
-vector<va_t> *Functions::GetFunctionAddresses()
+vector<va_t> *Functions::GetAddresses()
 {
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
@@ -35,8 +36,8 @@ void Functions::Load()
 {
     int Count = 0;
 
-    LogMessage(10, __FUNCTION__, "%s: ID = %d GetFunctionAddresses\n", __FUNCTION__);
-    vector <va_t>* p_functionAddresses = GetFunctionAddresses();
+    LogMessage(10, __FUNCTION__, "%s: ID = %d GetAddresses\n", __FUNCTION__);
+    vector <va_t>* p_functionAddresses = GetAddresses();
     if (p_functionAddresses)
     {
         LogMessage(10, __FUNCTION__, "%s: Function %u entries\n", __FUNCTION__, p_functionAddresses->size());
@@ -96,7 +97,7 @@ void Functions::Load()
                 if (function_start)
                 {
                     va_t functionStartAddress = val.first;
-                    m_functionHeads.insert(functionStartAddress);
+                    m_functionAddresses.insert(functionStartAddress);
                     list <AddressRange> function_member_blocks = GetFunctionBasicBlocks(functionStartAddress);
                     unordered_map<va_t, va_t>::iterator function_start_membership_it = membershipHash.find(functionStartAddress);
 
@@ -159,7 +160,7 @@ list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddr
         vector<va_t> addresses = m_pbasicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
         for (va_t address : addresses)
         {
-            if (m_functionHeads.find(address) != m_functionHeads.end())
+            if (m_functionAddresses.find(address) != m_functionAddresses.end())
                 continue;
 
             if (checkedAddresses.find(address) == checkedAddresses.end())
