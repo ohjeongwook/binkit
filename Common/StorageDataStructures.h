@@ -51,7 +51,7 @@ typedef struct
 } AddressRange;
 
 typedef struct _ControlFlow_ {
-	BYTE Type;
+	unsigned char Type;
 	va_t SrcBlock;
 	va_t SrcBlockEnd;
 	va_t Dst;
