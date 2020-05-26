@@ -5,3 +5,4 @@ libs/
 .vs/
 x64/
 Loader/Debug/
+tests/tests.cmd
