@@ -5,6 +5,7 @@ Functions::Functions(DisassemblyReader* p_disassemblyReader, BasicBlocks* p_basi
     m_pdisassemblyReader = p_disassemblyReader;
     m_pbasicBlocks = p_basicBlocks;
     Load();
+    UpdateFunctionAddressesInStorage()
 }
 
 Functions::~Functions()
@@ -179,7 +180,7 @@ list <AddressRange> Functions::GetFunctionBasicBlocks(unsigned long functionAddr
     return addressRangeList;
 }
 
-BOOL Functions::FixFunctionAddresses()
+BOOL Functions::UpdateFunctionAddressesInStorage()
 {
     BOOL is_fixed = FALSE;
     LogMessage(10, __FUNCTION__, "%s", __FUNCTION__);
@@ -190,8 +191,6 @@ BOOL Functions::FixFunctionAddresses()
 
     for (auto& val : m_blockToFunction)
     {
-        //startAddress: val.first
-        //FunctionAddress: val.second
         LogMessage(10, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
 
         m_pdisassemblyReader->UpdateBasicBlock(val.first, val.second);
@@ -217,7 +216,7 @@ bool Functions::GetFunctionAddress(va_t address, va_t& functionAddress)
     return false;
 }
 
-bool Functions::IsFunctionBlock(va_t block, va_t function)
+bool Functions::IsInFunction(va_t block, va_t function)
 {
     for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
     {

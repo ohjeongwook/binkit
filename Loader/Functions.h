@@ -23,15 +23,14 @@ private:
     unordered_set <va_t> m_functionAddresses;
 
     void Load();
-
+    BOOL UpdateFunctionAddressesInStorage();
 public:
     Functions(DisassemblyReader* p_disassemblyReader = NULL, BasicBlocks *p_basicBlocks = NULL);
     ~Functions();
 
-    vector<va_t> * GetAddresses();
+    vector<va_t> *GetAddresses();
     list <AddressRange> GetFunctionBasicBlocks(unsigned long FunctionAddress);
-    BOOL FixFunctionAddresses();
     bool GetFunctionAddress(va_t address, va_t& functionAddress);
-    bool IsFunctionBlock(va_t block, va_t function);
+    bool IsInFunction(va_t block, va_t function);
     multimap <va_t, va_t>* GetFunctionToBlock();
 };
