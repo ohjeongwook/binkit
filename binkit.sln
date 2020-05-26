@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Loader", "Loader\Loader.vcxproj", "{6828FC8F-EE18-46BD-8454-9C733FAD403D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pybinkit", "pybinkit\pybinkit.vcxproj", "{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{6828FC8F-EE18-46BD-8454-9C733FAD403D}.Release|x64.Build.0 = Release|x64
 		{6828FC8F-EE18-46BD-8454-9C733FAD403D}.Release|x86.ActiveCfg = Release|Win32
 		{6828FC8F-EE18-46BD-8454-9C733FAD403D}.Release|x86.Build.0 = Release|Win32
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Debug|x64.ActiveCfg = Debug|x64
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Debug|x64.Build.0 = Debug|x64
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Debug|x86.ActiveCfg = Debug|Win32
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Debug|x86.Build.0 = Debug|Win32
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Release|x64.ActiveCfg = Release|x64
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Release|x64.Build.0 = Release|x64
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Release|x86.ActiveCfg = Release|Win32
+		{B9BE5B65-45B8-4BA2-B726-83EACDBE502F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
