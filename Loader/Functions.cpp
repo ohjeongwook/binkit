@@ -206,11 +206,11 @@ bool Functions::GetFunctionAddress(va_t address, va_t& functionAddress)
     return false;
 }
 
-bool Functions::IsInFunction(va_t block, va_t function)
+bool Functions::IsInFunction(va_t basicBlockAddress, va_t functionAddress)
 {
-    for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(block); it != m_blockToFunction.end() && it->first == block; it++)
+    for (multimap <va_t, va_t>::iterator it = m_blockToFunction.find(basicBlockAddress); it != m_blockToFunction.end() && it->first == basicBlockAddress; it++)
     {
-        if (it->second == function)
+        if (it->second == functionAddress)
         {
             return true;
         }
