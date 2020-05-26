@@ -16,5 +16,7 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<BasicBlocks>(m, "BasicBlocks")
         .def(py::init())
         .def("get_addresses", &BasicBlocks::GetAddresses)
-        .def("get_symbol", &BasicBlocks::GetSymbol);
+        .def("get_symbol", &BasicBlocks::GetSymbol)
+        .def("get_instruction_hash", &BasicBlocks::GetInstructionHash)
+        .def("get_code_references", &BasicBlocks::GetCodeReferences);    
 }
