@@ -134,17 +134,19 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     DisassemblyHashMaps *m_disassemblyHashMaps = (DisassemblyHashMaps*)arg;
     if (argv[1] && argv[1][0] != NULL)
     {
-        va_t Address = strtoul10(argv[0]);
-        unsigned char *InstructionHashStr = HexToBytesWithLengthAmble(argv[1]);
-        if (InstructionHashStr)
+        va_t address = strtoul10(argv[0]);
+        unsigned char *instructionHashStr = HexToBytesWithLengthAmble(argv[1]);
+
+        if (instructionHashStr)
         {
-            m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, unsigned char*>(Address, InstructionHashStr));
+            m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, unsigned char*>(address, instructionHashStr));
         }
 
         if (strtoul10(argv[3]) == 1 && strlen(argv[2]) > 0)
         {
             char *name = argv[2];
-            m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(name, Address));
+            m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(name, address));
+            m_disassemblyHashMaps->addressToSymbolMap.insert(pair<va_t, string>(address, name));
         }
     }
     return 0;
@@ -162,15 +164,6 @@ void SQLiteDisassemblyReader::ReadBasicBlockHashes(char *conditionStr, Disassemb
 void SQLiteDisassemblyReader::Close()
 {
     CloseDatabase();
-}
-
-int SQLiteDisassemblyReader::display_callback(void *NotUsed, int argc, char **argv, char **azColName)
-{
-    int i;
-    for (i = 0; i < argc; i++) {
-        LogMessage(1, __FUNCTION__, "%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-    }
-    return 0;
 }
 
 int SQLiteDisassemblyReader::ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names)
