@@ -114,6 +114,36 @@ vector<va_t> BasicBlocks::GetCodeReferences(va_t address, int type)
     return addresses;
 }
 
+vector<va_t> BasicBlocks::GetParents(va_t address)
+{
+    vector<va_t> parentAddresses;
+
+    for (multimap<va_t, va_t>::iterator it = m_disassemblyHashMaps.dstToSrcAddressMap.find(address);
+        it != m_disassemblyHashMaps.dstToSrcAddressMap.end() && it->first == address;
+        it++
+        )
+    {
+        parentAddresses.push_back(it->second);
+    }
+
+    return parentAddresses;
+}
+
+vector<va_t> BasicBlocks::GetCallTargets()
+{
+    vector<va_t> callTargets;
+
+    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    {
+        if (val.second->Type == CALL)
+        {
+            callTargets.push_back(val.second->Dst);
+        }
+    }
+
+    return callTargets; 
+}
+
 void BasicBlocks::MergeBlocks()
 {
     multimap <va_t, PControlFlow>::iterator last_iter = m_disassemblyHashMaps.addressToControlFlowMap.end();
