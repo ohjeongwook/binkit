@@ -1,41 +1,63 @@
 import pybinkit
 
-# CALL, CREF_FROM, CREF_TO, DREF_FROM, DREF_TO, CALLED
+class Tests:
+    def __init__(self, filenames):
+        self.binaries = []
+        for filename in filenames:
+            binary = pybinkit.Binary()
+            binary.open(filename, 0)
+            self.binaries.append(binary)
 
-def dump_basic_blocks(basic_blocks):
-    for basic_block_address in basic_blocks.get_addresses():
-        symbol = basic_blocks.get_symbol(basic_block_address)
-        if symbol:
-            print('%.8x: %s' % (basic_block_address, symbol))
-        else:
-            print('%.8x:' % (basic_block_address))
+    def dump_basic_blocks(self, basic_blocks):
+        for basic_block_address in basic_blocks.get_addresses():
+            symbol = basic_blocks.get_symbol(basic_block_address)
+            if symbol:
+                print('%.8x: %s' % (basic_block_address, symbol))
+            else:
+                print('%.8x:' % (basic_block_address))
 
-        print('\t'+basic_blocks.get_instruction_hash(basic_block_address))
+            print('\t'+str(basic_blocks.get_instruction_hash(basic_block_address)))
 
-        for ref_type in range(0, 6, 1):
-            for reference in basic_blocks.get_code_references(basic_block_address, ref_type):
-                print('\t- [%d] -> %.8x' % (ref_type, reference))
+            # CALL, CREF_FROM, CREF_TO, DREF_FROM, DREF_TO, CALLED
+            for ref_type in range(0, 6, 1):
+                for reference in basic_blocks.get_code_references(basic_block_address, ref_type):
+                    print('\t- [%d] -> %.8x' % (ref_type, reference))
 
-        for parent in basic_blocks.get_parents(basic_block_address):
-            print('\tparent: %.8x' % (parent))
+            for parent in basic_blocks.get_parents(basic_block_address):
+                print('\tparent: %.8x' % (parent))
 
-binary = pybinkit.Binary()
-binary.open(r'examples\EPSIMP32-2006.1200.4518.1014.db', 0)
-basic_blocks = binary.get_basic_blocks()
-dump_basic_blocks(basic_blocks)
+    def dump(self):
+        for binary in self.binaries:
+            basic_blocks = binary.get_basic_blocks()
+            self.dump_basic_blocks(basic_blocks)
 
-binary2 = pybinkit.Binary()
-binary2.open(r'examples\EPSIMP32-2006.1200.6731.5000.db', 0)
-basic_blocks2 = binary2.get_basic_blocks()
-dump_basic_blocks(basic_blocks2)
+    def dump_call_targets(self, basic_blocks):
+        for call_target in basic_blocks.get_call_targets():
+            print('call_target: %x' % call_target)
 
-for call_target in basic_blocks2.get_call_targets():
-    print('call_target: %x' % call_target)
+    def dump_functions_addresses(self, functions, basic_blocks):
+        for function_address in functions.get_addresses():
+            symbol = basic_blocks.get_symbol(function_address)
+            print('function_address: %x - %s' % (function_address, symbol))
+            for basic_block_address in functions.get_function_basic_blocks(function_address):
+                print('\t%x' % (basic_block_address))
 
+    def dump_functions(self, binary):
+        functions = binary.get_functions()
+        basic_blocks = binary.get_functions()
+        self.dump_functions_addresses(functions, basic_blocks)
 
-functions2 = binary2.get_functions()
-for function_address in functions2.get_addresses():
-    symbol = basic_blocks2.get_symbol(function_address)
-    print('function_address: %x - %s' % (function_address, symbol))
-    for basic_block_address in functions2.get_function_basic_blocks(function_address):
-        print('\t%x' % (basic_block_address))
+    def do_instruction_hash_match(self):
+        diff_alrogithms = pybinkit.DiffAlgorithms()
+        basic_block0 = self.binaries[0].get_basic_blocks()
+        basic_block1 = self.binaries[1].get_basic_blocks()
+        diff_alrogithms.do_instruction_hash_match(basic_block0, basic_block1)
+        #print(self.binaries[0], self.binaries[1]        
+        #instruction_hashes = basic_block.get_instruction_hashes()
+        #print(instruction_hashes)
+
+if __name__ == '__main__':
+    filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
+    tests = Tests(filenames)
+    #tests.dump()
+    tests.do_instruction_hash_match()
