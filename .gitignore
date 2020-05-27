@@ -6,3 +6,5 @@ libs/
 x64/
 Loader/Debug/
 tests/tests.cmd
+*.log
+*.txt
