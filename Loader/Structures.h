@@ -94,15 +94,15 @@ typedef struct _DisassemblyHashMaps_ {
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
 
-enum { NAME_MATCH, INSTRUCTION_HASH_MATCH, TWO_LEVEL_INSTRUCTION_HASH_MATCH, TREE_MATCH, INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH, FUNCTION_MATCH };
+enum { NAME_MATCH, INSTRUCTION_HASH_MATCH, TWO_LEVEL_INSTRUCTION_HASH_MATCH, TREE_MATCH, INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH, FUNCTION_MATCH, CONTROLFLOW_MATCH };
 
 typedef struct _MatchData_ {
     short Type;
     short SubType;
     short Status;
-    va_t OriginalAddress;
-    va_t PatchedAddress;
+    va_t Source;
+    va_t Target;
     short MatchRate;
-    va_t OriginalParentAddress;
-    va_t PatchedParentAddress;
+    va_t SourceParent;
+    va_t TargetParent;
 } MatchData;
