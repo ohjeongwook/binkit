@@ -48,12 +48,12 @@ class Tests:
         self.dump_functions_addresses(functions, basic_blocks)
 
     def do_instruction_hash_match(self):
-        diff_alrogithms = pybinkit.DiffAlgorithms()
         basic_block0 = self.binaries[0].get_basic_blocks()
-        basic_block1 = self.binaries[1].get_basic_blocks()
-        matches = diff_alrogithms.do_instruction_hash_match(basic_block0, basic_block1)
+        basic_block1 = self.binaries[1].get_basic_blocks()        
+        diff_alrogithms = pybinkit.DiffAlgorithms(basic_block0, basic_block1)
+        matches = diff_alrogithms.do_instruction_hash_match()
         for match in matches:
-            print('%x - %x vs %s - match_rate: %d' % (match.type, match.original_address, match.patched_address, match.type))
+            print('%x - %x vs %s - match_rate: %d' % (match.type, match.source, match.target, match.type))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
