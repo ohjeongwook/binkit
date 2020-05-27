@@ -50,11 +50,13 @@ typedef struct
 	va_t End;
 } AddressRange;
 
-typedef struct _ControlFlow_ {
+class ControlFlow {
+public:
 	unsigned char Type;
 	va_t SrcBlock;
 	va_t SrcBlockEnd;
 	va_t Dst;
-} ControlFlow,  *PControlFlow;
+};
 
+typedef ControlFlow* PControlFlow;
 typedef pair <va_t, PControlFlow> AddressPControlFlowPair;
