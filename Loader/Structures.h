@@ -102,7 +102,7 @@ typedef struct _MatchData_ {
     short Status;
     va_t Source;
     va_t Target;
-    short MatchRate;
+    int MatchRate;
     va_t SourceParent;
     va_t TargetParent;
 } MatchData;
