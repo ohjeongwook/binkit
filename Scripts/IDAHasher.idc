@@ -3,7 +3,7 @@
 static main()
 {
     Wait();
-    RunPlugin( "IDAHasher", 1 );
-    SaveIDAHasherAnalysis("Test.db");
+    RunPlugin( "BinKit", 1 );
+    SaveBinKitAnalysis("Test.db");
     Exit( 0 );
 }
