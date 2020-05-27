@@ -60,6 +60,12 @@
     <ClInclude Include="DiffAlgorithms.h">
       <Filter>Algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="Diff.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Varray.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
@@ -87,6 +93,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DiffAlgorithms.cpp">
+      <Filter>Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="Diff.cpp">
+      <Filter>Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="Varray.cpp">
       <Filter>Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
