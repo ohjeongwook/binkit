@@ -174,49 +174,29 @@ void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
     );
 }
 
-void SQLiteDisassemblyStorage::AddBasicBlock(PBasicBlock pBasicBlock, int fileID)
+void SQLiteDisassemblyStorage::AddBasicBlock(BasicBlock &basicBlock, int fileID)
 {
-    char *instruction_hashStr = NULL;
-    if (pBasicBlock->InstructionHashLen > 0)
-    {
-        instruction_hashStr = (char*)malloc(pBasicBlock->InstructionHashLen * 2 + 10);
-        if (instruction_hashStr)
-        {
-            memset(instruction_hashStr, 0, pBasicBlock->InstructionHashLen * 2 + 10);
-            char tmp_buffer[10];
-            for (int i = 0; i < pBasicBlock->InstructionHashLen; i++)
-            {
-                _snprintf(tmp_buffer, sizeof(tmp_buffer) - 1, "%.2x", pBasicBlock->Data[pBasicBlock->NameLen + pBasicBlock->DisasmLinesLen + i] & 0xff);
-                tmp_buffer[sizeof(tmp_buffer) - 1] = NULL;
-                strncat(instruction_hashStr, tmp_buffer, sizeof(tmp_buffer));
-            }
-        }
-    }
-
     ExecuteStatement(NULL, NULL, INSERT_BASIC_BLOCK_TABLE_STATEMENT,
         fileID,
-        pBasicBlock->StartAddress,
-        pBasicBlock->EndAddress,
-        pBasicBlock->Flag,
-        pBasicBlock->FunctionAddress,
-        pBasicBlock->BlockType,
-        pBasicBlock->Data,
-        pBasicBlock->Data + pBasicBlock->NameLen,
-        instruction_hashStr ? instruction_hashStr : ""
+        basicBlock.StartAddress,
+        basicBlock.EndAddress,
+        basicBlock.Flag,
+        basicBlock.FunctionAddress,
+        basicBlock.BlockType,
+        basicBlock.Name.c_str(),
+        basicBlock.DisasmLines.c_str(),
+        basicBlock.InstructionHash.c_str()
     );
-
-    if (instruction_hashStr)
-        free(instruction_hashStr);
 }
 
-void SQLiteDisassemblyStorage::AddControlFlow(PControlFlow pControlFlow, int fileID)
+void SQLiteDisassemblyStorage::AddControlFlow(ControlFlow &controlFlow, int fileID)
 {
     ExecuteStatement(NULL, NULL, INSERT_MAP_INFO_TABLE_STATEMENT,
         fileID,
-        pControlFlow->Type,
-        pControlFlow->SrcBlock,
-        pControlFlow->SrcBlockEnd,
-        pControlFlow->Dst
+        controlFlow.Type,
+        controlFlow.SrcBlock,
+        controlFlow.SrcBlockEnd,
+        controlFlow.Dst
     );
 }
 

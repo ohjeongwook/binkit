@@ -249,7 +249,7 @@ list <int> GetRelatedFlags(int itype, bool IsModifying);
 class IDAAnalyzer
 {
 private:
-    DisassemblyStorage *m_pdisassemblyReader;
+    DisassemblyStorage *m_pdisassemblyWriter;
     unordered_map <ea_t, ea_t> m_newBlocks;
 
     void UpdateInstructionMap(

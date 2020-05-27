@@ -7,6 +7,7 @@
 #include <list>
 #include <string>
 
+#include "Utility.h"
 #include "IDAAnalyzer.h"
 #include "DisassemblyStorage.h"
 
@@ -547,7 +548,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         }
     }
 
-    vector <unsigned char> InstructionHash;
+    vector <unsigned char> instructionHash;
 
     basic_block.EndAddress = 0;
 
@@ -617,13 +618,13 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
                 )
             )
         {
-            InstructionHash.push_back((unsigned char)(*CmdArrayIter).itype);
+            instructionHash.push_back((unsigned char)(*CmdArrayIter).itype);
             for (int i = 0; i < UA_MAXOP; i++)
             {
                 if ((*CmdArrayIter).ops[i].type != 0)
                 {
-                    InstructionHash.push_back((*CmdArrayIter).ops[i].type);
-                    InstructionHash.push_back((*CmdArrayIter).ops[i].dtype);
+                    instructionHash.push_back((*CmdArrayIter).ops[i].type);
+                    instructionHash.push_back((*CmdArrayIter).ops[i].dtype);
                     /*
                     if((*CmdArrayIter).ops[i].type == o_imm)
                     {
@@ -651,10 +652,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         }
     }
 
-    basic_block.NameLen = name.length() + 1;
-    basic_block.DisasmLinesLen = disasm_buffer.length() + 1;
-    basic_block.InstructionHashLen = InstructionHash.size();
-
+    /*
     if (gatherCmdArray)
     {
         basic_block.CmdArrayLen = pCmdArray->size() * sizeof(insn_t);
@@ -664,46 +662,19 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         basic_block.CmdArrayLen = 0;
     }
 
-    int basic_block_length = sizeof(basic_block) + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.InstructionHashLen + basic_block.CmdArrayLen;
-    PBasicBlock p_basic_block = (PBasicBlock)malloc(basic_block_length);
-
-    if (p_basic_block)
+    if (gatherCmdArray)
     {
-        memcpy(p_basic_block, &basic_block, sizeof(basic_block));
-        memcpy(p_basic_block->Data, name.c_str(), basic_block.NameLen);
-
-        if (disasm_buffer.length() > 0)
+        int CmdArrayIndex = 0;
+        for (list <insn_t>::iterator iter = pCmdArray->begin(); iter != pCmdArray->end(); iter++, CmdArrayIndex++)
         {
-            memcpy((char*)p_basic_block->Data + basic_block.NameLen,
-                disasm_buffer.c_str(),
-                basic_block.DisasmLinesLen);
+            memcpy(&CmdsPtr[CmdArrayIndex], &(*iter), sizeof(insn_t));
         }
-        else
-        {
-            *((char*)p_basic_block->Data + basic_block.NameLen) = NULL;
-        }
-
-        for (size_t fi = 0; fi < InstructionHash.size(); fi++)
-        {
-            ((unsigned char*)p_basic_block->Data)[basic_block.NameLen + basic_block.DisasmLinesLen + fi] = InstructionHash.at(fi);
-        }
-
-        insn_t *CmdsPtr = (insn_t*)(p_basic_block->Data + basic_block.NameLen + basic_block.DisasmLinesLen + basic_block.InstructionHashLen);
-
-        if (gatherCmdArray)
-        {
-            int CmdArrayIndex = 0;
-            for (list <insn_t>::iterator iter = pCmdArray->begin(); iter != pCmdArray->end(); iter++, CmdArrayIndex++)
-            {
-                memcpy(&CmdsPtr[CmdArrayIndex], &(*iter), sizeof(insn_t));
-            }
-        }
-
-        m_pdisassemblyReader->AddBasicBlock(p_basic_block);
-        free(p_basic_block);
     }
-    //Reset InstructionHash Data
-    InstructionHash.clear();
+    */
+
+    basic_block.DisasmLines = disasm_buffer;
+    basic_block.InstructionHash = BytesToHexString(instructionHash);
+    m_pdisassemblyWriter->AddBasicBlock(basic_block);
 }
 
 list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
@@ -889,9 +860,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         pCmdArray->push_back(insn);
         short current_itype = insn.itype;
 
-        ControlFlow control_flow;
+        ControlFlow controlFlow;
         //New Location Found
-        control_flow.SrcBlock = srcBlockAddress;
+        controlFlow.SrcBlock = srcBlockAddress;
 
         //Finding Next CREF
         vector<ea_t> cref_list;
@@ -927,10 +898,10 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
                     //this is a call
                     //PUSH THIS: call_addrs targetAddress
-                    control_flow.Type = CALL;
-                    control_flow.Dst = targetAddress;
+                    controlFlow.Type = CALL;
+                    controlFlow.Dst = targetAddress;
 
-                    m_pdisassemblyReader->AddControlFlow(&control_flow);
+                    m_pdisassemblyWriter->AddControlFlow(controlFlow);
                 }
                 else {
                     //this is a jump
@@ -1048,9 +1019,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         while (dref != BADADDR)
         {
             //PUSH THIS: dref
-            control_flow.Type = DREF_TO;
-            control_flow.Dst = dref;
-            m_pdisassemblyReader->AddControlFlow(&control_flow);
+            controlFlow.Type = DREF_TO;
+            controlFlow.Dst = dref;
+            m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_to(currentAddress, dref);
         }
 
@@ -1060,9 +1031,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         {
             //PUSH THIS: next_drefs dref
 
-            control_flow.Type = DREF_FROM;
-            control_flow.Dst = dref;
-            m_pdisassemblyReader->AddControlFlow(&control_flow);
+            controlFlow.Type = DREF_FROM;
+            controlFlow.Dst = dref;
+            m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_from(currentAddress, dref);
         }
 
@@ -1189,9 +1160,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                     cref_list_iter != cref_list.end();
                     cref_list_iter++)
                 {
-                    control_flow.Type = CREF_FROM;
-                    control_flow.Dst = *cref_list_iter;
-                    m_pdisassemblyReader->AddControlFlow(&control_flow);
+                    controlFlow.Type = CREF_FROM;
+                    controlFlow.Dst = *cref_list_iter;
+                    m_pdisassemblyWriter->AddControlFlow(controlFlow);
                 }
             }
             else
@@ -1201,9 +1172,9 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
                     cref_list_iter != cref_list.rend();
                     cref_list_iter++)
                 {
-                    control_flow.Type = CREF_FROM;
-                    control_flow.Dst = *cref_list_iter;
-                    m_pdisassemblyReader->AddControlFlow(&control_flow);
+                    controlFlow.Type = CREF_FROM;
+                    controlFlow.Dst = *cref_list_iter;
+                    m_pdisassemblyWriter->AddControlFlow(controlFlow);
                 }
             }
 
@@ -1235,7 +1206,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
 IDAAnalyzer::IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage)
 {
-    m_pdisassemblyReader = p_disassemblyStorage;
+    m_pdisassemblyWriter = p_disassemblyStorage;
 }
 
 void IDAAnalyzer::AnalyzeRegion(ea_t startEA, ea_t endEA, bool gatherCmdArray)
@@ -1297,11 +1268,11 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
     DWORD UserNameLen = sizeof(file_info.UserName);
     GetUserName(file_info.UserName, &UserNameLen);
 
-    m_pdisassemblyReader->BeginTransaction();
+    m_pdisassemblyWriter->BeginTransaction();
 
     char *input_file_path = NULL;
     get_input_file_path(file_info.OriginalFilePath, sizeof(file_info.OriginalFilePath) - 1);
-    m_pdisassemblyReader->SetFileInfo(&file_info);
+    m_pdisassemblyWriter->SetFileInfo(&file_info);
 
     LogMessage(1, __FUNCTION__, "Analyze: %x ~ %x\n", startEA, endEA);
 
@@ -1340,7 +1311,7 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
         }
     }
 
-    m_pdisassemblyReader->EndTransaction();
+    m_pdisassemblyWriter->EndTransaction();
     LogMessage(1, __FUNCTION__, "Finished Analysis\n");
 }
 
