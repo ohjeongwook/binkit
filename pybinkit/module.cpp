@@ -8,6 +8,7 @@
 
 #include "Structures.h"
 #include "Binary.h"
+#include "BasicBlocks.h"
 #include "DiffAlgorithms.h"
 
 namespace py = pybind11;
@@ -16,8 +17,8 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<Binary>(m, "Binary")
         .def(py::init())
         .def("open", &Binary::Open)
-        .def("get_basic_blocks", &Binary::GetBasicBlocks)
-        .def("get_functions", &Binary::GetFunctions);
+        .def("get_basic_blocks", &Binary::GetBasicBlocks, py::return_value_policy::reference)
+        .def("get_functions", &Binary::GetFunctions, py::return_value_policy::reference);
 
     py::class_<BasicBlocks>(m, "BasicBlocks")
         .def(py::init())
@@ -34,8 +35,9 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_function_basic_blocks", &Functions::GetFunctionBasicBlocks);
 
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
-        .def(py::init())
-        .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch);
+        .def(py::init<BasicBlocks&, BasicBlocks&>())
+        .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
+        .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch);
 
     /*
         typedef struct _MatchData_ {
@@ -53,9 +55,9 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("type", &MatchData::Type)
         .def_readwrite("sub_type", &MatchData::SubType)
         .def_readwrite("status", &MatchData::Status)
-        .def_readonly("original_address", &MatchData::OriginalAddress)
-        .def_readonly("patched_address", &MatchData::PatchedAddress)
+        .def_readonly("source", &MatchData::Source)
+        .def_readonly("target", &MatchData::Target)
         .def_readwrite("match_rate", &MatchData::MatchRate)
-        .def_readwrite("original_parent_address", &MatchData::OriginalParentAddress)
-        .def_readwrite("patched_parent_address", &MatchData::PatchedParentAddress);
+        .def_readwrite("source_parent", &MatchData::SourceParent)
+        .def_readwrite("target_parent", &MatchData::TargetParent);
 }
