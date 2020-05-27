@@ -28,7 +28,7 @@ static error_t idaapi save_ida_hasher_analysis(idc_value_t* argv, idc_value_t* r
 }
 static const char save_ida_hasher_analysis_args[] = { VT_STR, 0 };
 static const ext_idcfunc_t save_ida_hasher_analysis_desc = {
-    "SaveIDAHasherAnalysis",
+    "SaveBinKitAnalysis",
     save_ida_hasher_analysis,
     save_ida_hasher_analysis_args,
     NULL,
@@ -154,13 +154,13 @@ void SaveAnalysis(const char *output_file_path)
     }
 
     long end_tick = GetTickCount();
-    LogMessage(1, __FUNCTION__, "IDAHasher Analysis Finished %.3f sec\n", (float)(end_tick - start_tick) / 1000);
+    LogMessage(1, __FUNCTION__, "BinKit Analysis Finished %.3f sec\n", (float)(end_tick - start_tick) / 1000);
 }
 
 bool idaapi run(size_t arg)
 {
     SetLogLevel(1);
-    LogMessage(1, __FUNCTION__, "IDAHasher plugin started...\n");
+    LogMessage(1, __FUNCTION__, "BinKit plugin started...\n");
 
     if (arg == 1)
     {
@@ -183,12 +183,12 @@ bool idaapi run(size_t arg)
     return true;
 }
 
-char comment[] = "This is a IDAHasher IDA Exporter Plugin";
+char comment[] = "This is a BinKit IDA Exporter Plugin";
 char help[] =
-"A IDAHasher Plugin module\n"
+"A BinKit Plugin module\n"
 "This will generate hash values for basic blocks to be used for identifying similar matching blocks from other binaries.\n";
 
-char wanted_name[] = "IDAHasher";
+char wanted_name[] = "BinKit";
 char wanted_hotkey[] = "Alt-8";
 
 plugin_t PLUGIN =
