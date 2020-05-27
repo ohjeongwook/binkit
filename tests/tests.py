@@ -1,10 +1,18 @@
 import pybinkit
 
+CALL = 0
+CREF_FROM = 1
+CREF_TO = 2
+DREF_FROM = 3
+DREF_TO = 4
+CALLED = 5
+
 class Tests:
     def __init__(self, filenames):
         self.binaries = []
         for filename in filenames:
             binary = pybinkit.Binary()
+            print('Opening %s...' % filename)
             binary.open(filename, 0)
             self.binaries.append(binary)
 
@@ -49,11 +57,20 @@ class Tests:
 
     def do_instruction_hash_match(self):
         basic_block0 = self.binaries[0].get_basic_blocks()
-        basic_block1 = self.binaries[1].get_basic_blocks()        
-        diff_alrogithms = pybinkit.DiffAlgorithms(basic_block0, basic_block1)
-        matches = diff_alrogithms.do_instruction_hash_match()
+        basic_block1 = self.binaries[1].get_basic_blocks()
+
+        print('Loading DiffAlgorithms...')
+        diff_algorithms = pybinkit.DiffAlgorithms(basic_block0, basic_block1)
+        print('Performing instruction hash matches...')
+        matches = diff_algorithms.do_instruction_hash_match()
         for match in matches:
-            print('%x - %x vs %s - match_rate: %d' % (match.type, match.source, match.target, match.type))
+            print('%x - %x vs %s - match_rate: %d' % (match.type, match.source, match.target, match.match_rate))
+
+            print('\tPerforming control flow matches:')
+            for control_flow_type in (CREF_FROM, CALL, DREF_FROM):
+                child_matches = diff_algorithms.do_control_flow_match(match.source, match.target, control_flow_type)
+                for child_match in child_matches:
+                    print('\t%d: %x - %x vs %s - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
