@@ -82,8 +82,8 @@ public:
     int BeginTransaction();
     int EndTransaction();
     void Close();
-    void AddBasicBlock(PBasicBlock pBasicBlock, int fileID = 0);
-    void AddControlFlow(PControlFlow p_control_flow, int fileID = 0);
+    void AddBasicBlock(BasicBlock& basicBlock, int fileID = 0);
+    void AddControlFlow(ControlFlow& controlFlow, int fileID = 0);
 
     void SetFileInfo(FileInfo *p_file_info);
     void CreateTables();

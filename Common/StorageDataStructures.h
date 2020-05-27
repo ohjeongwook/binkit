@@ -42,6 +42,7 @@ typedef struct _BasicBlock_ {
 	char BlockType; // FUNCTION, UNKNOWN
 	string Name;
 	string InstructionHash;
+	string DisasmLines;
 } BasicBlock,  *PBasicBlock;
 
 typedef struct
