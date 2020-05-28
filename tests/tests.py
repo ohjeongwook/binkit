@@ -66,11 +66,16 @@ class Tests:
         for match in matches:
             print('%x - %x vs %s - match_rate: %d' % (match.type, match.source, match.target, match.match_rate))
 
-            print('\tPerforming control flow matches:')
+            print('\tPerforming do_control_flow_match:')
             for control_flow_type in (CREF_FROM, CALL, DREF_FROM):
                 child_matches = diff_algorithms.do_control_flow_match(match.source, match.target, control_flow_type)
                 for child_match in child_matches:
-                    print('\t%d: %x - %x vs %s - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
+                    print('\t\t%d: %x - %x vs %s - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
+
+            print('\tPerforming do_control_flow_matches:')
+            child_matches = diff_algorithms.do_control_flow_matches((match, ))
+            for child_match in child_matches:
+                print('\t\t%d: %x - %x vs %s - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']

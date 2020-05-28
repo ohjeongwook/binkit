@@ -139,3 +139,57 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 
 	return controlFlowMatches;
 }
+
+vector<MatchData> DiffAlgorithms::DoControlFlowMatches(vector<MatchData> inputMatches)
+{
+	int matchLinkTypes[] = { CREF_FROM, CALL, DREF_FROM }; //CREF_TO, DREF_TO
+	int processed_count = 0;
+	vector<MatchData> newMatches;
+
+	for (auto& match : inputMatches)
+	{
+		for (int i = 0; i < sizeof(matchLinkTypes) / sizeof(int); i++)
+		{
+			vector<MatchData> controlFlowMatches = DiffAlgorithms::DoControlFlowMatch(match.Source, match.Target, matchLinkTypes[i]);
+
+			if (controlFlowMatches.size() == 0)
+			{
+				continue;
+			}
+
+			unordered_set <int> insertedIndexes;
+			unordered_set <va_t> insertedSources;
+			unordered_set <va_t> insertedTargets;
+			while (1)
+			{
+				int maxMatchRate = 0;
+				int selectedIndex = -1;
+
+				for (int i = 0; i < controlFlowMatches.size(); i++)
+				{
+					if (insertedIndexes.find(i) == insertedIndexes.end() && 
+						insertedSources.find(controlFlowMatches[i].Source) == insertedSources.end() &&
+						insertedTargets.find(controlFlowMatches[i].Target) == insertedTargets.end())
+					{
+						if (controlFlowMatches[i].MatchRate > maxMatchRate)
+						{
+							maxMatchRate = controlFlowMatches[i].MatchRate;
+							selectedIndex = i;
+						}
+					}
+				}
+
+				if (selectedIndex == -1)
+					break;
+
+				newMatches.push_back(controlFlowMatches[selectedIndex]);
+				insertedIndexes.insert(selectedIndex);
+				insertedSources.insert(controlFlowMatches[selectedIndex].Source);
+				insertedTargets.insert(controlFlowMatches[selectedIndex].Target);
+			}
+		}
+	}
+
+	LogMessage(0, __FUNCTION__, "New Tree Match count=%u\n", newMatches.size());
+	return newMatches;
+}
