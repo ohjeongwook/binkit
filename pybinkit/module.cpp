@@ -39,7 +39,11 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches);
-    
+
+    py::class_<AddressPair>(m, "AddressPair")
+        .def(py::init<va_t, va_t>())
+        .def_readwrite("SourceAddress", &AddressPair::SourceAddress)
+        .def_readwrite("TargetAddress", &AddressPair::TargetAddress);
 
     /*
         typedef struct _MatchData_ {
@@ -62,4 +66,11 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("match_rate", &MatchData::MatchRate)
         .def_readwrite("source_parent", &MatchData::SourceParent)
         .def_readwrite("target_parent", &MatchData::TargetParent);
+
+    py::class_<MatchDataCombination>(m, "MatchDataCombination")
+        .def(py::init())
+        .def("get_match_rate", &MatchDataCombination::GetMatchRate)
+        .def("count", &MatchDataCombination::Count)
+        .def("get", &MatchDataCombination::Get);
+    
 }
