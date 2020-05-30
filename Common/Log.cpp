@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include "Log.h"
 
-int gLogLevel = 0;
-void SetLogLevel(int gLogLevel)
+int gLogLevel = 10;
+void SetLogLevel(int logLevel)
 {
-    gLogLevel = gLogLevel;
+    gLogLevel = logLevel;
 }
 
 void LogMessage(int level, const char *function_name, const char *format, ...)
