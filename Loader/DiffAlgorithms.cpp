@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include "DiffAlgorithms.h"
 #include "Diff.h"
+#include<algorithm>
 
 DiffAlgorithms::DiffAlgorithms()
 {
@@ -90,7 +91,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 		return controlFlowMatches;
 	}
 
-	multimap <va_t, va_t> addressPairMap;
+	multimap <va_t, va_t> matchDataMap;
 	for (int i = 0; i < sourceAddresses.size(); i++)
 	{
 		vector<unsigned char> srcInstructionHash = m_srcBasicBlocks.GetInstructionHash(sourceAddresses[i]);
@@ -99,7 +100,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 		{
 			bool skip = false;
 
-			for (multimap <va_t, va_t>::iterator it = addressPairMap.find(sourceAddresses[i]); it != addressPairMap.end() && it->first == sourceAddresses[i]; it++)
+			for (multimap <va_t, va_t>::iterator it = matchDataMap.find(sourceAddresses[i]); it != matchDataMap.end() && it->first == sourceAddresses[i]; it++)
 			{
 				if (it->second == targetAddresses[j])
 				{
@@ -111,7 +112,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 			if (skip)
 				continue;
 
-			addressPairMap.insert(pair<va_t, va_t>(sourceAddresses[i], targetAddresses[j]));
+			matchDataMap.insert(pair<va_t, va_t>(sourceAddresses[i], targetAddresses[j]));
 			vector<unsigned char> targetInstructionHash = m_targetBasicBlocks.GetInstructionHash(targetAddresses[j]);
 
 			if (srcInstructionHash.size() > 0 && targetInstructionHash.size() > 0)
@@ -140,56 +141,81 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 	return controlFlowMatches;
 }
 
-vector<MatchData> DiffAlgorithms::DoControlFlowMatches(vector<MatchData> inputMatches)
+MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<MatchData> controlFlowMatches)
 {
-	int matchLinkTypes[] = { CREF_FROM, CALL, DREF_FROM }; //CREF_TO, DREF_TO
-	int processed_count = 0;
-	vector<MatchData> newMatches;
-
-	for (auto& match : inputMatches)
+	unordered_map<va_t, vector<MatchData>> matchMap;
+	for (MatchData matchData : controlFlowMatches)
 	{
-		for (int i = 0; i < sizeof(matchLinkTypes) / sizeof(int); i++)
+		unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.find(matchData.Source);
+		if (it == matchMap.end())
 		{
-			vector<MatchData> controlFlowMatches = DiffAlgorithms::DoControlFlowMatch(match.Source, match.Target, matchLinkTypes[i]);
+			vector<MatchData> matchDatalist;
+			matchDatalist.push_back(matchData);
+			matchMap.insert(pair<va_t, vector<MatchData>>(matchData.Source, matchDatalist));
+		}
+		else
+		{
+			it->second.push_back(matchData);
+		}
+	}
 
-			if (controlFlowMatches.size() == 0)
+	MatchDataCombinations* p_matchDataCombinations = new MatchDataCombinations();
+
+	for (auto& val : matchMap)
+	{
+		for (MatchData matchData : val.second)
+		{
+			if (!p_matchDataCombinations->IsNew(val.first, matchData.Target))
 			{
 				continue;
 			}
 
-			unordered_set <int> insertedIndexes;
-			unordered_set <va_t> insertedSources;
-			unordered_set <va_t> insertedTargets;
-			while (1)
-			{
-				int maxMatchRate = 0;
-				int selectedIndex = -1;
+			MatchDataCombination* p_matchDataCombination = p_matchDataCombinations->Add(val.first, matchData);
 
-				for (int i = 0; i < controlFlowMatches.size(); i++)
+			for (auto& sub_val : matchMap)
+			{
+				if (p_matchDataCombination->FindSource(sub_val.first))
 				{
-					if (insertedIndexes.find(i) == insertedIndexes.end() && 
-						insertedSources.find(controlFlowMatches[i].Source) == insertedSources.end() &&
-						insertedTargets.find(controlFlowMatches[i].Target) == insertedTargets.end())
-					{
-						if (controlFlowMatches[i].MatchRate > maxMatchRate)
-						{
-							maxMatchRate = controlFlowMatches[i].MatchRate;
-							selectedIndex = i;
-						}
-					}
+					continue;
 				}
 
-				if (selectedIndex == -1)
-					break;
+				for (MatchData subMatchData : sub_val.second)
+				{
+					if (p_matchDataCombination->FindTarget(subMatchData.Target))
+					{
+						continue;
+					}
 
-				newMatches.push_back(controlFlowMatches[selectedIndex]);
-				insertedIndexes.insert(selectedIndex);
-				insertedSources.insert(controlFlowMatches[selectedIndex].Source);
-				insertedTargets.insert(controlFlowMatches[selectedIndex].Target);
+					if (!p_matchDataCombinations->IsNew(sub_val.first, subMatchData.Target))
+					{
+						continue;
+					}
+
+					p_matchDataCombination->Add(sub_val.first, subMatchData);
+				}
 			}
 		}
 	}
 
-	LogMessage(0, __FUNCTION__, "New Tree Match count=%u\n", newMatches.size());
-	return newMatches;
+	p_matchDataCombinations->Print();
+	return p_matchDataCombinations;
+}
+
+vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType)
+{
+	int processed_count = 0;
+	vector<MatchData> controlFlowMatches;
+
+	for (AddressPair addressPair : addressPairs)
+	{
+		printf("DiffAlgorithms::DoControlFlowMatches: %x - %x\n", addressPair.SourceAddress, addressPair.TargetAddress);
+
+		vector<MatchData> newControlFlowMatches = DiffAlgorithms::DoControlFlowMatch(addressPair.SourceAddress, addressPair.TargetAddress, matchType);
+
+		controlFlowMatches.insert(controlFlowMatches.end(), newControlFlowMatches.begin(), newControlFlowMatches.end());
+	}
+
+	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(controlFlowMatches);
+	vector<MatchDataCombination*> matchDataCombinations = p_matchDataCombinations->GetTopSelection();
+	return matchDataCombinations;
 }
