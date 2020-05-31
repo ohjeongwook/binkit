@@ -176,12 +176,6 @@ public:
 	{
 		LogMessage(0, __FUNCTION__, "matchDataList.size(): %d\n", matchDataList.size());
 
-		for (MatchData matchData : matchDataList)
-		{
-			LogMessage(0, __FUNCTION__, "matchData: %x - %x (%d%%)\n", source, matchData.Target, matchData.MatchRate);
-			Add(source, matchData);
-		}
-
 		if (m_pcombinations->size() == 0)
 		{
 			for (MatchData matchData : matchDataList)
