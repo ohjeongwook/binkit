@@ -35,8 +35,10 @@ public:
 	{
 		MatchData newMatchData;
 		memcpy(&newMatchData, &matchData, sizeof(MatchData));
+
+		LogMessage(0, __FUNCTION__, "%x (%x) %x\n", source, newMatchData.Source, newMatchData.Target);
 		m_matchDataList.push_back(newMatchData);
-		m_matchRateTotal += matchData.MatchRate;
+		m_matchRateTotal += newMatchData.MatchRate;
 	}
 
 	int Count()
@@ -49,29 +51,35 @@ public:
 		return m_matchDataList.at(index);
 	}
 
-	bool FindSource(va_t source)
+	bool FindSource(va_t address)
 	{
+		LogMessage(0, __FUNCTION__, "%x\n", address);
 		for (MatchData matchData : m_matchDataList)
 		{
-			if (matchData.Source == source)
+			if (matchData.Source == address)
 			{
+				LogMessage(0, __FUNCTION__, "return true\n");
 				return true;
 			}
 		}
 
+		LogMessage(0, __FUNCTION__, "return false\n");
 		return false;
 	}
 
-	bool FindTarget(va_t target)
+	bool FindTarget(va_t address)
 	{
+		LogMessage(0, __FUNCTION__, "%x\n", address);
 		for (MatchData matchData : m_matchDataList)
 		{
-			if (matchData.Target == target)
+			if (matchData.Target == address)
 			{
+				LogMessage(0, __FUNCTION__, "return true\n");
 				return true;
 			}
 		}
 
+		LogMessage(0, __FUNCTION__, "return false\n");
 		return false;
 	}
 
