@@ -89,10 +89,7 @@ vector<va_t> BasicBlocks::GetCodeReferences(va_t address, int type)
 {
     vector<va_t> addresses;
     multimap <va_t, PControlFlow>::iterator it;
-    for (it = m_disassemblyHashMaps.addressToControlFlowMap.find(address);
-        it != m_disassemblyHashMaps.addressToControlFlowMap.end();
-        it++
-        )
+    for (it = m_disassemblyHashMaps.addressToControlFlowMap.find(address); it != m_disassemblyHashMaps.addressToControlFlowMap.end(); it++)
     {
         if (it->first != address)
             break;
@@ -138,22 +135,19 @@ vector<va_t> BasicBlocks::GetCallTargets()
 
 void BasicBlocks::MergeBlocks()
 {
-    multimap <va_t, PControlFlow>::iterator last_iter = m_disassemblyHashMaps.addressToControlFlowMap.end();
-    multimap <va_t, PControlFlow>::iterator iter;
-    multimap <va_t, PControlFlow>::iterator child_iter;
+    multimap <va_t, PControlFlow>::iterator lastIt = m_disassemblyHashMaps.addressToControlFlowMap.end();
+    multimap <va_t, PControlFlow>::iterator it;
+    multimap <va_t, PControlFlow>::iterator childIt;
 
     int NumberOfChildren = 1;
-    for (iter = m_disassemblyHashMaps.addressToControlFlowMap.begin();
-        iter != m_disassemblyHashMaps.addressToControlFlowMap.end();
-        iter++
-        )
+    for (it = m_disassemblyHashMaps.addressToControlFlowMap.begin(); it != m_disassemblyHashMaps.addressToControlFlowMap.end(); it++)
     {
-        if (iter->second->Type == CREF_FROM)
+        if (it->second->Type == CREF_FROM)
         {
             BOOL bHasOnlyOneChild = FALSE;
-            if (last_iter != m_disassemblyHashMaps.addressToControlFlowMap.end())
+            if (lastIt != m_disassemblyHashMaps.addressToControlFlowMap.end())
             {
-                if (last_iter->first == iter->first)
+                if (lastIt->first == it->first)
                 {
                     NumberOfChildren++;
                 }
@@ -161,15 +155,15 @@ void BasicBlocks::MergeBlocks()
                 {
                     LogMessage(10, __FUNCTION__, "%s:Number Of Children for %X  = %u\n",
                         __FUNCTION__,
-                        last_iter->first,
+                        lastIt->first,
                         NumberOfChildren);
                     if (NumberOfChildren == 1)
                         bHasOnlyOneChild = TRUE;
-                    multimap <va_t, PControlFlow>::iterator nextIt = iter;
+                    multimap <va_t, PControlFlow>::iterator nextIt = it;
                     nextIt++;
                     if (nextIt == m_disassemblyHashMaps.addressToControlFlowMap.end())
                     {
-                        last_iter = iter;
+                        lastIt = it;
                         bHasOnlyOneChild = TRUE;
                     }
                     NumberOfChildren = 1;
@@ -178,26 +172,24 @@ void BasicBlocks::MergeBlocks()
             if (bHasOnlyOneChild)
             {
                 int numberOfParents = 0;
-                for (child_iter = m_disassemblyHashMaps.addressToControlFlowMap.find(last_iter->second->Dst);
-                    child_iter != m_disassemblyHashMaps.addressToControlFlowMap.end() && child_iter->first == last_iter->second->Dst;
-                    child_iter++)
+                for (childIt = m_disassemblyHashMaps.addressToControlFlowMap.find(lastIt->second->Dst);
+                    childIt != m_disassemblyHashMaps.addressToControlFlowMap.end() && childIt->first == lastIt->second->Dst;
+                    childIt++)
                 {
-                    if (child_iter->second->Type == CREF_TO && child_iter->second->Dst != last_iter->first)
+                    if (childIt->second->Type == CREF_TO && childIt->second->Dst != lastIt->first)
                     {
                         LogMessage(10, __FUNCTION__, "%s:Found %X -> %X\n",
                             __FUNCTION__,
-                            child_iter->second->Dst, child_iter->first);
+                            childIt->second->Dst, childIt->first);
                         numberOfParents++;
                     }
                 }
                 if (numberOfParents == 0)
                 {
-                    LogMessage(10, __FUNCTION__, "%s: Found Mergable Nodes %X -> %X\n",
-                        __FUNCTION__, 
-                        last_iter->first, last_iter->second->Dst);
+                    LogMessage(10, __FUNCTION__, "%s: Found Mergable Nodes %X -> %X\n", __FUNCTION__, lastIt->first, lastIt->second->Dst);
                 }
             }
-            last_iter = iter;
+            lastIt = it;
         }
     }
 }
