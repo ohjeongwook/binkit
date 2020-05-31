@@ -72,18 +72,35 @@ class Tests:
                 for child_match in child_matches:
                     print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
-            print('\tPerforming do_control_flow_matches: %x - %x' % (match.source, match.target))
+            print('\tPerforming do_control_flow_matches')
             for control_flow_type in (CREF_FROM, ):
                 address_pair = pybinkit.AddressPair(match.source, match.target)
                 match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), control_flow_type)
+                print('\tCombinations counts: %d' % (len(match_data_combinations)))
                 for match_data_combination in match_data_combinations:
                     print('\t\tMatch Data Combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
                     for i in range(0, match_data_combination.count(), 1):
                         match_data = match_data_combination.get(i)
                         print('\t\t\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
+    def test(self):
+        source = 0x6c81ac85
+        target = 0x42aeb8
+
+        basic_blocks0 = self.binaries[0].get_basic_blocks()
+        basic_blocks1 = self.binaries[1].get_basic_blocks()
+        diff_algorithms = pybinkit.DiffAlgorithms(basic_blocks0, basic_blocks1)
+        address_pair = pybinkit.AddressPair(source, target)
+        match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), CREF_FROM)
+        for match_data_combination in match_data_combinations:
+            print('\t\tMatch Data Combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
+            for i in range(0, match_data_combination.count(), 1):
+                match_data = match_data_combination.get(i)
+                print('\t\t\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
+
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
     tests = Tests(filenames)
     #tests.dump()
     tests.do_instruction_hash_match()
+    #tests.test()
