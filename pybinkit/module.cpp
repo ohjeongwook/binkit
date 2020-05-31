@@ -42,8 +42,8 @@ PYBIND11_MODULE(pybinkit, m) {
 
     py::class_<AddressPair>(m, "AddressPair")
         .def(py::init<va_t, va_t>())
-        .def_readwrite("SourceAddress", &AddressPair::SourceAddress)
-        .def_readwrite("TargetAddress", &AddressPair::TargetAddress);
+        .def_readwrite("source", &AddressPair::SourceAddress)
+        .def_readwrite("target", &AddressPair::TargetAddress);
 
     /*
         typedef struct _MatchData_ {
@@ -58,18 +58,21 @@ PYBIND11_MODULE(pybinkit, m) {
     */
     py::class_<MatchData>(m, "MatchData")
         .def(py::init())
-        .def_readwrite("type", &MatchData::Type)
-        .def_readwrite("sub_type", &MatchData::SubType)
-        .def_readwrite("status", &MatchData::Status)
+        .def_readonly("type", &MatchData::Type)
+        .def_readonly("sub_type", &MatchData::SubType)
+        .def_readonly("status", &MatchData::Status)
         .def_readonly("source", &MatchData::Source)
         .def_readonly("target", &MatchData::Target)
-        .def_readwrite("match_rate", &MatchData::MatchRate)
-        .def_readwrite("source_parent", &MatchData::SourceParent)
-        .def_readwrite("target_parent", &MatchData::TargetParent);
+        .def_readonly("reference_order_difference", &MatchData::ReferenceOrderDifference)        
+        .def_readonly("match_rate", &MatchData::MatchRate)
+        .def_readonly("source_parent", &MatchData::SourceParent)
+        .def_readonly("target_parent", &MatchData::TargetParent);
 
     py::class_<MatchDataCombination>(m, "MatchDataCombination")
         .def(py::init())
         .def("get_match_rate", &MatchDataCombination::GetMatchRate)
         .def("count", &MatchDataCombination::Count)
-        .def("get", &MatchDataCombination::Get);
+        .def("get", &MatchDataCombination::Get)
+        .def("get_address_pairs", &MatchDataCombination::GetAddressPairs)        
+        .def("get_match_data_list", &MatchDataCombination::GetMatchDataList);        
 }
