@@ -197,7 +197,6 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 		}
 	}
 
-	p_matchDataCombinations->Print();
 	return p_matchDataCombinations;
 }
 
