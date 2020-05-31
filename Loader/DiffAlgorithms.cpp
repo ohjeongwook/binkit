@@ -161,38 +161,25 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 
 	MatchDataCombinations* p_matchDataCombinations = new MatchDataCombinations();
 
-	for (auto& val : matchMap)
+	if (matchMap.empty())
 	{
-		for (MatchData matchData : val.second)
+		return p_matchDataCombinations;
+	}
+
+	unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.begin();
+	for (MatchData matchData : it->second)
+	{
+		MatchDataCombination* p_matchDataCombination = p_matchDataCombinations->Add(it->first, matchData);
+
+		for (auto& sub_val : matchMap)
 		{
-			if (!p_matchDataCombinations->IsNew(val.first, matchData.Target))
+			for (MatchData subMatchData : sub_val.second)
 			{
-				continue;
-			}
-
-			MatchDataCombination* p_matchDataCombination = p_matchDataCombinations->Add(val.first, matchData);
-
-			for (auto& sub_val : matchMap)
-			{
-				if (p_matchDataCombination->FindSource(sub_val.first))
+				if (p_matchDataCombination->FindSource(sub_val.first) || p_matchDataCombination->FindTarget(subMatchData.Target))
 				{
 					continue;
 				}
-
-				for (MatchData subMatchData : sub_val.second)
-				{
-					if (p_matchDataCombination->FindTarget(subMatchData.Target))
-					{
-						continue;
-					}
-
-					if (!p_matchDataCombinations->IsNew(sub_val.first, subMatchData.Target))
-					{
-						continue;
-					}
-
-					p_matchDataCombination->Add(sub_val.first, subMatchData);
-				}
+				p_matchDataCombination->Add(sub_val.first, subMatchData);
 			}
 		}
 	}
