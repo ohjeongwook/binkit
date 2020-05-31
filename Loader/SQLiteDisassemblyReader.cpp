@@ -202,10 +202,10 @@ void SQLiteDisassemblyReader::ReadFunctionAddressMap(unordered_set <va_t>& funct
 
 char *SQLiteDisassemblyReader::ReadInstructionHash(va_t address)
 {
-    char *fingerPrintString = NULL;
+    char *instructionHash = NULL;
 
-    ExecuteStatement(ReadRecordStringCallback, &fingerPrintString, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
-    return fingerPrintString;
+    ExecuteStatement(ReadRecordStringCallback, &instructionHash, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
+    return instructionHash;
 }
 
 string SQLiteDisassemblyReader::ReadSymbol(va_t address)
