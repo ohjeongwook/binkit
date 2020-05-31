@@ -83,24 +83,38 @@ class Tests:
                         match_data = match_data_combination.get(i)
                         print('\t\t\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
-    def test(self):
-        source = 0x6c81ac85
-        target = 0x42aeb8
+    def print_match_data_combination(self, match_data_combination, prefix = ''):
+        print(prefix + '* Match Data Combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
+        for i in range(0, match_data_combination.count(), 1):
+            match_data = match_data_combination.get(i)
+            print(prefix + '\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
-        basic_blocks0 = self.binaries[0].get_basic_blocks()
-        basic_blocks1 = self.binaries[1].get_basic_blocks()
-        diff_algorithms = pybinkit.DiffAlgorithms(basic_blocks0, basic_blocks1)
+    def print_match_data_combinations(self, match_data_combinations, prefix = ''):
+        for match_data_combination in match_data_combinations:
+            self.print_match_data_combination(match_data_combination, prefix + '\t')
+
+    def perform_multilevel_control_flow_matches(self, source, target):
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0].get_basic_blocks(), self.binaries[1].get_basic_blocks())
+        print('Control Flow Match: %x - %x' % (source, target))
         address_pair = pybinkit.AddressPair(source, target)
         match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), CREF_FROM)
+
         for match_data_combination in match_data_combinations:
-            print('\t\tMatch Data Combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
-            for i in range(0, match_data_combination.count(), 1):
-                match_data = match_data_combination.get(i)
-                print('\t\t\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
+            self.print_match_data_combination(match_data_combination)
+
+            address_str_list = []            
+            address_pairs = match_data_combination.get_address_pairs()
+            for address_pair in address_pairs:
+                address_str_list.append('%x - %x' % (address_pair.source, address_pair.target))
+
+            print('\tControl Flow Match:' + ','.join(address_str_list))
+            sub_match_data_combinations = diff_algorithms.do_control_flow_matches(address_pairs, CREF_FROM)
+            self.print_match_data_combinations(sub_match_data_combinations, '\t')
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
     tests = Tests(filenames)
     #tests.dump()
-    tests.do_instruction_hash_match()
-    #tests.test()
+    #tests.do_instruction_hash_match()
+    #tests.perform_multilevel_control_flow_matches(0x6c83a795, 0x44a9e3)
+    tests.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
