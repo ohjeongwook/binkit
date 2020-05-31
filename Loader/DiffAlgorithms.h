@@ -31,17 +31,26 @@ public:
 		m_matchRateTotal = 0;
 	}
 
+	MatchDataCombination(MatchDataCombination* p_matchDataCombination)
+	{
+		for (MatchData matchData : p_matchDataCombination->GetMatchDataList())
+		{
+			m_matchDataList.push_back(matchData);
+			m_matchRateTotal += matchData.MatchRate;
+		}
+	}
+
 	void Add(va_t source, MatchData& matchData)
 	{
 		MatchData newMatchData;
 		memcpy(&newMatchData, &matchData, sizeof(MatchData));
 
-		LogMessage(0, __FUNCTION__, "%x (%x) %x\n", source, newMatchData.Source, newMatchData.Target);
+		LogMessage(0, __FUNCTION__, "%x - %x\n", source, newMatchData.Target);
 		m_matchDataList.push_back(newMatchData);
 		m_matchRateTotal += newMatchData.MatchRate;
 	}
 
-	int Count()
+	size_t Count()
 	{
 		return m_matchDataList.size();
 	}
@@ -49,6 +58,22 @@ public:
 	MatchData Get(int index)
 	{
 		return m_matchDataList.at(index);
+	}
+
+	vector<MatchData> GetMatchDataList()
+	{
+		return m_matchDataList;
+	}
+
+	vector<AddressPair> GetAddressPairs()
+	{
+		vector<AddressPair> addressPairs;
+		for (auto& val : m_matchDataList)
+		{
+			addressPairs.push_back(AddressPair(val.Source, val.Target));
+		}
+
+		return addressPairs;
 	}
 
 	bool FindSource(va_t address)
@@ -107,9 +132,14 @@ class MatchDataCombinations
 {
 private:
 	unordered_map<va_t, unordered_set<va_t>> m_processedAddresses;
-	vector<MatchDataCombination *> m_combinations;
+	vector<MatchDataCombination *>* m_pcombinations;
 
 public:
+	MatchDataCombinations()
+	{
+		m_pcombinations = new vector<MatchDataCombination*>;
+	}
+
 	bool IsNew(va_t source, va_t target)
 	{
 		LogMessage(0, __FUNCTION__, "%x %x\n", source, target);
@@ -137,25 +167,63 @@ public:
 		LogMessage(0, __FUNCTION__, "%x %x\n", source, matchData.Target);
 		MatchDataCombination* p_addressPairCombination = new MatchDataCombination();
 		p_addressPairCombination->Add(source, matchData);
-		m_combinations.push_back(p_addressPairCombination);
+		m_pcombinations->push_back(p_addressPairCombination);
 
 		return p_addressPairCombination;
 	}
 
+	void AddCombinations(va_t source, vector<MatchData> &matchDataList)
+	{
+		LogMessage(0, __FUNCTION__, "matchDataList.size(): %d\n", matchDataList.size());
+
+		for (MatchData matchData : matchDataList)
+		{
+			LogMessage(0, __FUNCTION__, "matchData: %x - %x (%d%%)\n", source, matchData.Target, matchData.MatchRate);
+			Add(source, matchData);
+		}
+
+		if (m_pcombinations->size() == 0)
+		{
+			for (MatchData matchData : matchDataList)
+			{
+				LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, matchData.Target);
+				Add(source, matchData);
+			}
+		}
+		else
+		{
+			vector<MatchDataCombination*>* p_newCombinations = new vector<MatchDataCombination*>;
+			for (MatchDataCombination* p_matchDataCombination : *m_pcombinations)
+			{
+				for (MatchData matchData : matchDataList)
+				{
+					LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, matchData.Target);
+					MatchDataCombination* p_duplicatedMatchDataCombination = new MatchDataCombination(p_matchDataCombination);
+					p_duplicatedMatchDataCombination->Add(source, matchData);
+					p_newCombinations->push_back(p_duplicatedMatchDataCombination);
+				}
+			}
+			delete m_pcombinations;
+			m_pcombinations = p_newCombinations;		
+		}
+
+		LogMessage(0, __FUNCTION__, "size(): %d\n", m_pcombinations->size());
+	}
+
 	void Print()
 	{
-		for (MatchDataCombination* p_combination : m_combinations)
+		for (MatchDataCombination* p_combination : *m_pcombinations)
 		{
 			p_combination->Print();
 		}
 	}
 
-	vector<MatchDataCombination*> GetTopSelection()
+	vector<MatchDataCombination*> GetTopMatches()
 	{
 		vector<MatchDataCombination*> matchDataCombinations;
 		float maxMatchRate = 0;
 		MatchDataCombination* p_selectedMatchDataCombination = NULL;
-		for (MatchDataCombination* p_combination : m_combinations)
+		for (MatchDataCombination* p_combination : *m_pcombinations)
 		{
 			float matchRate = p_combination->GetMatchRate();
 
@@ -165,7 +233,7 @@ public:
 			}
 		}
 
-		for (MatchDataCombination* p_matchDataCombination : m_combinations)
+		for (MatchDataCombination* p_matchDataCombination : *m_pcombinations)
 		{
 			float matchRate = p_matchDataCombination->GetMatchRate();
 
@@ -175,6 +243,11 @@ public:
 			}
 		}
 		return matchDataCombinations;
+	}
+
+	vector<MatchDataCombination*>* GetCombinations()
+	{
+		return m_pcombinations;
 	}
 };
 

@@ -122,6 +122,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				matchData.Type = CONTROLFLOW_MATCH;
 				matchData.Source = sourceAddresses[i];
 				matchData.Target = targetAddresses[j];
+				matchData.ReferenceOrderDifference = abs(i - j);
 				matchData.MatchRate = GetInstructionHashMatchRate(srcInstructionHash, targetInstructionHash);
 				controlFlowMatches.push_back(matchData);
 			}
@@ -132,6 +133,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				matchData.Type = CONTROLFLOW_MATCH;
 				matchData.Source = sourceAddresses[i];
 				matchData.Target = targetAddresses[j];
+				matchData.ReferenceOrderDifference = abs(i - j);
 				matchData.MatchRate = 100;
 				controlFlowMatches.push_back(matchData);
 			}
@@ -146,6 +148,7 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 	unordered_map<va_t, vector<MatchData>> matchMap;
 	for (MatchData matchData : controlFlowMatches)
 	{
+		LogMessage(0, __FUNCTION__, "%x-%x: %d%%\n", matchData.Source, matchData.Target, matchData.MatchRate);
 		unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.find(matchData.Source);
 		if (it == matchMap.end())
 		{
@@ -155,7 +158,20 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 		}
 		else
 		{
-			it->second.push_back(matchData);
+			bool isNew = true;
+			for (MatchData matchData2 : it->second)
+			{
+				if (matchData.Source == matchData2.Source && matchData.Target == matchData2.Target)
+				{
+					isNew = false;
+					break;
+				}
+			}
+
+			if (isNew)
+			{
+				it->second.push_back(matchData);
+			}
 		}
 	}
 
@@ -166,24 +182,10 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 		return p_matchDataCombinations;
 	}
 
-	unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.begin();
-	for (MatchData matchData : it->second)
+	for (auto& val : matchMap)
 	{
-		MatchDataCombination* p_matchDataCombination = p_matchDataCombinations->Add(it->first, matchData);
-
-		for (auto& sub_val : matchMap)
-		{
-			for (MatchData subMatchData : sub_val.second)
-			{
-				if (p_matchDataCombination->FindSource(sub_val.first) || p_matchDataCombination->FindTarget(subMatchData.Target))
-				{
-					continue;
-				}
-				p_matchDataCombination->Add(sub_val.first, subMatchData);
-			}
-		}
+		p_matchDataCombinations->AddCombinations(val.first, val.second);
 	}
-
 	return p_matchDataCombinations;
 }
 
@@ -199,6 +201,5 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 	}
 
 	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(controlFlowMatches);
-	vector<MatchDataCombination*> matchDataCombinations = p_matchDataCombinations->GetTopSelection();
-	return matchDataCombinations;
+	return p_matchDataCombinations->GetTopMatches();
 }
