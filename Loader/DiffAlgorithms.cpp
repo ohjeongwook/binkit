@@ -207,10 +207,7 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 
 	for (AddressPair addressPair : addressPairs)
 	{
-		printf("DiffAlgorithms::DoControlFlowMatches: %x - %x\n", addressPair.SourceAddress, addressPair.TargetAddress);
-
 		vector<MatchData> newControlFlowMatches = DiffAlgorithms::DoControlFlowMatch(addressPair.SourceAddress, addressPair.TargetAddress, matchType);
-
 		controlFlowMatches.insert(controlFlowMatches.end(), newControlFlowMatches.begin(), newControlFlowMatches.end());
 	}
 
