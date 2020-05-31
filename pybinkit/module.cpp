@@ -72,5 +72,4 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_match_rate", &MatchDataCombination::GetMatchRate)
         .def("count", &MatchDataCombination::Count)
         .def("get", &MatchDataCombination::Get);
-    
 }
