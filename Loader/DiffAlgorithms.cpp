@@ -203,3 +203,36 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(controlFlowMatches);
 	return p_matchDataCombinations->GetTopMatches();
 }
+
+vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(list<va_t>& sourceBlockAddresses, list<va_t>& targetBlockAddresses)
+{
+	vector<MatchData> matcDataList;
+	unordered_set<va_t> targetBlockAddressesMap;
+
+	for (va_t address : targetBlockAddresses)
+	{
+		targetBlockAddressesMap.insert(address);
+	}
+
+	for (va_t sourceAddress : sourceBlockAddresses)
+	{
+		vector<unsigned char> instructionHash = m_srcBasicBlocks.GetInstructionHash(sourceAddress);
+		for (va_t targetAddress : m_targetBasicBlocks.GetAddressesForInstructionHash(instructionHash))
+		{
+			if (targetBlockAddressesMap.find(targetAddress) == targetBlockAddressesMap.end())
+			{
+				continue;
+			}
+
+			MatchData matchData;
+			memset(&matchData, 0, sizeof(MatchData));
+			matchData.Type = INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH;
+			matchData.Source = sourceAddress;
+			matchData.Target = targetAddress;
+			matchData.MatchRate = 100;
+			matcDataList.push_back(matchData);
+		}
+	}
+
+	return matcDataList;
+}
