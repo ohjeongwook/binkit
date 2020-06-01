@@ -37,6 +37,7 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init<BasicBlocks&, BasicBlocks&>())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
+        .def("do_instruction_hash_match_in_blocks", &DiffAlgorithms::DoInstructionHashMatchInBlocks)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches);
 

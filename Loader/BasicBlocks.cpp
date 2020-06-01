@@ -221,19 +221,31 @@ InstructionHashMap *BasicBlocks::GetInstructionHashes()
     return &(m_disassemblyHashMaps.instructionHashMap);
 }
 
-void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
+vector<va_t> BasicBlocks::GetAddressesForInstructionHash(vector<unsigned char> instructionHash)
 {
-    vector<unsigned char> instructionHash;
-    char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
-
-    if (p_instructionHashStr)
+    vector<va_t> addresses;
+    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash); it != m_disassemblyHashMaps.instructionHashMap.end(); it++)
     {
-        instructionHash = HexToBytes(p_instructionHashStr);
+        if (it->first != instructionHash)
+            break;
+
+        addresses.push_back(it->second);
     }
 
-    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash);
-        it != m_disassemblyHashMaps.instructionHashMap.end(); it++
-    )
+    return addresses;
+}
+
+void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
+{
+    char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
+
+    if (!p_instructionHashStr)
+    {
+        return;
+    }
+
+    vector<unsigned char> instructionHash = HexToBytes(p_instructionHashStr);
+    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash); it != m_disassemblyHashMaps.instructionHashMap.end(); it++)
     {
         if (it->first != instructionHash)
             break;
