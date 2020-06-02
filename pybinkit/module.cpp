@@ -33,12 +33,13 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init<Binary&, Binary&>())
         .def(py::init<BasicBlocks*, BasicBlocks*>())
-        .def(py::init<BasicBlocks* ,Functions*,BasicBlocks*,Functions* >())
+        .def(py::init<BasicBlocks*, Functions*, BasicBlocks*, Functions* >())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
         .def("do_instruction_hash_match_in_blocks", &DiffAlgorithms::DoInstructionHashMatchInBlocks)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
-        .def("do_function_match", &DiffAlgorithms::DoFunctionMatch);        
+        .def("do_function_match", &DiffAlgorithms::DoFunctionMatch)
+        .def("get_match_data_combinations", &DiffAlgorithms::GetMatchDataCombinations);        
 
     py::class_<Functions>(m, "Functions")
         .def(py::init())
