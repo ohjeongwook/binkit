@@ -47,6 +47,10 @@ Functions* Binary::GetFunctions()
 {
     if (!m_pfunctions)
     {
+        if (!m_pbasicBlocks)
+        {
+            GetBasicBlocks();
+        }
         m_pfunctions = new Functions(m_pdisassemblyReader, m_pbasicBlocks);
     }
     return m_pfunctions;
