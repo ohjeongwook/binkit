@@ -252,20 +252,76 @@ vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(vector<va_t>& s
 	return matcDataList;
 }
 
-vector<MatchData> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentMatchDataList)
+void DiffAlgorithms::AddFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData)
 {
-	vector<MatchData> matchDataList;
-	typedef unordered_map<va_t, vector<MatchData>> TargetToMatchDataListMap;
+	unordered_map<va_t, TargetToMatchDataListMap>::iterator it = functionMatchMap.find(sourceFunctionAddress);
+	if (it == functionMatchMap.end())
+	{
+		TargetToMatchDataListMap targetToMatchDataList;
+		vector<MatchData> matchDataList;
+		matchDataList.push_back(matchData);
+		targetToMatchDataList.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
+		functionMatchMap.insert(pair<va_t, TargetToMatchDataListMap>(sourceFunctionAddress, targetToMatchDataList));
+	}
+	else
+	{
+		TargetToMatchDataListMap::iterator targetToMatchDataListMapit = it->second.find(targetFunctionAddress);
+
+		if (targetToMatchDataListMapit == it->second.end())
+		{
+			vector<MatchData> matchDataList;
+			matchDataList.push_back(matchData);
+			it->second.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
+		}
+		else
+		{
+			targetToMatchDataListMapit->second.push_back(matchData);
+		}
+	}
+}
+
+void DiffAlgorithms::AddFunctionMatchDataList(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList)
+{
+	for (MatchData matchData : matchDataList)
+	{
+		AddFunctionMatchData(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, matchData);
+	}
+}
+
+void DiffAlgorithms::PrintFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap)
+{
+	for (auto& val : functionMatchMap)
+	{
+		va_t sourceFunctionAddress = val.first;
+		vector<va_t> sourceFunctionAddresses = m_psourceFunctions->GetBasicBlocks(sourceFunctionAddress);
+		for (auto& val2 : val.second)
+		{
+			va_t targetFunctionAddress = val2.first;
+			vector<va_t> targetFunctionAddresses = m_ptargetFunctions->GetBasicBlocks(targetFunctionAddress);
+
+			printf("==========================================\n");
+			printf("Function: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
+			for (MatchData matchData : val2.second)
+			{
+				printf("\tMatch: %x-%x %d\n", matchData.Source, matchData.Target, matchData.MatchRate);
+			}
+		}
+	}
+}
+
+vector<FunctionMatch> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentMatchDataList)
+{
+	vector<FunctionMatch> functionMatchDataList;
 	unordered_map<va_t, TargetToMatchDataListMap> functionMatchMap;
 
 	if (!m_psourceFunctions)
 	{
-		return matchDataList;
+		return functionMatchDataList;
 	}
 
 	if (!m_ptargetFunctions)
 	{
-		return matchDataList;
+		return functionMatchDataList;
 	}
 
 	// va_t sourceFunctionAddress,
@@ -278,36 +334,13 @@ vector<MatchData> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentMatch
 	{
 		va_t sourceFunctionAddress;
 		m_psourceFunctions->GetFunctionAddress(matchData.Source, sourceFunctionAddress);
-
 		va_t targetFunctionAddress;
 		m_ptargetFunctions->GetFunctionAddress(matchData.Target, targetFunctionAddress);
 
-		unordered_map<va_t, TargetToMatchDataListMap>::iterator it = functionMatchMap.find(sourceFunctionAddress);
-		if (it == functionMatchMap.end())
-		{
-			TargetToMatchDataListMap targetToMatchDataList;
-			vector<MatchData> matchDataList;
-			matchDataList.push_back(matchData);
-			targetToMatchDataList.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
-			functionMatchMap.insert(pair<va_t, TargetToMatchDataListMap>(sourceFunctionAddress, targetToMatchDataList));
-		}
-		else
-		{
-			TargetToMatchDataListMap::iterator targetToMatchDataListMapit = it->second.find(targetFunctionAddress);
-
-			if (targetToMatchDataListMapit == it->second.end())
-			{
-				vector<MatchData> matchDataList;
-				matchDataList.push_back(matchData);
-				it->second.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
-			}
-			else
-			{
-				targetToMatchDataListMapit->second.push_back(matchData);
-			}
-		}
+		AddFunctionMatchData(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, matchData);
 	}
 
+	PrintFunctionMatchData(functionMatchMap);
 	for (auto& val : functionMatchMap)
 	{
 		va_t sourceFunctionAddress = val.first;
@@ -315,23 +348,40 @@ vector<MatchData> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentMatch
 		for (auto& val2 : val.second)
 		{
 			va_t targetFunctionAddress = val2.first;
-			vector<va_t> targetFunctionAddresses = m_ptargetFunctions->GetBasicBlocks(targetFunctionAddress);
 
-			printf("Function: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
+			vector<va_t> targetFunctionAddresses = m_ptargetFunctions->GetBasicBlocks(targetFunctionAddress);
+			vector<MatchData> functionInstructionHashMatches = DoInstructionHashMatchInBlocks(sourceFunctionAddresses, targetFunctionAddresses);
+			AddFunctionMatchDataList(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, functionInstructionHashMatches);
+
 			for (MatchData matchData : val2.second)
 			{
-				printf("\t%x-%x %d\n", matchData.Source, matchData.Target, matchData.MatchRate);
+				vector<MatchData> newFunctionControlFlowMatches = DoControlFlowMatch(matchData.Source, matchData.Target, CREF_FROM);
+				AddFunctionMatchDataList(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, newFunctionControlFlowMatches);
 			}
 
-			printf("--------------------------------------\n");
-			vector<MatchData> functionBasicBlockMatches = DoInstructionHashMatchInBlocks(sourceFunctionAddresses, targetFunctionAddresses);
-			for (MatchData matchData : functionBasicBlockMatches)
+			for (MatchData matchData : functionInstructionHashMatches)
 			{
-				printf("\t%x-%x %d\n", matchData.Source, matchData.Target, matchData.MatchRate);
+				vector<MatchData> newFunctionControlFlowMatches = DoControlFlowMatch(matchData.Source, matchData.Target, CREF_FROM);
+				AddFunctionMatchDataList(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, newFunctionControlFlowMatches);
 			}
-			printf("--------------------------------------\n");
 		}
 	}
 
-	return matchDataList;
+	printf("* Revised Function Maps:\n");
+	PrintFunctionMatchData(functionMatchMap);
+
+	for (auto& val : functionMatchMap)
+	{
+		va_t sourceFunctionAddress = val.first;
+		vector<va_t> sourceFunctionAddresses = m_psourceFunctions->GetBasicBlocks(sourceFunctionAddress);
+		for (auto& val2 : val.second)
+		{
+			FunctionMatch functionMatch;
+			functionMatch.SourceFunction = sourceFunctionAddress;
+			functionMatch.TargetFunction = val2.first;
+			functionMatch.MatchDataList = val2.second;
+			functionMatchDataList.push_back(functionMatch);
+		}
+	}
+	return functionMatchDataList;
 }
