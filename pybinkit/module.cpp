@@ -73,6 +73,12 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readonly("source_parent", &MatchData::SourceParent)
         .def_readonly("target_parent", &MatchData::TargetParent);
 
+    py::class_<FunctionMatch>(m, "FunctionMatch")
+        .def(py::init())
+        .def_readonly("source", &FunctionMatch::SourceFunction)
+        .def_readonly("target", &FunctionMatch::TargetFunction)
+        .def_readonly("match_data_list", &FunctionMatch::MatchDataList);
+
     py::class_<MatchDataCombination>(m, "MatchDataCombination")
         .def(py::init())
         .def("get_match_rate", &MatchDataCombination::GetMatchRate)
