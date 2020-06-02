@@ -112,9 +112,10 @@ public:
 
 	void Print()
 	{
+		printf("* MatchDataCombination:\n");
 		for (MatchData matchData : m_matchDataList)
 		{
-			printf("    %x - %x matchRate: %d \n", matchData.Source, matchData.Target, matchData.MatchRate);
+			printf("%x - %x matchRate: %d \n", matchData.Source, matchData.Target, matchData.MatchRate);
 		}
 		printf("averageMatchRate : %f\n", GetMatchRate());
 	}
@@ -247,6 +248,15 @@ public:
 	}
 };
 
+typedef unordered_map<va_t, vector<MatchData>> TargetToMatchDataListMap;
+
+struct FunctionMatch
+{
+	va_t SourceFunction;
+	va_t TargetFunction;
+	vector<MatchData> MatchDataList;
+};
+
 class DiffAlgorithms
 {
 private:
@@ -266,5 +276,8 @@ public:
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
-	vector<MatchData> DoFunctionMatch(vector<MatchData> currentMatchDataList);
+	void AddFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
+	void AddFunctionMatchDataList(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
+	void PrintFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap);
+	vector<FunctionMatch> DoFunctionMatch(vector<MatchData> currentMatchDataList);
 };
