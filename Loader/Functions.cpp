@@ -25,7 +25,7 @@ vector<va_t> *Functions::GetAddresses()
     {
         if (functionAddresses.find(callTarget) == functionAddresses.end())
         {
-            LogMessage(10, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, callTarget);
+            LogMessage(0, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, callTarget);
             functionAddresses.insert(callTarget);
         }
     }
@@ -37,42 +37,42 @@ void Functions::Load()
 {
     int Count = 0;
 
-    LogMessage(10, __FUNCTION__, "%s: ID = %d GetAddresses\n", __FUNCTION__);
+    LogMessage(0, __FUNCTION__, "%s: ID = %d GetAddresses\n", __FUNCTION__);
     vector <va_t>* p_functionAddresses = GetAddresses();
     if (p_functionAddresses)
     {
-        LogMessage(10, __FUNCTION__, "%s: Function %u entries\n", __FUNCTION__, p_functionAddresses->size());
+        LogMessage(0, __FUNCTION__, "%s: Function %u entries\n", __FUNCTION__, p_functionAddresses->size());
 
-        unordered_map<va_t, va_t> addresses;
+        unordered_map<va_t, va_t> basicBlockAddresses;
         unordered_map<va_t, va_t> membershipHash;
 
         for (va_t functionAddress : *p_functionAddresses)
         {
-            for (va_t address : GetFunctionBasicBlocks(functionAddress))
+            for (va_t basicBlockAddress : GetBasicBlocks(functionAddress))
             {
-                m_blockToFunction.insert(pair <va_t, va_t>(address, functionAddress));
+                m_blockToFunction.insert(pair <va_t, va_t>(basicBlockAddress, functionAddress));
 
-                if (addresses.find(address) == addresses.end())
+                if (basicBlockAddresses.find(basicBlockAddress) == basicBlockAddresses.end())
                 {
-                    addresses.insert(pair<va_t, va_t>(address, (va_t)1));
+                    basicBlockAddresses.insert(pair<va_t, va_t>(basicBlockAddress, (va_t)1));
                 }
                 else
                 {
-                    addresses[address] += 1;
+                    basicBlockAddresses[basicBlockAddress] += 1;
                 }
 
-                if (membershipHash.find(address) == membershipHash.end())
+                if (membershipHash.find(basicBlockAddress) == membershipHash.end())
                 {
-                    membershipHash.insert(pair<va_t, va_t>(address, functionAddress));
+                    membershipHash.insert(pair<va_t, va_t>(basicBlockAddress, functionAddress));
                 }
                 else
                 {
-                    membershipHash[address] += functionAddress;
+                    membershipHash[basicBlockAddress] += functionAddress;
                 }
             }
         }
 
-        for (auto& val : addresses)
+        for (auto& val : basicBlockAddresses)
         {
             if (val.second > 1)
             {
@@ -80,7 +80,7 @@ void Functions::Load()
                 for(va_t parentAddress: m_pbasicBlocks->GetParents(val.first))
                 {
                     unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(val.first);
-                    LogMessage(10, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parentAddress);
+                    LogMessage(0, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parentAddress);
 
                     unordered_map<va_t, va_t>::iterator parent_membership_it = membershipHash.find(parentAddress);
                     if (current_membership_it != membershipHash.end() && parent_membership_it != membershipHash.end())
@@ -93,7 +93,7 @@ void Functions::Load()
                     }
                 }
 
-                LogMessage(10, __FUNCTION__, "Multiple function membership: %X (%d) %s\n", val.first, val.second, function_start ? "Possible Head" : "Member");
+                LogMessage(0, __FUNCTION__, "Multiple function membership: %X (%d) %s\n", val.first, val.second, function_start ? "Possible Head" : "Member");
 
                 if (function_start)
                 {
@@ -101,7 +101,7 @@ void Functions::Load()
                     m_functionAddresses.insert(functionStartAddress);
                     unordered_map<va_t, va_t>::iterator function_start_membership_it = membershipHash.find(functionStartAddress);
 
-                    for(va_t address : GetFunctionBasicBlocks(functionStartAddress))
+                    for(va_t address : GetBasicBlocks(functionStartAddress))
                     {
                         unordered_map<va_t, va_t>::iterator current_membership_it = membershipHash.find(address);
 
@@ -113,11 +113,11 @@ void Functions::Load()
                             a2f_it++
                             )
                         {
-                            LogMessage(10, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
+                            LogMessage(0, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
                             a2f_it = m_blockToFunction.erase(a2f_it);
                         }
                         m_blockToFunction.insert(pair <va_t, va_t>(address, functionStartAddress));
-                        LogMessage(10, __FUNCTION__, "\tAdding Block: %X Function: %X\n", address, functionStartAddress);
+                        LogMessage(0, __FUNCTION__, "\tAdding Block: %X Function: %X\n", address, functionStartAddress);
                     }
                 }
             }
@@ -130,12 +130,12 @@ void Functions::Load()
             m_functionToBlock.insert(pair<va_t, va_t>(val.second, val.first));
         }
 
-        LogMessage(10, __FUNCTION__, "%s: m_blockToFunction %u entries\n", __FUNCTION__, m_blockToFunction.size());
+        LogMessage(0, __FUNCTION__, "%s: m_blockToFunction %u entries\n", __FUNCTION__, m_blockToFunction.size());
     }
 }
 
 
-vector<va_t> Functions::GetFunctionBasicBlocks(va_t functionAddress)
+vector<va_t> Functions::GetBasicBlocks(va_t functionAddress)
 {
     vector<va_t> basicBlockAddresses;
     unordered_set <va_t> checkedAddresses;
@@ -173,7 +173,7 @@ vector<va_t> Functions::GetFunctionBasicBlocks(va_t functionAddress)
 BOOL Functions::UpdateFunctionAddressesInStorage()
 {
     BOOL is_fixed = FALSE;
-    LogMessage(10, __FUNCTION__, "%s", __FUNCTION__);
+    LogMessage(0, __FUNCTION__, "%s", __FUNCTION__);
     Load();
 
     if (m_pdisassemblyReader)
@@ -181,7 +181,7 @@ BOOL Functions::UpdateFunctionAddressesInStorage()
 
     for (auto& val : m_blockToFunction)
     {
-        LogMessage(10, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
+        LogMessage(0, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
 
         m_pdisassemblyReader->UpdateBasicBlock(val.first, val.second);
         is_fixed = TRUE;
