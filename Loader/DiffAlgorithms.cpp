@@ -6,11 +6,12 @@
 
 DiffAlgorithms::DiffAlgorithms()
 {
-
+	m_debugLevel = 0;
 }
 
 DiffAlgorithms::DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary)
 {
+	m_debugLevel = 0;
 	m_psourceBasicBlocks = sourceBinary.GetBasicBlocks();
 	m_psourceFunctions = sourceBinary.GetFunctions();
 	m_ptargetBasicBlocks = targetBinary.GetBasicBlocks();
@@ -19,12 +20,14 @@ DiffAlgorithms::DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary)
 
 DiffAlgorithms::DiffAlgorithms(BasicBlocks *p_sourceBasicBlocks, BasicBlocks* p_targetBasicBlocks)
 {
+	m_debugLevel = 0;
 	m_psourceBasicBlocks = p_sourceBasicBlocks;
 	m_ptargetBasicBlocks = p_targetBasicBlocks;
 }
 
 DiffAlgorithms::DiffAlgorithms(BasicBlocks *p_sourceBasicBlocks, Functions *p_sourceFunctions, BasicBlocks* p_targetBasicBlocks, Functions *p_targetFunctions)
 {
+	m_debugLevel = 0;
 	m_psourceBasicBlocks = p_sourceBasicBlocks;
 	m_psourceFunctions = p_sourceFunctions;
 	m_ptargetBasicBlocks = p_targetBasicBlocks;
@@ -340,7 +343,11 @@ vector<FunctionMatch> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentM
 		AddFunctionMatchData(functionMatchMap, sourceFunctionAddress, targetFunctionAddress, matchData);
 	}
 
-	PrintFunctionMatchData(functionMatchMap);
+	if (m_debugLevel > 0)
+	{
+		PrintFunctionMatchData(functionMatchMap);
+	}
+
 	for (auto& val : functionMatchMap)
 	{
 		va_t sourceFunctionAddress = val.first;
@@ -367,8 +374,11 @@ vector<FunctionMatch> DiffAlgorithms::DoFunctionMatch(vector<MatchData> currentM
 		}
 	}
 
-	printf("* Revised Function Maps:\n");
-	PrintFunctionMatchData(functionMatchMap);
+	if (m_debugLevel > 0)
+	{
+		printf("* Revised Function Maps:\n");
+		PrintFunctionMatchData(functionMatchMap);
+	}
 
 	for (auto& val : functionMatchMap)
 	{
