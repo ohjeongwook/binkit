@@ -32,7 +32,7 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<Functions>(m, "Functions")
         .def(py::init())
         .def("get_addresses", &Functions::GetAddresses)
-        .def("get_function_basic_blocks", &Functions::GetFunctionBasicBlocks);
+        .def("get_basic_blocks", &Functions::GetBasicBlocks);
 
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init<BasicBlocks&, BasicBlocks&>())
