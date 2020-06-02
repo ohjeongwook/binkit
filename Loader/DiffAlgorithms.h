@@ -260,6 +260,7 @@ struct FunctionMatch
 class DiffAlgorithms
 {
 private:
+	int m_debugLevel;
 	BasicBlocks *m_psourceBasicBlocks;
 	BasicBlocks* m_ptargetBasicBlocks;
 	Functions *m_psourceFunctions;
