@@ -130,6 +130,10 @@ class Tests:
         for function_match in diff_algorithms.do_function_match(matches):
             print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
 
+            if function_match.source == 0x6c813b40:
+                match_data_combinations = diff_algorithms.get_match_data_combinations(function_match.match_data_list)
+                self.print_match_data_combinations(match_data_combinations, '\t')
+
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
     tests = Tests(filenames)
