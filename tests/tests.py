@@ -127,7 +127,8 @@ class Tests:
 
         print('Performing instruction hash matches...')
         matches = diff_algorithms.do_instruction_hash_match()        
-        diff_algorithms.do_function_match(matches)
+        for function_match in diff_algorithms.do_function_match(matches):
+            print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
