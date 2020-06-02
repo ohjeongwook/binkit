@@ -265,7 +265,7 @@ private:
 	BasicBlocks* m_ptargetBasicBlocks;
 	Functions *m_psourceFunctions;
 	Functions *m_ptargetFunctions;
-	MatchDataCombinations* GenerateMatchDataCombinations(vector<MatchData> controlFlowMatches);
+	MatchDataCombinations* GenerateMatchDataCombinations(vector<MatchData> matchDataList);
 
 public:
 	DiffAlgorithms();
@@ -275,6 +275,7 @@ public:
 	vector<MatchData> DoInstructionHashMatch();
 	vector<MatchData> DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
+	vector<MatchDataCombination*> GetMatchDataCombinations(vector<MatchData> matchDataList);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
 	void AddFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);

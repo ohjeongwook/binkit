@@ -34,7 +34,6 @@ DiffAlgorithms::DiffAlgorithms(BasicBlocks *p_sourceBasicBlocks, Functions *p_so
 	m_ptargetFunctions = p_targetFunctions;
 }
 
-
 vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()
 {
 	vector<MatchData> matchDataList;
@@ -80,10 +79,10 @@ int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructio
 	return matchRate;
 }
 
-MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<MatchData> controlFlowMatches)
+MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<MatchData> matchDataList)
 {
 	unordered_map<va_t, vector<MatchData>> matchMap;
-	for (MatchData matchData : controlFlowMatches)
+	for (MatchData matchData : matchDataList)
 	{
 		LogMessage(0, __FUNCTION__, "%x-%x: %d%%\n", matchData.Source, matchData.Target, matchData.MatchRate);
 		unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.find(matchData.Source);
@@ -124,6 +123,12 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 		p_matchDataCombinations->AddCombinations(val.first, val.second);
 	}
 	return p_matchDataCombinations;
+}
+
+vector<MatchDataCombination*> DiffAlgorithms::GetMatchDataCombinations(vector<MatchData> matchDataList)
+{
+	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(matchDataList);
+	return p_matchDataCombinations->GetTopMatches();
 }
 
 vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type)
@@ -218,8 +223,7 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 		controlFlowMatches.insert(controlFlowMatches.end(), newControlFlowMatches.begin(), newControlFlowMatches.end());
 	}
 
-	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(controlFlowMatches);
-	return p_matchDataCombinations->GetTopMatches();
+	return GetMatchDataCombinations(controlFlowMatches);
 }
 
 vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
