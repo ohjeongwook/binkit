@@ -122,6 +122,13 @@ class Tests:
             sub_match_data_combinations = diff_algorithms.do_control_flow_matches(address_pairs, CREF_FROM)
             self.print_match_data_combinations(sub_match_data_combinations, '\t')
 
+    def do_function_match(self):
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+
+        print('Performing instruction hash matches...')
+        matches = diff_algorithms.do_instruction_hash_match()        
+        diff_algorithms.do_function_match(matches)
+
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
     tests = Tests(filenames)
@@ -130,4 +137,5 @@ if __name__ == '__main__':
     #tests.perform_multilevel_control_flow_matches(0x6c83a795, 0x44a9e3)
     #tests.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
     #tests.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
-    tests.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
+    #tests.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
+    tests.do_function_match()
