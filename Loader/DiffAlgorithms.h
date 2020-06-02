@@ -1,7 +1,9 @@
 #pragma once
 #include <unordered_map>
 
+#include "Binary.h"
 #include "BasicBlocks.h"
+#include "Functions.h"
 #include "Log.h"
 
 using namespace std;
@@ -248,16 +250,21 @@ public:
 class DiffAlgorithms
 {
 private:
-	BasicBlocks m_srcBasicBlocks;
-	BasicBlocks m_targetBasicBlocks;
+	BasicBlocks *m_psourceBasicBlocks;
+	BasicBlocks* m_ptargetBasicBlocks;
+	Functions *m_psourceFunctions;
+	Functions *m_ptargetFunctions;
 	MatchDataCombinations* GenerateMatchDataCombinations(vector<MatchData> controlFlowMatches);
 
 public:
 	DiffAlgorithms();
-	DiffAlgorithms(BasicBlocks& srcBasicBlocks, BasicBlocks& targetBasicBlocks);
-    vector<MatchData> DoInstructionHashMatch();
-	vector<MatchData> DoInstructionHashMatchInBlocks(list<va_t>& sourceBlockAddresses, list<va_t>& targetBlockAddresses);
+	DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary);
+	DiffAlgorithms(BasicBlocks* p_sourceBasicBlocks, BasicBlocks* p_targetBasicBlocks);
+	DiffAlgorithms(BasicBlocks* p_sourceBasicBlocks, Functions* p_sourceFunctions, BasicBlocks* p_targetBasicBlocks, Functions* p_targetFunctions);
+	vector<MatchData> DoInstructionHashMatch();
+	vector<MatchData> DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
+	vector<MatchData> DoFunctionMatch(vector<MatchData> currentMatchDataList);
 };
