@@ -6,6 +6,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
 
+#include "Functions.h"
 #include "Structures.h"
 #include "Binary.h"
 #include "BasicBlocks.h"
@@ -29,17 +30,20 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_parents", &BasicBlocks::GetParents)
         .def("get_call_targets", &BasicBlocks::GetCallTargets);
 
+    py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
+        .def(py::init<Binary&, Binary&>())
+        .def(py::init<BasicBlocks*, BasicBlocks*>())
+        .def(py::init<BasicBlocks* ,Functions*,BasicBlocks*,Functions* >())
+        .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
+        .def("do_instruction_hash_match_in_blocks", &DiffAlgorithms::DoInstructionHashMatchInBlocks)
+        .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
+        .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
+        .def("do_function_match", &DiffAlgorithms::DoFunctionMatch);        
+
     py::class_<Functions>(m, "Functions")
         .def(py::init())
         .def("get_addresses", &Functions::GetAddresses)
         .def("get_basic_blocks", &Functions::GetBasicBlocks);
-
-    py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
-        .def(py::init<BasicBlocks&, BasicBlocks&>())
-        .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
-        .def("do_instruction_hash_match_in_blocks", &DiffAlgorithms::DoInstructionHashMatchInBlocks)
-        .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
-        .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches);
 
     py::class_<AddressPair>(m, "AddressPair")
         .def(py::init<va_t, va_t>())
