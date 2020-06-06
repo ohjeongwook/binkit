@@ -75,3 +75,8 @@ int SQLiteTool::EndTransaction()
 {
     return ExecuteStatement(NULL, NULL, "COMMIT TRANSACTION");
 }
+
+int SQLiteTool::GetLastInsertRowID()
+{
+    return (int)sqlite3_last_insert_rowid(m_database);
+}

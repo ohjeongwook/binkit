@@ -19,4 +19,5 @@ public:
 
     int BeginTransaction();
     int EndTransaction();
+    int GetLastInsertRowID();
 };
