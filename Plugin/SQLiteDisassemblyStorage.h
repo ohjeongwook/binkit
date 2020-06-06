@@ -4,6 +4,7 @@
 
 #include "StorageDataStructures.h"
 #include "DisassemblyStorage.h"
+#include "SQLiteTool.h"
 
 #include "sqlite3.h"
 
@@ -72,25 +73,17 @@ class SQLiteDisassemblyStorage : public DisassemblyStorage
 private:
     sqlite3 *m_database;
     string m_databaseName;
+    SQLiteTool m_sqliteTool;
 
 public:
     SQLiteDisassemblyStorage(const char *DatabaseName = NULL);
     ~SQLiteDisassemblyStorage();
 
 public:
-    int BeginTransaction();
-    int EndTransaction();
-    void Close();
+    bool Open(char* databaseName);
     void AddBasicBlock(BasicBlock& basicBlock, int fileID = 0);
     void AddControlFlow(ControlFlow& controlFlow, int fileID = 0);
 
     void SetFileInfo(FileInfo *p_file_info);
     void CreateTables();
-    bool Open(char *DatabaseName);
-    const char *GetDatabaseName();
-    void CloseDatabase();
-    bool ConnectDatabase(const char *DatabaseName);
-
-    int GetLastInsertRowID();
-    int ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...);
 };

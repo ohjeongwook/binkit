@@ -151,6 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\sqlite3.h" />
+    <ClInclude Include="..\Common\SQLiteTool.h" />
     <ClInclude Include="..\Common\StorageDataStructures.h" />
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="DisassemblyStorage.h" />
@@ -162,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\sqlite3.c" />
+    <ClCompile Include="..\Common\SQLiteTool.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="IDAAnalyzer.cpp" />
     <ClCompile Include="BinKit.cpp" />
