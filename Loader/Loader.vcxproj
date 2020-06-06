@@ -155,17 +155,20 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="..\Common\sqlite3.h" />
+    <ClInclude Include="..\Common\SQLiteTool.h" />
     <ClInclude Include="..\Common\StorageDataStructures.h" />
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="BasicBlocks.h" />
     <ClInclude Include="Binary.h" />
     <ClInclude Include="Diff.h" />
     <ClInclude Include="DiffAlgorithms.h" />
+    <ClInclude Include="DiffStorage.h" />
     <ClInclude Include="DisassemblyReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="FunctionMatches.h" />
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Binaries.h" />
+    <ClInclude Include="SQLiteDiffStorage.h" />
     <ClInclude Include="SQLiteDisassemblyReader.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="Varray.h" />
@@ -173,6 +176,7 @@
   <ItemGroup>
     <ClCompile Include="..\Common\Log.cpp" />
     <ClCompile Include="..\Common\sqlite3.c" />
+    <ClCompile Include="..\Common\SQLiteTool.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="BasicBlocks.cpp" />
     <ClCompile Include="Binary.cpp" />
@@ -181,6 +185,7 @@
     <ClCompile Include="FunctionMatches.cpp" />
     <ClCompile Include="Functions.cpp" />
     <ClCompile Include="Binaries.cpp" />
+    <ClCompile Include="SQLiteDiffStorage.cpp" />
     <ClCompile Include="SQLiteDisassemblyReader.cpp" />
     <ClCompile Include="Varray.cpp" />
   </ItemGroup>

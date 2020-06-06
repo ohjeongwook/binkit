@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Library">
-      <UniqueIdentifier>{f320162a-2313-4cf7-bd8d-eb551a0fc235}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Algorithms">
       <UniqueIdentifier>{2700885f-13d1-4044-8375-e484d9ce93d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SQLite">
+      <UniqueIdentifier>{9741dfa6-6026-45d3-8408-c9d2f716c47c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -29,9 +29,6 @@
     </ClInclude>
     <ClInclude Include="Structures.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\sqlite3.h">
-      <Filter>Library</Filter>
     </ClInclude>
     <ClInclude Include="BasicBlocks.h">
       <Filter>Header Files</Filter>
@@ -63,25 +60,31 @@
     <ClInclude Include="..\Common\Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SQLiteDisassemblyReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DisassemblyReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DiffStorage.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\sqlite3.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteDisassemblyReader.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\SQLiteTool.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteDiffStorage.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SQLiteDisassemblyReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Utility.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\sqlite3.c">
-      <Filter>Library</Filter>
     </ClCompile>
     <ClCompile Include="BasicBlocks.cpp">
       <Filter>Source Files</Filter>
@@ -106,6 +109,18 @@
     </ClCompile>
     <ClCompile Include="FunctionMatches.cpp">
       <Filter>Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\sqlite3.c">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLiteDisassemblyReader.cpp">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\SQLiteTool.cpp">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLiteDiffStorage.cpp">
+      <Filter>SQLite</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
