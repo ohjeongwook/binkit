@@ -32,13 +32,10 @@ PYBIND11_MODULE(pybinkit, m) {
 
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init<Binary&, Binary&>())
-        .def(py::init<BasicBlocks*, BasicBlocks*>())
-        .def(py::init<BasicBlocks*, Functions*, BasicBlocks*, Functions* >())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
         .def("do_instruction_hash_match_in_blocks", &DiffAlgorithms::DoInstructionHashMatchInBlocks)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
-        .def("do_function_match", &DiffAlgorithms::DoFunctionMatch)
         .def("get_match_data_combinations", &DiffAlgorithms::GetMatchDataCombinations);        
 
     py::class_<Functions>(m, "Functions")
@@ -79,6 +76,13 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readonly("source", &FunctionMatch::SourceFunction)
         .def_readonly("target", &FunctionMatch::TargetFunction)
         .def_readonly("match_data_list", &FunctionMatch::MatchDataList);
+
+    py::class_<FunctionMatches>(m, "FunctionMatches")
+        .def(py::init<Binary&, Binary&>())
+        .def("add_matches", &FunctionMatches::AddMatches)
+        .def("get_matches", &FunctionMatches::GetMatches)
+        .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)
+        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch);
 
     py::class_<MatchDataCombination>(m, "MatchDataCombination")
         .def(py::init())
