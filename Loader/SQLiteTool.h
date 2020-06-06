@@ -16,4 +16,7 @@ public:
     void Close();
     const char* GetDatabaseName();
     int ExecuteStatement(sqlite3_callback callback, void* context, const char* format, ...);
+
+    int BeginTransaction();
+    int EndTransaction();
 };

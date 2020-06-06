@@ -65,3 +65,13 @@ int SQLiteTool::ExecuteStatement(sqlite3_callback callback, void* context, const
     }
     return SQLITE_ERROR;
 }
+
+int SQLiteTool::BeginTransaction()
+{
+    return ExecuteStatement(NULL, NULL, "BEGIN TRANSACTION");
+}
+
+int SQLiteTool::EndTransaction()
+{
+    return ExecuteStatement(NULL, NULL, "COMMIT TRANSACTION");
+}

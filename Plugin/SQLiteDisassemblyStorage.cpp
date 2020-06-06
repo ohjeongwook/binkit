@@ -204,9 +204,3 @@ void SQLiteDisassemblyStorage::Close()
 {
     CloseDatabase();
 }
-
-void SQLiteDisassemblyStorage::UpdateBasicBlock(int fileID, va_t address1, va_t address2)
-{
-    ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT,
-        address2, address2 == address1 ? FUNCTION_BLOCK : UNKNOWN_BLOCK, fileID, address1);
-}

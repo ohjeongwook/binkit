@@ -23,7 +23,7 @@ private:
     unordered_set <va_t> m_functionAddresses;
 
     void Load();
-    BOOL UpdateFunctionAddressesInStorage();
+    bool UpdateFunctionAddressesInStorage();
 public:
     Functions(DisassemblyReader* p_disassemblyReader = NULL, BasicBlocks *p_basicBlocks = NULL);
     ~Functions();

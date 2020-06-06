@@ -223,3 +223,21 @@ PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
 
     return p_basic_block;
 }
+
+bool SQLiteDisassemblyReader::UpdateBasicBlock(multimap <va_t, va_t> blockToFunction)
+{
+    bool isFixed = false;
+    m_sqliteTool.BeginTransaction();
+
+    for (auto& val : blockToFunction)
+    {
+        LogMessage(0, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
+        m_sqliteTool.ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT,
+            val.second, val.second == val.first ? FUNCTION_BLOCK : UNKNOWN_BLOCK, m_fileId, val.first);
+        isFixed = TRUE;
+    }
+
+    m_sqliteTool.EndTransaction();
+
+    return isFixed;
+}

@@ -170,27 +170,15 @@ vector<va_t> Functions::GetBasicBlocks(va_t functionAddress)
     return basicBlockAddresses;
 }
 
-BOOL Functions::UpdateFunctionAddressesInStorage()
+bool Functions::UpdateFunctionAddressesInStorage()
 {
-    BOOL is_fixed = FALSE;
     LogMessage(0, __FUNCTION__, "%s", __FUNCTION__);
     Load();
 
-    if (m_pdisassemblyReader)
-        m_pdisassemblyReader->BeginTransaction();
+    if (!m_pdisassemblyReader)
+        return FALSE;
 
-    for (auto& val : m_blockToFunction)
-    {
-        LogMessage(0, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
-
-        m_pdisassemblyReader->UpdateBasicBlock(val.first, val.second);
-        is_fixed = TRUE;
-    }
-
-    if (m_pdisassemblyReader)
-        m_pdisassemblyReader->EndTransaction();
-
-    return is_fixed;
+    return m_pdisassemblyReader->UpdateBasicBlock(m_blockToFunction);
 }
 
 bool Functions::GetFunctionAddress(va_t address, va_t& functionAddress)
