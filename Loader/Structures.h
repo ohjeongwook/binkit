@@ -94,7 +94,24 @@ typedef struct _DisassemblyHashMaps_ {
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
 
-enum { NAME_MATCH, INSTRUCTION_HASH_MATCH, TWO_LEVEL_INSTRUCTION_HASH_MATCH, TREE_MATCH, INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH, FUNCTION_MATCH, CONTROLFLOW_MATCH };
+enum { 
+    NAME_MATCH,
+    INSTRUCTION_HASH_MATCH,
+    TWO_LEVEL_INSTRUCTION_HASH_MATCH,
+    TREE_MATCH,
+    INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH,
+    FUNCTION_MATCH,
+    CONTROLFLOW_MATCH
+};
+
+static const char* MatchDataTypeStr[] = {
+    "Name",
+    "InstructionHash",
+    "Two Level InstructionHash",
+    "IsoMorphic Match",
+    "InstructionHash Inside Function",
+    "Function"
+};
 
 typedef struct _MatchData_ {
     short Type;

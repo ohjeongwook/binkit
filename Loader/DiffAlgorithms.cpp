@@ -242,3 +242,12 @@ vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(vector<va_t>& s
 
 	return matcDataList;
 }
+
+string DiffAlgorithms::GetMatchTypeStr(int Type)
+{
+	if (Type < sizeof(MatchDataTypeStr) / sizeof(MatchDataTypeStr[0]))
+	{
+		return MatchDataTypeStr[Type];
+	}
+	return "Unknown";
+}
