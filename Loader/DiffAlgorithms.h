@@ -269,4 +269,5 @@ public:
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
 	FunctionMatches DoFunctionMatch(vector<MatchData> currentMatchDataList);
+	string GetMatchTypeStr(int Type);
 };
