@@ -4,8 +4,7 @@
 
 #include "Structures.h"
 #include "DisassemblyReader.h"
-
-#include "sqlite3.h"
+#include "SQLiteTool.h"
 
 using namespace std;
 
@@ -18,21 +17,13 @@ class SQLiteDisassemblyReader : public DisassemblyReader
 {
 private:
     int m_debugLevel = 0;
-    sqlite3 *m_database;
-    string m_databaseName;
+    SQLiteTool m_sqliteTool;
 
 public:
     SQLiteDisassemblyReader();
     SQLiteDisassemblyReader(string dataBasName);
     ~SQLiteDisassemblyReader();
 
-public:
-    void Close();
-    bool Open(string dataBasName);
-    const char *GetDatabaseName();
-    void CloseDatabase();
-
-    int ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...);
     static int ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names);
     static int ReadRecordStringCallback(void *arg, int argc, char **argv, char **names);
 

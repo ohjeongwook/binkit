@@ -22,9 +22,7 @@ Binary::~Binary()
 void Binary::Open(string databaseFileName, int fileID)
 {
     m_fileId = fileID;
-    SQLiteDisassemblyReader* p_sqliteDisassemblyReader = new SQLiteDisassemblyReader();
-    p_sqliteDisassemblyReader->Open(databaseFileName);
-
+    SQLiteDisassemblyReader* p_sqliteDisassemblyReader = new SQLiteDisassemblyReader(databaseFileName);
     m_pdisassemblyReader = (DisassemblyReader *)p_sqliteDisassemblyReader;
     m_pdisassemblyReader->SetFileID(m_fileId);
 }
