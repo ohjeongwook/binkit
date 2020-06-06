@@ -17,6 +17,7 @@ using namespace std;
 class SQLiteDisassemblyReader : public DisassemblyReader
 {
 private:
+    int m_debugLevel = 0;
     sqlite3 *m_database;
     string m_databaseName;
 
