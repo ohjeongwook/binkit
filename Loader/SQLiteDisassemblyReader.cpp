@@ -52,7 +52,6 @@ const char *SQLiteDisassemblyReader::GetDatabaseName()
 
 void SQLiteDisassemblyReader::CloseDatabase()
 {
-    //Close Database
     if (m_database)
     {
         sqlite3_close(m_database);
@@ -62,8 +61,6 @@ void SQLiteDisassemblyReader::CloseDatabase()
 
 int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...)
 {
-    int debug = 0;
-
     if (m_database)
     {
         int rc = 0;
@@ -72,30 +69,10 @@ int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *c
 
         va_list args;
         va_start(args, format);
-#ifdef USE_VSNPRINTF
-        int statement_buffer_len = 0;
-
-        while (1)
-        {
-            statement_buffer_len += 1024;
-            statement_buffer = (char*)malloc(statement_buffer_len);
-            memset(statement_buffer, 0, statement_buffer_len);
-            if (statement_buffer && _vsnprintf(statement_buffer, statement_buffer_len, format, args) != -1)
-            {
-                free(statement_buffer);
-                break;
-            }
-
-            if (!statement_buffer)
-                break;
-            free(statement_buffer);
-        }
-#else
         statement_buffer = sqlite3_vmprintf(format, args);
-#endif
         va_end(args);
 
-        if (debug > 1)
+        if (m_debugLevel > 1)
         {
             LogMessage(1, __FUNCTION__, "Executing [%s]\n", statement_buffer);
         }
@@ -106,20 +83,12 @@ int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *c
 
             if (rc != SQLITE_OK)
             {
-                if (debug > 0)
+                if (m_debugLevel > 0)
                 {
-#ifdef IDA_PLUGIN				
                     LogMessage(1, __FUNCTION__, "SQL error: [%s] [%s]\n", statement_buffer, zErrMsg);
-#else
-                    LogMessage(1, __FUNCTION__, "SQL error: [%s] [%s]\n", statement_buffer, zErrMsg);
-#endif
                 }
             }
-#ifdef USE_VSNPRINTF
-            free(statement_buffer);
-#else
             sqlite3_free(statement_buffer);
-#endif
         }
 
         return rc;
@@ -165,13 +134,6 @@ void SQLiteDisassemblyReader::Close()
 
 int SQLiteDisassemblyReader::ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names)
 {
-#if DEBUG_LEVEL > 2
-    printf("%s: arg=%x %d\n", __FUNCTION__, arg, argc);
-    for (int i = 0; i < argc; i++)
-    {
-        printf("	[%d] %s=%s\n", i, names[i], argv[i]);
-    }
-#endif
      *(int*)arg = atoi(argv[0]);
     return 0;
 }
@@ -187,9 +149,6 @@ int SQLiteDisassemblyReader::ReadFunctionAddressesCallback(void *arg, int argc, 
     unordered_set <va_t> *FunctionAddressHash = (unordered_set <va_t>*)arg;
     if (FunctionAddressHash)
     {
-#if DEBUG_LEVEL > 1
-        if (DebugLevel & 1) Logger.Log(10, __FUNCTION__, "%s: ID = %d strtoul10(%s) = 0x%X\n", __FUNCTION__, fileID, argv[0], strtoul10(argv[0]));
-#endif
         FunctionAddressHash->insert(strtoul10(argv[0]));
     }
     return 0;
@@ -234,14 +193,6 @@ int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char *
     p_control_flow->SrcBlock = strtoul10(argv[1]);
     p_control_flow->SrcBlockEnd = strtoul10(argv[2]);
     p_control_flow->Dst = strtoul10(argv[3]);
-#if DEBUG_LEVEL > 1
-    Logger.Log(10, "%s: ID = %d strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X, strtoul10(%s) = 0x%X\n", __FUNCTION__, fileID,
-        argv[0], strtoul10(argv[0]),
-        argv[1], strtoul10(argv[1]),
-        argv[2], strtoul10(argv[2]),
-        argv[3], strtoul10(argv[3])
-    );
-#endif
     p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->SrcBlock, p_control_flow));
     return 0;
 }
@@ -282,9 +233,6 @@ int SQLiteDisassemblyReader::ReadFunctionMemberAddressesCallback(void *arg, int 
     list <AddressRange> *p_address_list = (list <AddressRange>*)arg;
     if (p_address_list)
     {
-#if DEBUG_LEVEL > 1
-        if (DebugLevel & 1) Logger.Log(10, __FUNCTION__, "%s: ID = %d strtoul10(%s) = 0x%X\n", __FUNCTION__, fileID, argv[0], strtoul10(argv[0]));
-#endif
         AddressRange addressRange;
         addressRange.Start = strtoul10(argv[0]);
         addressRange.End = strtoul10(argv[1]);
@@ -332,15 +280,6 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
     p_basic_block->BlockType = strtoul10(argv[4]);
     p_basic_block->Name = argv[5];
     p_basic_block->InstructionHash = argv[6];
-
-#if DEBUG_LEVEL > 1
-    LogMessage(0, __FUNCTION__, "%X Block Type: %d\n", p_basic_block->StartAddress, p_basic_block->BlockType);
-
-    if (p_basic_block->BlockType == FUNCTION_BLOCK)
-    {
-        LogMessage(0, __FUNCTION__, "Function Block: %X\n", p_basic_block->StartAddress);
-    }
-#endif
     return 0;
 }
 
