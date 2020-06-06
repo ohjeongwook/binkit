@@ -17,16 +17,6 @@ public:
     {
     }
 
-    virtual int BeginTransaction()
-    {
-        return 0;
-    }
-
-    virtual int EndTransaction()
-    {
-        return 0;
-    }
-
     virtual void Close()
     {
     }
@@ -86,7 +76,8 @@ public:
         return NULL;
     }
 
-    virtual void UpdateBasicBlock(va_t address1, va_t address2)
+    virtual bool UpdateBasicBlock(multimap <va_t, va_t> blockToFunction)
     {
+        return false;
     }
 };

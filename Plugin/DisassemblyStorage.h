@@ -46,8 +46,4 @@ public:
     {
         return {};
     }
-
-    virtual void UpdateBasicBlock(int fileID, va_t address1, va_t address2)
-    {
-    }
 };

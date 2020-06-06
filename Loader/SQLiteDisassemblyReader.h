@@ -12,6 +12,7 @@ using namespace std;
 #define MAP_INFO_TABLE "ControlFlow"
 #define CREATE_MAP_INFO_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "MAP_INFO_TABLE"Index ON "MAP_INFO_TABLE" (SrcBlock)"
 #define BASIC_BLOCK_TABLE "BasicBlock"
+#define UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT "UPDATE " BASIC_BLOCK_TABLE" SET FunctionAddress='%u',BlockType='%d' WHERE FileID='%u' AND StartAddress='%u';"
 
 class SQLiteDisassemblyReader : public DisassemblyReader
 {
@@ -51,4 +52,6 @@ public:
 
     static int ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names);
     PBasicBlock ReadBasicBlock(va_t address);
+
+    bool UpdateBasicBlock(multimap <va_t, va_t> blockToFunction);
 };
