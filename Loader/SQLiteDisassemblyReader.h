@@ -53,5 +53,5 @@ public:
     static int ReadBasicBlockCallback(void *arg, int argc, char **argv, char **names);
     PBasicBlock ReadBasicBlock(va_t address);
 
-    bool UpdateBasicBlock(multimap <va_t, va_t> blockToFunction);
+    bool UpdateBasicBlockFunctions(multimap <va_t, va_t> blockToFunction);
 };

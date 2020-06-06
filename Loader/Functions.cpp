@@ -178,7 +178,7 @@ bool Functions::UpdateFunctionAddressesInStorage()
     if (!m_pdisassemblyReader)
         return FALSE;
 
-    return m_pdisassemblyReader->UpdateBasicBlock(m_blockToFunction);
+    return m_pdisassemblyReader->UpdateBasicBlockFunctions(m_blockToFunction);
 }
 
 bool Functions::GetFunctionAddress(va_t address, va_t& functionAddress)
