@@ -224,7 +224,7 @@ PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
     return p_basic_block;
 }
 
-bool SQLiteDisassemblyReader::UpdateBasicBlock(multimap <va_t, va_t> blockToFunction)
+bool SQLiteDisassemblyReader::UpdateBasicBlockFunctions(multimap <va_t, va_t> blockToFunction)
 {
     bool isFixed = false;
     m_sqliteTool.BeginTransaction();

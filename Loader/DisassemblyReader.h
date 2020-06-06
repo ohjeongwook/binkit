@@ -76,7 +76,7 @@ public:
         return NULL;
     }
 
-    virtual bool UpdateBasicBlock(multimap <va_t, va_t> blockToFunction)
+    virtual bool UpdateBasicBlockFunctions(multimap <va_t, va_t> blockToFunction)
     {
         return false;
     }
