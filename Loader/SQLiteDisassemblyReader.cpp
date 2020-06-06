@@ -14,86 +14,21 @@ using namespace stdext;
 #include "SQLiteDisassemblyReader.h"
 #include "Log.h"
 
-SQLiteDisassemblyReader::SQLiteDisassemblyReader() : m_database(NULL)
+SQLiteDisassemblyReader::SQLiteDisassemblyReader()
 {
 }
 
-SQLiteDisassemblyReader::SQLiteDisassemblyReader(string dataBasName): m_database(NULL)
+SQLiteDisassemblyReader::SQLiteDisassemblyReader(string dataBasName)
 {
     if (!dataBasName.empty())
     {
-        Open(dataBasName);
+        m_sqliteTool.Open(dataBasName);
     }
 }
 
 SQLiteDisassemblyReader::~SQLiteDisassemblyReader()
 {
-    CloseDatabase();
-}
-
-bool SQLiteDisassemblyReader::Open(string dataBasName)
-{
-    m_databaseName = dataBasName;
-    int rc = sqlite3_open(dataBasName.c_str(), &m_database);
-    if (rc)
-    {
-        printf("Opening Database [%s] Failed\n", dataBasName.c_str());
-        sqlite3_close(m_database);
-        m_database = NULL;
-        return FALSE;
-    }
-    return TRUE;
-}
-
-const char *SQLiteDisassemblyReader::GetDatabaseName()
-{
-    return m_databaseName.c_str();
-}
-
-void SQLiteDisassemblyReader::CloseDatabase()
-{
-    if (m_database)
-    {
-        sqlite3_close(m_database);
-        m_database = NULL;
-    }
-}
-
-int SQLiteDisassemblyReader::ExecuteStatement(sqlite3_callback callback, void *context, const char *format, ...)
-{
-    if (m_database)
-    {
-        int rc = 0;
-        char *statement_buffer = NULL;
-        char *zErrMsg = 0;
-
-        va_list args;
-        va_start(args, format);
-        statement_buffer = sqlite3_vmprintf(format, args);
-        va_end(args);
-
-        if (m_debugLevel > 1)
-        {
-            LogMessage(1, __FUNCTION__, "Executing [%s]\n", statement_buffer);
-        }
-
-        if (statement_buffer)
-        {
-            rc = sqlite3_exec(m_database, statement_buffer, callback, context, &zErrMsg);
-
-            if (rc != SQLITE_OK)
-            {
-                if (m_debugLevel > 0)
-                {
-                    LogMessage(1, __FUNCTION__, "SQL error: [%s] [%s]\n", statement_buffer, zErrMsg);
-                }
-            }
-            sqlite3_free(statement_buffer);
-        }
-
-        return rc;
-    }
-    return SQLITE_ERROR;
+    m_sqliteTool.Close();
 }
 
 vector<unsigned char> HexToBytes(char *hexBytesString);
@@ -120,16 +55,11 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
 
 void SQLiteDisassemblyReader::ReadBasicBlockHashes(char *conditionStr, DisassemblyHashMaps *DisassemblyHashMaps)
 {
-    ExecuteStatement(ReadBasicBlockHashCallback,
+    m_sqliteTool.ExecuteStatement(ReadBasicBlockHashCallback,
         (void*)DisassemblyHashMaps,
         "SELECT StartAddress, InstructionHash, Name, BlockType FROM BasicBlock WHERE FileID = %u %s",
         m_fileId,
         conditionStr);
-}
-
-void SQLiteDisassemblyReader::Close()
-{
-    CloseDatabase();
 }
 
 int SQLiteDisassemblyReader::ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names)
@@ -156,21 +86,21 @@ int SQLiteDisassemblyReader::ReadFunctionAddressesCallback(void *arg, int argc, 
 
 void SQLiteDisassemblyReader::ReadFunctionAddressMap(unordered_set <va_t>& functionAddressMap)
 {
-    ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", m_fileId, FUNCTION_BLOCK);
+    m_sqliteTool.ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", m_fileId, FUNCTION_BLOCK);
 }
 
 char *SQLiteDisassemblyReader::ReadInstructionHash(va_t address)
 {
     char *instructionHash = NULL;
 
-    ExecuteStatement(ReadRecordStringCallback, &instructionHash, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &instructionHash, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return instructionHash;
 }
 
 string SQLiteDisassemblyReader::ReadSymbol(va_t address)
 {
     string name;
-    ExecuteStatement(ReadRecordStringCallback, &name,
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &name,
         "SELECT Name FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return name;
 }
@@ -178,7 +108,7 @@ string SQLiteDisassemblyReader::ReadSymbol(va_t address)
 va_t SQLiteDisassemblyReader::ReadBlockStartAddress(va_t address)
 {
     va_t blockAddress;
-    ExecuteStatement(ReadRecordIntegerCallback, &blockAddress,
+    m_sqliteTool.ExecuteStatement(ReadRecordIntegerCallback, &blockAddress,
         "SELECT StartAddress FROM BasicBlock WHERE FileID = %u and StartAddress <=  %u  and %u <=  EndAddress LIMIT 1",
         m_fileId, address, address);
     return blockAddress;
@@ -201,7 +131,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
 {
     if (address == 0)
     {
-        ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
+        m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
             "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow WHERE FileID = %u",
             m_fileId);
     }
@@ -211,7 +141,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
         {
             ReadControlFlow(addressToControlFlowMap, address, isFunction);
 
-            ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
+            m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
@@ -219,7 +149,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
         }
         else
         {
-            ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
+            m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
@@ -245,7 +175,7 @@ list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(va_t fun
 {
     list<AddressRange> addressRangeList;
 
-    ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
+    m_sqliteTool.ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
         "SELECT StartAddress, EndAddress FROM BasicBlock WHERE FileID = '%d' AND FunctionAddress='%d'"
         "ORDER BY ID ASC",
         m_fileId, functionAddress);
@@ -256,7 +186,7 @@ list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(va_t fun
 string SQLiteDisassemblyReader::GetOriginalFilePath()
 {
     string originalFilePath;
-    ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
         "SELECT OriginalFilePath FROM FileInfo WHERE id = %u", m_fileId);
 
     return originalFilePath;
@@ -265,7 +195,7 @@ string SQLiteDisassemblyReader::GetOriginalFilePath()
 string SQLiteDisassemblyReader::ReadDisasmLine(va_t startAddress)
 {
     string disasmLines;
-    ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
         m_fileId, startAddress);
     return disasmLines;
 }
@@ -286,7 +216,7 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
 PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
 {
     PBasicBlock p_basic_block = new BasicBlock();
-    ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
+    m_sqliteTool.ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
         "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, Name, InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
         m_fileId,
         address);
