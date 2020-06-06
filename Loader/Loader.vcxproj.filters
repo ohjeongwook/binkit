@@ -24,20 +24,11 @@
     <ClInclude Include="framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DisassemblyReader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLiteDisassemblyReader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Structures.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Utility.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\sqlite3.h">
       <Filter>Library</Filter>
@@ -47,9 +38,6 @@
     </ClInclude>
     <ClInclude Include="Functions.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Binaries.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Binary.h">
       <Filter>Header Files</Filter>
@@ -68,6 +56,18 @@
     </ClInclude>
     <ClInclude Include="FunctionMatches.h">
       <Filter>Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Binaries.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteDisassemblyReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DisassemblyReader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
