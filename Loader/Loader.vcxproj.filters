@@ -66,6 +66,9 @@
     <ClInclude Include="Varray.h">
       <Filter>Algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionMatches.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SQLiteDisassemblyReader.cpp">
@@ -99,6 +102,9 @@
       <Filter>Algorithms</Filter>
     </ClCompile>
     <ClCompile Include="Varray.cpp">
+      <Filter>Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="FunctionMatches.cpp">
       <Filter>Algorithms</Filter>
     </ClCompile>
   </ItemGroup>

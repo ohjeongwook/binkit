@@ -5,6 +5,7 @@
 #include "BasicBlocks.h"
 #include "Functions.h"
 #include "Log.h"
+#include "FunctionMatches.h"
 
 using namespace std;
 
@@ -248,15 +249,6 @@ public:
 	}
 };
 
-typedef unordered_map<va_t, vector<MatchData>> TargetToMatchDataListMap;
-
-struct FunctionMatch
-{
-	va_t SourceFunction;
-	va_t TargetFunction;
-	vector<MatchData> MatchDataList;
-};
-
 class DiffAlgorithms
 {
 private:
@@ -270,16 +262,11 @@ private:
 public:
 	DiffAlgorithms();
 	DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary);
-	DiffAlgorithms(BasicBlocks* p_sourceBasicBlocks, BasicBlocks* p_targetBasicBlocks);
-	DiffAlgorithms(BasicBlocks* p_sourceBasicBlocks, Functions* p_sourceFunctions, BasicBlocks* p_targetBasicBlocks, Functions* p_targetFunctions);
 	vector<MatchData> DoInstructionHashMatch();
 	vector<MatchData> DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<MatchDataCombination*> GetMatchDataCombinations(vector<MatchData> matchDataList);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
-	void AddFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
-	void AddFunctionMatchDataList(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap, va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
-	void PrintFunctionMatchData(unordered_map<va_t, TargetToMatchDataListMap>& functionMatchMap);
-	vector<FunctionMatch> DoFunctionMatch(vector<MatchData> currentMatchDataList);
+	FunctionMatches DoFunctionMatch(vector<MatchData> currentMatchDataList);
 };
