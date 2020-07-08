@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{6828FC8F-EE18-46BD-8454-9C733FAD403D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Loader</RootNamespace>
+    <RootNamespace>binkit</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
