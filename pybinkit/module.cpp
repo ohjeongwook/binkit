@@ -17,7 +17,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(pybinkit, m) {
     py::class_<Binary>(m, "Binary")
         .def(py::init())
-        .def("open", &Binary::Open)
+        .def("open", &Binary::Open, "A function to open binary", py::arg("filename"), py::arg("file_id") = 0)
         .def("get_basic_blocks", &Binary::GetBasicBlocks, py::return_value_policy::reference)
         .def("get_functions", &Binary::GetFunctions, py::return_value_policy::reference);
 
