@@ -1,3 +1,4 @@
+import time
 import pybinkit
 
 CALL = 0
@@ -13,10 +14,11 @@ class Tests:
         for filename in filenames:
             binary = pybinkit.Binary()
             print('Opening %s...' % filename)
-            binary.open(filename, 0)
+            binary.open(filename)
             self.binaries.append(binary)
 
     def dump_basic_blocks(self, basic_blocks):
+        print('* dump_basic_blocks:')
         for basic_block_address in basic_blocks.get_addresses():
             symbol = basic_blocks.get_symbol(basic_block_address)
             if symbol:
@@ -56,10 +58,10 @@ class Tests:
         self.dump_functions_addresses(functions, basic_blocks)
 
     def do_instruction_hash_match(self):
+        print('* do_instruction_hash_match:')
         basic_block0 = self.binaries[0].get_basic_blocks()
         basic_block1 = self.binaries[1].get_basic_blocks()
 
-        print('Loading DiffAlgorithms...')
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         print('Performing instruction hash matches...')
         matches = diff_algorithms.do_instruction_hash_match()
@@ -95,7 +97,7 @@ class Tests:
             print('\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
     def print_match_data_combination(self, match_data_combination, prefix = ''):
-        print(prefix + '* Match Data Combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
+        print(prefix + '* print_match_data_combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
         for i in range(0, match_data_combination.count(), 1):
             match_data = match_data_combination.get(i)
             print(prefix + '\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
@@ -105,8 +107,9 @@ class Tests:
             self.print_match_data_combination(match_data_combination, prefix + '\t')
 
     def perform_multilevel_control_flow_matches(self, source, target):
+        print('* perform_multilevel_control_flow_matches: %x - %x' % (source, target))
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        print('Control Flow Match: %x - %x' % (source, target))
+        
         address_pair = pybinkit.AddressPair(source, target)
         match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), CREF_FROM)
 
@@ -123,9 +126,9 @@ class Tests:
             self.print_match_data_combinations(sub_match_data_combinations, '\t')
 
     def do_function_match(self):
-        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+        print('* do_function_match:')
 
-        print('Performing instruction hash matches...')
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_instruction_hash_match()
 
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
@@ -144,8 +147,11 @@ class Tests:
         for function_match in function_matches.get_matches():
             print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
 
+            #start_time = time.time()
             #match_data_combinations = diff_algorithms.get_match_data_combinations(function_match.match_data_list)
             #self.print_match_data_combinations(match_data_combinations, '\t')
+            #end_time = time.time()
+            #print("--- %s seconds ---" % (end_time - start_time))
 
 if __name__ == '__main__':
     filenames = [r'examples\EPSIMP32-2006.1200.4518.1014.db', r'examples\EPSIMP32-2006.1200.6731.5000.db']
