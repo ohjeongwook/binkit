@@ -78,6 +78,9 @@
     <ClInclude Include="SQLiteDiffStorage.h">
       <Filter>SQLite</Filter>
     </ClInclude>
+    <ClInclude Include="Function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Log.cpp">
@@ -121,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="SQLiteDiffStorage.cpp">
       <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="Function.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
