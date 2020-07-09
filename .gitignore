@@ -8,3 +8,4 @@ Loader/Debug/
 tests/tests.cmd
 *.log
 *.txt
+tmp/
