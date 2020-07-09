@@ -164,5 +164,36 @@ class TestingClass(unittest.TestCase):
 
         self.assertEqual(expected_match_data_list, match_data_list)
 
+    def do_instruction_hash_match_in_functions(self, src_function_address, target_function_address):
+        if self.debug_level > 0:
+            print('* do_instruction_hash_match_in_functions: %x - %x' % (src_function_address, target_function_address))
+
+        src_functions = self.binaries[0].get_functions()
+        target_functions = self.binaries[1].get_functions()
+        source_basic_block_addresses = src_functions.get_basic_blocks(src_function_address)
+        target_basic_block_addresses = target_functions.get_basic_blocks(target_function_address)
+
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+
+        matches = []
+        for match_data in diff_algorithms.do_instruction_hash_match_in_blocks(source_basic_block_addresses, target_basic_block_addresses):
+            if self.debug_level > 0:
+                print('\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
+            matches.append({'source': match_data.source, 'target': match_data.target, 'match_rate': match_data.match_rate})
+
+        return matches
+
+    def test_do_instruction_hash_match_in_functions(self):
+        instruction_matches = self.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
+
+        if self.write_data:
+            with open('instruction_matches_6C83948B_004496D9.json', 'w') as fd:
+                json.dump(instruction_matches, fd, indent = 4)
+
+        with open(r'expected\instruction_matches_6C83948B_004496D9.json', 'r') as fd:
+            expected_instruction_matches = json.load(fd)        
+
+        self.assertEqual(expected_instruction_matches, instruction_matches)
+
 if __name__ == '__main__':
     unittest.main()

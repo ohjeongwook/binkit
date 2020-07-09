@@ -17,20 +17,6 @@ class Tests:
             binary.open(filename)
             self.binaries.append(binary)
 
-    def dump_call_targets(self, basic_blocks):
-        for call_target in basic_blocks.get_call_targets():
-            print('call_target: %x' % call_target)
-
-    def do_instruction_hash_match_in_functions(self, src_function_address, target_function_address):
-        print('* do_instruction_hash_match_in_functions: %x - %x' % (src_function_address, target_function_address))
-        src_functions = self.binaries[0].get_functions()
-        target_functions = self.binaries[1].get_functions()
-        source_basic_block_addresses = src_functions.get_basic_blocks(src_function_address)
-        target_basic_block_addresses = target_functions.get_basic_blocks(target_function_address)
-
-        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        for match_data in diff_algorithms.do_instruction_hash_match_in_blocks(source_basic_block_addresses, target_basic_block_addresses):
-            print('\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
     def print_match_data_combination(self, match_data_combination, prefix = ''):
         print(prefix + '* print_match_data_combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
@@ -97,7 +83,6 @@ if __name__ == '__main__':
     #tests.perform_multilevel_control_flow_matches(0x6c83a795, 0x44a9e3)
     #tests.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
     #tests.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
-    #tests.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
     #tests.do_function_match()
     tests.dump_functions()
     
