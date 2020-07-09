@@ -10,6 +10,8 @@ setx PYTHONHOME C:\Users\Administrator\AppData\Local\Programs\Python\Python38
 
 Open binkit.sln solution file to compile Loader and pybinkit project
 
+* Use Visual Studio 2019
+
 # Using pybinkit
 
 * Import pybinkit
