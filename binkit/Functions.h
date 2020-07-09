@@ -7,6 +7,7 @@
 
 #include "Structures.h"
 #include "DisassemblyReader.h"
+#include "Function.h"
 #include "BasicBlocks.h"
 
 using namespace std;
@@ -18,9 +19,9 @@ private:
     DisassemblyReader* m_pdisassemblyReader;
     BasicBlocks* m_pbasicBlocks;
 
-    multimap <va_t, va_t> m_blockToFunction;
-    multimap <va_t, va_t> m_functionToBlock;
-    unordered_set <va_t> m_functionAddresses;
+    multimap<va_t, va_t> m_basicBlockToFunctionAddresses;
+    vector<Function *> m_functions;
+    multimap<va_t, Function*> m_addressToFunctions;
 
     void Load();
     bool UpdateFunctionAddressesInStorage();
@@ -28,9 +29,7 @@ public:
     Functions(DisassemblyReader* p_disassemblyReader = NULL, BasicBlocks *p_basicBlocks = NULL);
     ~Functions();
 
-    vector<va_t> *GetAddresses();
-    vector <va_t> GetBasicBlocks(va_t FunctionAddress);
-    bool GetFunctionAddress(va_t address, va_t& functionAddress);
+    vector<Function*>* GetFunctions();
+    Function* GetFunction(va_t address);
     bool IsInFunction(va_t basicBlockAddress, va_t functionAddress);
-    multimap <va_t, va_t>* GetFunctionToBlock();
 };
