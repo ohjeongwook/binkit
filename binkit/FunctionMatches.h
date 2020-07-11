@@ -2,7 +2,6 @@
 #include <unordered_map>
 
 #include "Binary.h"
-#include "Functions.h"
 #include "BasicBlocks.h"
 #include "Log.h"
 
@@ -22,8 +21,6 @@ class FunctionMatches
 private:
 	Binary m_sourceBinary;
 	Binary m_targetBinary;
-	Functions* m_psourceFunctions;
-	Functions* m_ptargetFunctions;
 	unordered_map<va_t, TargetToMatchDataListMap> m_functionMatches;
 	void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
 	void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
