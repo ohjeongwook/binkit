@@ -20,7 +20,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("open", &Binary::Open, "A function to open binary", py::arg("filename"), py::arg("file_id") = 0)
         .def("get_basic_blocks", &Binary::GetBasicBlocks, py::return_value_policy::reference)
         .def("get_functions", &Binary::GetFunctions)
-        .def("get_function", &Binary::GetFunction);
+        .def("get_function", &Binary::GetFunction, py::return_value_policy::reference);
 
     py::class_<BasicBlocks>(m, "BasicBlocks")
         .def(py::init())
