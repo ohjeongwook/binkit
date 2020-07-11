@@ -35,7 +35,7 @@ void Functions::Load()
     // Build up m_functions, m_addressToFunctions
     for (va_t functionAddress : functionAddresses)
     {
-        Function* p_function = new Function(functionAddress);
+        Function* p_function = new Function(m_pbasicBlocks, functionAddress);
         m_functions.push_back(p_function);
         m_addressToFunctions.insert(pair<va_t, Function*>(functionAddress, p_function));
     }
@@ -119,6 +119,10 @@ void Functions::Load()
                     {
                         LogMessage(0, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
                         a2f_it = m_basicBlockToFunctionAddresses.erase(a2f_it);
+                        if (a2f_it == m_basicBlockToFunctionAddresses.end())
+                        {
+                            break;
+                        }
                     }
                     m_basicBlockToFunctionAddresses.insert(pair <va_t, va_t>(address, functionStartAddress));
                     LogMessage(0, __FUNCTION__, "\tAdding Block: %X Function: %X\n", address, functionStartAddress);
