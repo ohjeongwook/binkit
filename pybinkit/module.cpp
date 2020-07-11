@@ -6,7 +6,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
 
-#include "Functions.h"
+#include "Function.h"
 #include "Structures.h"
 #include "Binary.h"
 #include "BasicBlocks.h"
@@ -19,7 +19,8 @@ PYBIND11_MODULE(pybinkit, m) {
         .def(py::init())
         .def("open", &Binary::Open, "A function to open binary", py::arg("filename"), py::arg("file_id") = 0)
         .def("get_basic_blocks", &Binary::GetBasicBlocks, py::return_value_policy::reference)
-        .def("get_functions", &Binary::GetFunctions, py::return_value_policy::reference);
+        .def("get_functions", &Binary::GetFunctions)
+        .def("get_function", &Binary::GetFunction);
 
     py::class_<BasicBlocks>(m, "BasicBlocks")
         .def(py::init())
@@ -37,11 +38,6 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
         .def("get_match_data_combinations", &DiffAlgorithms::GetMatchDataCombinations);        
-
-    py::class_<Functions>(m, "Functions")
-        .def(py::init())
-        .def("get_functions", &Functions::GetFunctions)
-        .def("get_function", &Functions::GetFunction);
 
     py::class_<Function>(m, "Function")
         .def(py::init())

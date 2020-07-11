@@ -3,7 +3,6 @@
 
 #include "Binary.h"
 #include "BasicBlocks.h"
-#include "Functions.h"
 #include "Log.h"
 #include "FunctionMatches.h"
 
@@ -255,8 +254,6 @@ private:
 	int m_debugLevel;
 	BasicBlocks *m_psourceBasicBlocks;
 	BasicBlocks* m_ptargetBasicBlocks;
-	Functions *m_psourceFunctions;
-	Functions *m_ptargetFunctions;
 	MatchDataCombinations* GenerateMatchDataCombinations(vector<MatchData> matchDataList);
 
 public:

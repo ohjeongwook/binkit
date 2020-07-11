@@ -13,9 +13,7 @@ DiffAlgorithms::DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary)
 {
 	m_debugLevel = 0;
 	m_psourceBasicBlocks = sourceBinary.GetBasicBlocks();
-	m_psourceFunctions = sourceBinary.GetFunctions();
 	m_ptargetBasicBlocks = targetBinary.GetBasicBlocks();
-	m_ptargetFunctions = targetBinary.GetFunctions();
 }
 
 vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()

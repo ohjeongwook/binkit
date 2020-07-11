@@ -5,8 +5,6 @@ FunctionMatches::FunctionMatches(Binary& sourceBinary, Binary& targetBinary)
 {
 	m_sourceBinary = sourceBinary;
 	m_targetBinary = targetBinary;
-	m_psourceFunctions = sourceBinary.GetFunctions();
-	m_ptargetFunctions = targetBinary.GetFunctions();
 }
 
 void FunctionMatches::Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData)
@@ -86,21 +84,16 @@ vector<FunctionMatch> FunctionMatches::GetMatches()
 
 void FunctionMatches::AddMatches(vector<MatchData> currentMatchDataList)
 {
-	if (!m_psourceFunctions || !m_ptargetFunctions)
-	{
-		return;
-	}
-
 	for (MatchData matchData : currentMatchDataList)
 	{
 		va_t sourceFunctionAddress;
-		Function *p_src_function = m_psourceFunctions->GetFunction(matchData.Source);
+		Function *p_src_function = m_sourceBinary.GetFunction(matchData.Source);
 		if (p_src_function)
 		{
 			sourceFunctionAddress = p_src_function->GetAddress();
 		}
 		va_t targetFunctionAddress;
-		Function *p_target_function = m_ptargetFunctions->GetFunction(matchData.Target);
+		Function *p_target_function = m_targetBinary.GetFunction(matchData.Target);
 		if (p_target_function)
 		{
 			targetFunctionAddress = p_target_function->GetAddress();
@@ -117,12 +110,12 @@ void FunctionMatches::DoInstructionHashMatch()
 	for (auto& val : m_functionMatches)
 	{
 		va_t sourceFunctionAddress = val.first;
-		vector<va_t> sourceFunctionAddresses = m_psourceFunctions->GetFunction(sourceFunctionAddress)->GetBasicBlocks();
+		vector<va_t> sourceFunctionAddresses = m_sourceBinary.GetFunction(sourceFunctionAddress)->GetBasicBlocks();
 		for (auto& val2 : val.second)
 		{
 			va_t targetFunctionAddress = val2.first;
 
-			vector<va_t> targetFunctionAddresses = m_ptargetFunctions->GetFunction(targetFunctionAddress)->GetBasicBlocks();
+			vector<va_t> targetFunctionAddresses = m_targetBinary.GetFunction(targetFunctionAddress)->GetBasicBlocks();
 			vector<MatchData> functionInstructionHashMatches = p_diffAlgorithms->DoInstructionHashMatchInBlocks(sourceFunctionAddresses, targetFunctionAddresses);
 			Add(sourceFunctionAddress, targetFunctionAddress, functionInstructionHashMatches);
 		}
