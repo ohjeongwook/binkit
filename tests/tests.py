@@ -208,7 +208,6 @@ class TestCase(unittest.TestCase):
             print(prefix + '\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
 
     def perform_multilevel_control_flow_matches(self, source, target):
-        print('* perform_multilevel_control_flow_matches: %x - %x' % (source, target))
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         
         address_pair = pybinkit.AddressPair(source, target)
@@ -243,7 +242,6 @@ class TestCase(unittest.TestCase):
     def get_function_match_list(self, function_matches):
         function_match_data_list = []
         for function_match in function_matches.get_matches():
-            print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
             function_match_data = {'source': function_match.source, 'target': function_match.target}
             function_match_data['matches'] = self.get_match_list(function_match.match_data_list)
             function_match_data_list.append(function_match_data)
@@ -254,8 +252,6 @@ class TestCase(unittest.TestCase):
         return function_match_data_list
 
     def test_function_match(self):
-        print('* do_function_match:')
-
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         basic_block_matches = diff_algorithms.do_instruction_hash_match()
 
