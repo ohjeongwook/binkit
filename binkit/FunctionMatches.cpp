@@ -87,19 +87,13 @@ void FunctionMatches::AddMatches(vector<MatchData> currentMatchDataList)
 	for (MatchData matchData : currentMatchDataList)
 	{
 		va_t sourceFunctionAddress;
-		Function *p_src_function = m_sourceBinary.GetFunction(matchData.Source);
-		if (p_src_function)
-		{
-			sourceFunctionAddress = p_src_function->GetAddress();
-		}
-		va_t targetFunctionAddress;
-		Function *p_target_function = m_targetBinary.GetFunction(matchData.Target);
-		if (p_target_function)
-		{
-			targetFunctionAddress = p_target_function->GetAddress();
-		}
+		Function* p_src_function = m_sourceBinary.GetFunction(matchData.Source);
+		Function* p_target_function = m_targetBinary.GetFunction(matchData.Target);
 
-		Add(sourceFunctionAddress, targetFunctionAddress, matchData);
+		if (p_src_function && p_target_function)
+		{
+			Add(p_src_function->GetAddress(), p_target_function->GetAddress(), matchData);
+		}
 	}
 }
 
