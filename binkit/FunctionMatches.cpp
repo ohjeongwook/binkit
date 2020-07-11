@@ -30,7 +30,20 @@ void FunctionMatches::Add(va_t sourceFunctionAddress, va_t targetFunctionAddress
 		}
 		else
 		{
-			targetToMatchDataListMapit->second.push_back(matchData);
+			bool isNewMatchData = true;
+			for (MatchData currentMatchData : targetToMatchDataListMapit->second)
+			{
+				if (matchData.Source == currentMatchData.Source && matchData.Target == currentMatchData.Target)
+				{
+					isNewMatchData = false;
+					break;
+				}
+			}
+
+			if (isNewMatchData)
+			{
+				targetToMatchDataListMapit->second.push_back(matchData);
+			}
 		}
 	}
 }
