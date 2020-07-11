@@ -21,9 +21,10 @@ private:
     unordered_set<va_t> m_basicBlockAddresses;
 
 public:
-    Function(va_t address = 0);
+    Function(BasicBlocks* p_basicBlocks = NULL, va_t address = 0);
 
     va_t GetAddress();
     void AddBasicBlock(va_t address);
     vector<va_t> GetBasicBlocks();
+    string GetSymbol();
 };

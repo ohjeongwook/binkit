@@ -40,8 +40,14 @@ PYBIND11_MODULE(pybinkit, m) {
 
     py::class_<Functions>(m, "Functions")
         .def(py::init())
-        .def("get_addresses", &Functions::GetAddresses)
-        .def("get_basic_blocks", &Functions::GetBasicBlocks);
+        .def("get_functions", &Functions::GetFunctions)
+        .def("get_function", &Functions::GetFunction);
+
+    py::class_<Function>(m, "Function")
+        .def(py::init())
+        .def("get_address", &Function::GetAddress)
+        .def("get_basic_blocks", &Function::GetBasicBlocks)
+        .def("get_symbol", &Function::GetSymbol);    
 
     py::class_<AddressPair>(m, "AddressPair")
         .def(py::init<va_t, va_t>())

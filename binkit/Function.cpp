@@ -1,8 +1,9 @@
 #include "Function.h"
 
-Function::Function(va_t address)
+Function::Function(BasicBlocks* p_basicBlocks, va_t address)
 {
     m_address = address;
+    m_pbasicBlocks = p_basicBlocks;
     vector<va_t> newBasicBlockAddresses;
 
     m_basicBlockAddresses.insert(address);
@@ -46,4 +47,9 @@ vector<va_t> Function::GetBasicBlocks()
     vector<va_t> basicBlockAddresses;
     basicBlockAddresses.insert(basicBlockAddresses.end(), m_basicBlockAddresses.begin(), m_basicBlockAddresses.end());
     return basicBlockAddresses;
+}
+
+string Function::GetSymbol()
+{
+    return m_pbasicBlocks->GetSymbol(m_address);
 }
