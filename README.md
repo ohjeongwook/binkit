@@ -94,7 +94,10 @@ for function_match in function_matches.get_matches():
    print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
 ```
 
-## BinKit SQLite Plugin
+## BinKit IDA Plugin
+
+* You can run following IDAPython script to download and install BinKit IDA Plugin
+   - [Download](Scripts/install_binkit_plugin.py)
 
 ```
 import os
