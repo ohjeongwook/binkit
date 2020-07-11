@@ -82,11 +82,10 @@ class TestingClass(unittest.TestCase):
             print('* dump_functions: ')
 
         function_data_list = []
-        functions = binary.get_functions()
-        basic_blocks = binary.get_basic_blocks()
-        for function_address in functions.get_addresses():
+        for function in binary.get_functions():
+            function_address = function.get_address()
             function_data = {'address': function_address}
-            symbol = basic_blocks.get_symbol(function_address)
+            symbol = function.get_symbol()
             function_data['symbol'] = symbol
             function_data['basic_block_addresses'] = []
 
@@ -94,28 +93,37 @@ class TestingClass(unittest.TestCase):
                 print('%.8x' % function_address)
                 print('function_address: %x - %s' % (function_address, symbol))
 
-            for basic_block_address in functions.get_basic_blocks(function_address):
+            for basic_block_address in function.get_basic_blocks():
                 if self.debug_level > 0:
                     print('\t%x' % (basic_block_address))
 
                 function_data['basic_block_addresses'].append(basic_block_address)
+
+            function_data['basic_block_addresses'].sort()
             function_data_list.append(function_data)
 
         return function_data_list
 
     def test_dump_functions(self):
-        function_data_list_arrary = []
+        function_data_list_array = []
         for binary in self.binaries:
-            function_data_list_arrary.append(self.dump_functions(binary))
+            function_data_list_array.append(self.dump_functions(binary))
 
         if self.write_data:
-            with open('function_data_list_arrary.json', 'w') as fd:
-                json.dump(function_data_list_arrary, fd, indent = 4)        
+            with open('function_data_list_array.json', 'w') as fd:
+                json.dump(function_data_list_array, fd, indent = 4)
 
-        with open(r'expected\function_data_list_arrary.json', 'r') as fd:
-            expected_function_data_list_arrary = json.load(fd)
+        with open(r'expected\function_data_list_array.json', 'r') as fd:
+            expected_function_data_list_array = json.load(fd)
 
-        self.assertEqual(expected_function_data_list_arrary, function_data_list_arrary)
+            for expected_function_data_list in expected_function_data_list_array:
+                for expected_function_data in expected_function_data_list:
+                    expected_function_data['basic_block_addresses'].sort()
+
+        with open(r'expected\function_data_list_array.json', 'w') as fd:
+            json.dump(expected_function_data_list_array, fd, indent = 4)
+
+        self.assertEqual(expected_function_data_list_array, function_data_list_array)
 
     def test_instruction_hash_match(self):
         if self.debug_level > 0:
@@ -168,15 +176,12 @@ class TestingClass(unittest.TestCase):
         if self.debug_level > 0:
             print('* do_instruction_hash_match_in_functions: %x - %x' % (src_function_address, target_function_address))
 
-        src_functions = self.binaries[0].get_functions()
-        target_functions = self.binaries[1].get_functions()
-        source_basic_block_addresses = src_functions.get_basic_blocks(src_function_address)
-        target_basic_block_addresses = target_functions.get_basic_blocks(target_function_address)
-
+        src_function = self.binaries[0].get_function(src_function_address)
+        target_function = self.binaries[1].get_function(target_function_address)
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
 
         matches = []
-        for match_data in diff_algorithms.do_instruction_hash_match_in_blocks(source_basic_block_addresses, target_basic_block_addresses):
+        for match_data in diff_algorithms.do_instruction_hash_match_in_blocks(src_function.get_basic_blocks(), target_function.get_basic_blocks()):
             if self.debug_level > 0:
                 print('\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
             matches.append({'source': match_data.source, 'target': match_data.target, 'match_rate': match_data.match_rate})
@@ -194,6 +199,37 @@ class TestingClass(unittest.TestCase):
             expected_instruction_matches = json.load(fd)        
 
         self.assertEqual(expected_instruction_matches, instruction_matches)
+
+    def print_match_data_combination(self, match_data_combination, prefix = ''):
+        print(prefix + '* print_match_data_combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
+        for i in range(0, match_data_combination.count(), 1):
+            match_data = match_data_combination.get(i)
+            print(prefix + '\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
+
+    def perform_multilevel_control_flow_matches(self, source, target):
+        print('* perform_multilevel_control_flow_matches: %x - %x' % (source, target))
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+        
+        address_pair = pybinkit.AddressPair(source, target)
+        match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), CREF_FROM)
+
+        for match_data_combination in match_data_combinations:
+            self.print_match_data_combination(match_data_combination)
+
+            address_str_list = []
+            address_pairs = match_data_combination.get_address_pairs()
+            for address_pair in address_pairs:
+                address_str_list.append('%x - %x' % (address_pair.source, address_pair.target))
+
+            print('\tControl Flow Match:' + ','.join(address_str_list))
+            sub_match_data_combinations = diff_algorithms.do_control_flow_matches(address_pairs, CREF_FROM)
+            for sub_match_data_combination in sub_match_data_combinations:
+                self.print_match_data_combination(sub_match_data_combination)
+
+    def test_perform_multilevel_control_flow_matches(self):
+        self.perform_multilevel_control_flow_matches(0x6c83a795, 0x44a9e3)
+        self.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
+        self.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
 
 if __name__ == '__main__':
     unittest.main()
