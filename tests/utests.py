@@ -9,9 +9,9 @@ DREF_FROM = 3
 DREF_TO = 4
 CALLED = 5
 
-class TestingClass(unittest.TestCase):
+class TestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        super(TestingClass, self).__init__(*args, **kwargs)
+        super(TestCase, self).__init__(*args, **kwargs)
 
         self.debug_level = 0
         self.write_data = True
@@ -131,6 +131,7 @@ class TestingClass(unittest.TestCase):
 
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_instruction_hash_match()
+
         match_data_list = []
         for match in matches:
             if self.debug_level > 0:
@@ -230,6 +231,56 @@ class TestingClass(unittest.TestCase):
         self.perform_multilevel_control_flow_matches(0x6c83a795, 0x44a9e3)
         self.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
         self.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
+
+
+    def get_match_list(self, matches):
+        match_data_list = []
+        for match in matches:
+            match_data = {'source': match.source, 'target': match.target, 'match_rate': match.match_rate}
+            match_data_list.append(match_data)
+        return match_data_list
+
+    def get_function_match_list(self, function_matches):
+        function_match_data_list = []
+        for function_match in function_matches.get_matches():
+            print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
+            function_match_data = {'source': function_match.source, 'target': function_match.target}
+            function_match_data['matches'] = self.get_match_list(function_match.match_data_list)
+            function_match_data_list.append(function_match_data)
+
+            #match_data_combinations = diff_algorithms.get_match_data_combinations(function_match.match_data_list)
+            #self.print_match_data_combinations(match_data_combinations, '\t')
+
+        return function_match_data_list
+
+    def test_function_match(self):
+        print('* do_function_match:')
+
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+        basic_block_matches = diff_algorithms.do_instruction_hash_match()
+
+        function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
+        function_matches.add_matches(basic_block_matches)
+        original_function_matches = self.get_function_match_list(function_matches)
+
+        function_matches.do_instruction_hash_match()
+        revised_function_matches = self.get_function_match_list(function_matches)
+
+        if self.write_data:
+            with open('original_function_matches.json', 'w') as fd:
+                json.dump(original_function_matches, fd, indent = 4)
+
+            with open('revised_function_matches.json', 'w') as fd:
+                json.dump(revised_function_matches, fd, indent = 4)                
+
+        with open(r'expected\original_function_matches.json', 'r') as fd:
+            expected_original_function_matches = json.load(fd)
+
+        with open(r'expected\revised_function_matches.json', 'r') as fd:
+            expected_revised_function_matches = json.load(fd)            
+
+        self.assertEqual(expected_original_function_matches, original_function_matches)
+        self.assertEqual(expected_revised_function_matches, revised_function_matches)
 
 if __name__ == '__main__':
     unittest.main()
