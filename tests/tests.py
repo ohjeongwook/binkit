@@ -251,6 +251,40 @@ class TestCase(unittest.TestCase):
 
         return function_match_data_list
 
+    def get_basic_blocks_set(self, binary, address):
+        basic_blocks = {}
+        function = binary.get_function(address)
+
+        if not function:
+            return
+
+        for basic_block_address in function.get_basic_blocks():
+            basic_blocks[basic_block_address] = 1
+        return basic_blocks
+
+    def check_function_matches(self, function_matches, src_binary, target_binary):
+        for function_match in function_matches.get_matches():
+            src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
+            target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
+            
+            for match in function_match.match_data_list:
+                if match.source in src_basic_blocks:
+                    del src_basic_blocks[match.source]
+
+                if match.target in target_basic_blocks:
+                    del target_basic_blocks[match.target]
+
+            if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
+                print('%x - %x' % (function_match.source, function_match.target))
+
+                print('\t- src:')
+                for src_basic_block in src_basic_blocks.keys():
+                    print('\t%.8x' % src_basic_block)
+
+                print('\t- target:')
+                for target_basic_block in target_basic_blocks.keys():
+                    print('\t%.8x' % target_basic_block)
+
     def test_function_match(self):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         basic_block_matches = diff_algorithms.do_instruction_hash_match()
@@ -277,6 +311,8 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(expected_original_function_matches, original_function_matches)
         self.assertEqual(expected_revised_function_matches, revised_function_matches)
+
+        self.check_function_matches(function_matches, self.binaries[0], self.binaries[1])
 
 if __name__ == '__main__':
     unittest.main()
