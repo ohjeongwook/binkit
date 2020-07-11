@@ -9,3 +9,4 @@ tests/tests.cmd
 *.log
 *.txt
 tmp/
+tests/*.json
