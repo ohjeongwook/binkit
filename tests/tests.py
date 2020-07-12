@@ -182,7 +182,7 @@ class TestCase(unittest.TestCase):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
 
         matches = []
-        for match_data in diff_algorithms.do_instruction_hash_match_in_blocks(src_function.get_basic_blocks(), target_function.get_basic_blocks()):
+        for match_data in diff_algorithms.do_blocks_instruction_hash_match(src_function.get_basic_blocks(), target_function.get_basic_blocks()):
             if self.debug_level > 0:
                 print('\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
             matches.append({'source': match_data.source, 'target': match_data.target, 'match_rate': match_data.match_rate})
