@@ -262,7 +262,22 @@ class TestCase(unittest.TestCase):
             basic_blocks[basic_block_address] = 1
         return basic_blocks
 
-    def check_function_matches(self, function_matches, src_binary, target_binary):
+    def check_function_match(self, src_function_address, target_function_address, src_binary, target_binary, function_matches):
+
+        for function_match in function_matches.get_matches():
+            function_match.source
+            function_match.target
+
+        for match in function_match.match_data_list:
+            match.source, match.target
+
+        child_matches = diff_algorithms.do_control_flow_match(match.source, match.target, CREF_FROM)
+        for child_match in child_matches:
+            if self.debug_level > 0:
+                print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
+
+    def check_function_matches(self, function_matches, binaries):
+        (src_binary, target_binary) = binaries
         for function_match in function_matches.get_matches():
             src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
             target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
@@ -294,25 +309,40 @@ class TestCase(unittest.TestCase):
         original_function_matches = self.get_function_match_list(function_matches)
 
         function_matches.do_instruction_hash_match()
-        revised_function_matches = self.get_function_match_list(function_matches)
+        function_matches_after_instruction_hash_match = self.get_function_match_list(function_matches)
+
+        self.check_function_matches(function_matches, self.binaries)
+        #self.check_function_match(function_matches, 0x6c822ee8, 0x43313a, self.binaries[0], self.binaries[1])
+
+        print('* do_control_flow_match:')
+        function_matches.do_control_flow_match()
+        function_matches_after_control_flow_match = self.get_function_match_list(function_matches)
+        
+        self.check_function_matches(function_matches, self.binaries)
 
         if self.write_data:
             with open('original_function_matches.json', 'w') as fd:
                 json.dump(original_function_matches, fd, indent = 4)
 
-            with open('revised_function_matches.json', 'w') as fd:
-                json.dump(revised_function_matches, fd, indent = 4)                
+            with open('function_matches_after_instruction_hash_match.json', 'w') as fd:
+                json.dump(function_matches_after_instruction_hash_match, fd, indent = 4)
+
+            with open('function_matches_after_control_flow_match.json', 'w') as fd:
+                json.dump(function_matches_after_control_flow_match, fd, indent = 4)                   
 
         with open(r'expected\original_function_matches.json', 'r') as fd:
             expected_original_function_matches = json.load(fd)
 
-        with open(r'expected\revised_function_matches.json', 'r') as fd:
-            expected_revised_function_matches = json.load(fd)            
+        with open(r'expected\function_matches_after_instruction_hash_match.json', 'r') as fd:
+            expected_function_matches_after_instruction_hash_match = json.load(fd)            
+
+        with open(r'expected\function_matches_after_control_flow_match.json', 'r') as fd:
+            expected_function_matches_after_control_flow_match = json.load(fd)        
 
         self.assertEqual(expected_original_function_matches, original_function_matches)
-        self.assertEqual(expected_revised_function_matches, revised_function_matches)
-
-        self.check_function_matches(function_matches, self.binaries[0], self.binaries[1])
+        self.assertEqual(expected_function_matches_after_instruction_hash_match, function_matches_after_instruction_hash_match)
+        self.assertEqual(expected_function_matches_after_control_flow_match, function_matches_after_control_flow_match)
 
 if __name__ == '__main__':
     unittest.main()
+
