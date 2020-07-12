@@ -44,10 +44,10 @@ diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
 diff_algorithms.do_instruction_hash_match()
 ```
 
-### do_instruction_hash_match_in_blocks
+### do_blocks_instruction_hash_match
 
 ```
-diff_algorithms.do_instruction_hash_match_in_blocks(source_basic_block_addresses, target_basic_block_addresses):
+diff_algorithms.do_blocks_instruction_hash_match(source_basic_block_addresses, target_basic_block_addresses):
 ```
 
 ### do_control_flow_match

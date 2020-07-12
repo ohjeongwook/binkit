@@ -260,7 +260,8 @@ public:
 	DiffAlgorithms();
 	DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary);
 	vector<MatchData> DoInstructionHashMatch();
-	vector<MatchData> DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
+	vector<MatchData> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
+	vector<MatchData> DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<MatchDataCombination*> GetMatchDataCombinations(vector<MatchData> matchDataList);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type);	
