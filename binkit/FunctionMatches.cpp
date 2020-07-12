@@ -123,7 +123,7 @@ void FunctionMatches::DoInstructionHashMatch()
 			va_t targetFunctionAddress = val2.first;
 
 			vector<va_t> targetFunctionAddresses = m_targetBinary.GetFunction(targetFunctionAddress)->GetBasicBlocks();
-			vector<MatchData> functionInstructionHashMatches = p_diffAlgorithms->DoInstructionHashMatchInBlocks(sourceFunctionAddresses, targetFunctionAddresses);
+			vector<MatchData> functionInstructionHashMatches = p_diffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
 			Add(sourceFunctionAddress, targetFunctionAddress, functionInstructionHashMatches);
 		}
 	}

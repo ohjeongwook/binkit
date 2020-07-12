@@ -177,7 +177,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				matchData.MatchRate = GetInstructionHashMatchRate(srcInstructionHash, targetInstructionHash);
 				controlFlowMatches.push_back(matchData);
 			}
-			else if (srcInstructionHash.size() ==0 && targetInstructionHash.size() == 0)
+			else if (srcInstructionHash.size() == 0 && targetInstructionHash.size() == 0)
 			{
 				MatchData matchData;
 				memset(&matchData, 0, sizeof(MatchData));
@@ -208,7 +208,7 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 	return GetMatchDataCombinations(controlFlowMatches);
 }
 
-vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
+vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
 {
 	vector<MatchData> matcDataList;
 	unordered_set<va_t> targetBlockAddressesMap;
@@ -239,6 +239,14 @@ vector<MatchData> DiffAlgorithms::DoInstructionHashMatchInBlocks(vector<va_t>& s
 	}
 
 	return matcDataList;
+}
+
+vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
+{
+	vector<va_t> sourceBasicBlocks = sourceFunction->GetBasicBlocks();
+	vector<va_t> targetBasicBlocks = targetFunction->GetBasicBlocks();
+
+	return DoBlocksInstructionHashMatch(sourceBasicBlocks, targetBasicBlocks);
 }
 
 string DiffAlgorithms::GetMatchTypeStr(int Type)
