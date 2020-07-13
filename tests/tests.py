@@ -316,60 +316,69 @@ class TestCase(unittest.TestCase):
 
         return unidentified_blocks
 
-    def test_function_match(self):
-        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        basic_block_matches = diff_algorithms.do_instruction_hash_match()
-
-        function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
-        function_matches.add_matches(basic_block_matches)
-        original_function_matches = self.get_function_matches(function_matches)
-
+    def do_instruction_hash_match(self, function_matches):
         print('* do_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
         function_matches_after_instruction_hash_match = self.get_function_matches(function_matches)
         unidentified_blocks_after_instruction_hash_match = self.get_function_unidentified_blocks(function_matches)
 
+        if self.write_data:
+            with open('function_matches_after_instruction_hash_match.json', 'w') as fd:
+                json.dump(function_matches_after_instruction_hash_match, fd, indent = 4)
+
+            with open('unidentified_blocks_after_instruction_hash_match.json', 'w') as fd:
+                json.dump(unidentified_blocks_after_instruction_hash_match, fd, indent = 4)
+
+        with open(r'expected\function_matches_after_instruction_hash_match.json', 'r') as fd:
+            expected_function_matches_after_instruction_hash_match = json.load(fd)
+
+        with open(r'expected\unidentified_blocks_after_instruction_hash_match.json', 'r') as fd:
+            expected_unidentified_blocks_after_instruction_hash_match = json.load(fd)
+
+        self.assertEqual(expected_function_matches_after_instruction_hash_match, function_matches_after_instruction_hash_match)
+        self.assertEqual(expected_unidentified_blocks_after_instruction_hash_match, unidentified_blocks_after_instruction_hash_match)
+
+    def do_control_flow_match(self, function_matches):
         print('* do_control_flow_match:')
         function_matches.do_control_flow_match()
         function_matches_after_control_flow_match = self.get_function_matches(function_matches)        
         unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches)
 
         if self.write_data:
-            with open('original_function_matches.json', 'w') as fd:
-                json.dump(original_function_matches, fd, indent = 4)
-
-            with open('function_matches_after_instruction_hash_match.json', 'w') as fd:
-                json.dump(function_matches_after_instruction_hash_match, fd, indent = 4)
-
             with open('function_matches_after_control_flow_match.json', 'w') as fd:
                 json.dump(function_matches_after_control_flow_match, fd, indent = 4)
-
-            with open('unidentified_blocks_after_instruction_hash_match.json', 'w') as fd:
-                json.dump(unidentified_blocks_after_instruction_hash_match, fd, indent = 4)
 
             with open('unidentified_blocks_after_control_flow_match.json', 'w') as fd:
                 json.dump(unidentified_blocks_after_control_flow_match, fd, indent = 4)
 
-        with open(r'expected\original_function_matches.json', 'r') as fd:
-            expected_original_function_matches = json.load(fd)
-
-        with open(r'expected\function_matches_after_instruction_hash_match.json', 'r') as fd:
-            expected_function_matches_after_instruction_hash_match = json.load(fd)
-
         with open(r'expected\function_matches_after_control_flow_match.json', 'r') as fd:
             expected_function_matches_after_control_flow_match = json.load(fd)
-
-        with open(r'expected\unidentified_blocks_after_instruction_hash_match.json', 'r') as fd:
-            expected_unidentified_blocks_after_instruction_hash_match = json.load(fd)
 
         with open(r'expected\unidentified_blocks_after_control_flow_match.json', 'r') as fd:
             expected_unidentified_blocks_after_control_flow_match = json.load(fd)
 
-        self.assertEqual(expected_original_function_matches, original_function_matches)
-        self.assertEqual(expected_function_matches_after_instruction_hash_match, function_matches_after_instruction_hash_match)
         self.assertEqual(expected_function_matches_after_control_flow_match, function_matches_after_control_flow_match)
-        self.assertEqual(expected_unidentified_blocks_after_instruction_hash_match, unidentified_blocks_after_instruction_hash_match)
         self.assertEqual(expected_unidentified_blocks_after_control_flow_match, unidentified_blocks_after_control_flow_match)
+
+    def test_function_match(self):
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+        basic_block_matches = diff_algorithms.do_instruction_hash_match()
+
+        function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
+        function_matches.add_matches(basic_block_matches)
+        function_matches_initial = self.get_function_matches(function_matches)
+
+        if self.write_data:
+            with open('function_matches_initial.json', 'w') as fd:
+                json.dump(function_matches_initial, fd, indent = 4)
+
+        with open(r'expected\function_matches_initial.json', 'r') as fd:
+            expected_function_matches_initial = json.load(fd)
+
+        self.assertEqual(expected_function_matches_initial, function_matches_initial)
+
+        self.do_instruction_hash_match(function_matches)
+        self.do_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
         print('* do_function_diff:')
