@@ -373,6 +373,7 @@ class TestCase(unittest.TestCase):
 
     def do_function_diff(self, source, target):
         print('* do_function_diff:')
+        function_diff_list = []
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(source), self.binaries[1].get_function(target))
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
@@ -383,19 +384,34 @@ class TestCase(unittest.TestCase):
 
         print('* do_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
-        function_matches_after_instruction_hash_match = self.get_function_matches(function_matches)
-        unidentified_blocks_after_instruction_hash_match = self.get_function_unidentified_blocks(function_matches)
+        function_matches_list = self.get_function_matches(function_matches)
+        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
+        function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
         print('* do_control_flow_match:')
         function_matches.do_control_flow_match()
-        function_matches_after_control_flow_match = self.get_function_matches(function_matches)        
-        unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches)
+        function_matches_list = self.get_function_matches(function_matches)        
+        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
+        function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
-    def test_function_diff_6c822ee8_43313a(self):
-        self.do_function_diff(0x6c822ee8, 0x43313a)
+        return function_diff_list
 
-    def test_function_diff_6c7fc779_40c78a(self):      
-        self.do_function_diff(0x6c7fc779, 0x40c78a)
+    def do_function_pair_diff(self, src, target):
+        function_diff_list = self.do_function_diff(src, target)
+
+        filename = 'function_diff_%.8x_%.8x.json' % (src, target)
+        if self.write_data:
+            with open(filename, 'w') as fd:
+                json.dump(function_diff_list, fd, indent = 4)
+
+        with open(r'expected\%s' % filename, 'r') as fd:
+            expected_function_diff_list = json.load(fd)
+
+        self.assertEqual(expected_function_diff_list, function_diff_list)
+
+    def test_function_pair_diffs(self):
+        self.do_function_pair_diff(0x6c822ee8, 0x43313a)
+        self.do_function_pair_diff(0x6c7fc779, 0x40c78a)
 
 if __name__ == '__main__':
     unittest.main()
