@@ -242,10 +242,13 @@ class TestCase(unittest.TestCase):
             match_data_list.append(match_data)
         return match_data_list
 
-    def get_function_matches(self, function_matches, level = 1):
+    def get_function_matches(self, function_matches, source_function_address = 0, level = 1):
         prefix = '\t' * level
         function_match_data_list = []
         for function_match in function_matches.get_matches():
+            if source_function_address !=0 and source_function_address != function_match.source:
+                continue
+            
             if self.debug_level > 0:
                 print(prefix + 'FunctionMatch: %x vs %x' % (function_match.source, function_match.target))
 
@@ -280,11 +283,14 @@ class TestCase(unittest.TestCase):
             if self.debug_level > 0:
                 print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
-    def get_function_unidentified_blocks(self, function_matches, level = 0):
+    def get_function_unidentified_blocks(self, function_matches, source_function_address = 0, level = 0):
         prefix = '\t' * level
         unidentified_blocks = []
         (src_binary, target_binary) = self.binaries
         for function_match in function_matches.get_matches():
+            if source_function_address !=0 and source_function_address != function_match.source:
+                continue
+
             src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
             target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
             
@@ -338,23 +344,26 @@ class TestCase(unittest.TestCase):
         self.assertEqual(expected_function_matches_after_instruction_hash_match, function_matches_after_instruction_hash_match)
         self.assertEqual(expected_unidentified_blocks_after_instruction_hash_match, unidentified_blocks_after_instruction_hash_match)
 
-    def do_control_flow_match(self, function_matches):
+    def do_control_flow_match(self, function_matches, source_function_address = 0):
         print('* do_control_flow_match:')
-        function_matches.do_control_flow_match()
-        function_matches_after_control_flow_match = self.get_function_matches(function_matches)        
-        unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches)
+        match_sequence = function_matches.do_control_flow_match(source_function_address)
+        function_matches_after_control_flow_match = self.get_function_matches(function_matches, source_function_address)        
+        unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches, source_function_address)
+
+        print('\tremove_matches: match_sequence: %d' % match_sequence)
+        function_matches.remove_matches(match_sequence)
 
         if self.write_data:
-            with open('function_matches_after_control_flow_match.json', 'w') as fd:
+            with open('function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
                 json.dump(function_matches_after_control_flow_match, fd, indent = 4)
 
-            with open('unidentified_blocks_after_control_flow_match.json', 'w') as fd:
+            with open('unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
                 json.dump(unidentified_blocks_after_control_flow_match, fd, indent = 4)
 
-        with open(r'expected\function_matches_after_control_flow_match.json', 'r') as fd:
+        with open(r'expected\function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
             expected_function_matches_after_control_flow_match = json.load(fd)
 
-        with open(r'expected\unidentified_blocks_after_control_flow_match.json', 'r') as fd:
+        with open(r'expected\unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
             expected_unidentified_blocks_after_control_flow_match = json.load(fd)
 
         self.assertEqual(expected_function_matches_after_control_flow_match, function_matches_after_control_flow_match)
@@ -378,6 +387,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(expected_function_matches_initial, function_matches_initial)
 
         self.do_instruction_hash_match(function_matches)
+        self.do_control_flow_match(function_matches, 0x6c7fc779)
         self.do_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
