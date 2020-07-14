@@ -72,7 +72,8 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readonly("reference_order_difference", &MatchData::ReferenceOrderDifference)        
         .def_readonly("match_rate", &MatchData::MatchRate)
         .def_readonly("source_parent", &MatchData::SourceParent)
-        .def_readonly("target_parent", &MatchData::TargetParent);
+        .def_readonly("target_parent", &MatchData::TargetParent)
+        .def_readonly("match_sequence", &MatchData::MatchSequence);
 
     py::class_<FunctionMatch>(m, "FunctionMatch")
         .def(py::init())
@@ -85,7 +86,8 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("add_matches", &FunctionMatches::AddMatches)
         .def("get_matches", &FunctionMatches::GetMatches)
         .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)
-        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch);
+        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0)
+        .def("remove_matches", &FunctionMatches::RemoveMatches);
 
     py::class_<MatchDataCombination>(m, "MatchDataCombination")
         .def(py::init())
