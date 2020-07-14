@@ -123,4 +123,5 @@ typedef struct _MatchData_ {
     int MatchRate;
     va_t SourceParent;
     va_t TargetParent;
+    int MatchSequence;
 } MatchData;

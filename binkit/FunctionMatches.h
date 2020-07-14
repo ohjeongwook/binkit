@@ -16,14 +16,18 @@ struct FunctionMatch
 	vector<MatchData> MatchDataList;
 };
 
+class DiffAlgorithms;
+
 class FunctionMatches
 {
 private:
 	Binary m_sourceBinary;
 	Binary m_targetBinary;
+	DiffAlgorithms* m_pdiffAlgorithms;
+	int m_matchSequence;
 	unordered_map<va_t, TargetToMatchDataListMap> m_functionMatches;
-	void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
-	void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
+	void AddMatchData(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
+	void AddMatchDataList(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
 
 public:
 	FunctionMatches(Binary& sourceBinary, Binary& targetBinary);
@@ -32,6 +36,7 @@ public:
 	void Print();
 	vector<FunctionMatch> GetMatches();
 
-	void DoInstructionHashMatch();
-	void DoControlFlowMatch();
+	int DoInstructionHashMatch();
+	int DoControlFlowMatch(va_t address = 0);
+	void RemoveMatches(int matchSequence);
 };
