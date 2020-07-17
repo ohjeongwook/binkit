@@ -16,6 +16,22 @@ DiffAlgorithms::DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary)
 	m_ptargetBasicBlocks = targetBinary.GetBasicBlocks();
 }
 
+int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2)
+{
+	int matchRate = 0;
+
+	int lengthDifference = (instructionHash1.size() - instructionHash2.size());
+	if (lengthDifference > instructionHash1.size() * 0.5 || lengthDifference > instructionHash2.size() * 0.5)
+	{
+		matchRate = 0;
+	}
+	else
+	{
+		matchRate = GetStringSimilarity(BytesToHexString(instructionHash1).c_str(), BytesToHexString(instructionHash2).c_str());
+	}
+	return matchRate;
+}
+
 vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()
 {
 	vector<MatchData> matchDataList;
@@ -45,20 +61,52 @@ vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()
 	return matchDataList;
 }
 
-int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2)
+vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
 {
-	int matchRate = 0;
+	vector<MatchData> matcDataList;
+	unordered_set<va_t> targetBlockAddressSet;
 
-	int lengthDifference = (instructionHash1.size() - instructionHash2.size());
-	if (lengthDifference > instructionHash1.size() * 0.5 || lengthDifference > instructionHash2.size() * 0.5)
+	for (va_t address : targetBlockAddresses)
 	{
-		matchRate = 0;
+		targetBlockAddressSet.insert(address);
 	}
-	else
+
+	for (va_t sourceAddress : sourceBlockAddresses)
 	{
-		matchRate = GetStringSimilarity(BytesToHexString(instructionHash1).c_str(), BytesToHexString(instructionHash2).c_str());
+		vector<unsigned char> instructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddress);
+		vector<va_t> targetAddresses;
+
+		for (va_t targetAddress : m_ptargetBasicBlocks->GetInstructionHashMatches(instructionHash))
+		{
+			if (targetBlockAddressSet.find(targetAddress) == targetBlockAddressSet.end())
+			{
+				continue;
+			}
+
+			targetAddresses.push_back(targetAddress);
+		}
+
+		if (targetAddresses.size() == 1)
+		{
+			MatchData matchData;
+			memset(&matchData, 0, sizeof(MatchData));
+			matchData.Type = INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH;
+			matchData.Source = sourceAddress;
+			matchData.Target = targetAddresses[0];
+			matchData.MatchRate = 100;
+			matcDataList.push_back(matchData);
+		}
 	}
-	return matchRate;
+
+	return matcDataList;
+}
+
+vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
+{
+	vector<va_t> sourceBasicBlocks = sourceFunction->GetBasicBlocks();
+	vector<va_t> targetBasicBlocks = targetFunction->GetBasicBlocks();
+
+	return DoBlocksInstructionHashMatch(sourceBasicBlocks, targetBasicBlocks);
 }
 
 MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<MatchData> matchDataList)
@@ -212,47 +260,6 @@ vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<Addres
 	}
 
 	return GetMatchDataCombinations(controlFlowMatches);
-}
-
-vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
-{
-	vector<MatchData> matcDataList;
-	unordered_set<va_t> targetBlockAddressesMap;
-
-	for (va_t address : targetBlockAddresses)
-	{
-		targetBlockAddressesMap.insert(address);
-	}
-
-	for (va_t sourceAddress : sourceBlockAddresses)
-	{
-		vector<unsigned char> instructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddress);
-		for (va_t targetAddress : m_ptargetBasicBlocks->GetAddressesForInstructionHash(instructionHash))
-		{
-			if (targetBlockAddressesMap.find(targetAddress) == targetBlockAddressesMap.end())
-			{
-				continue;
-			}
-
-			MatchData matchData;
-			memset(&matchData, 0, sizeof(MatchData));
-			matchData.Type = INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH;
-			matchData.Source = sourceAddress;
-			matchData.Target = targetAddress;
-			matchData.MatchRate = 100;
-			matcDataList.push_back(matchData);
-		}
-	}
-
-	return matcDataList;
-}
-
-vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
-{
-	vector<va_t> sourceBasicBlocks = sourceFunction->GetBasicBlocks();
-	vector<va_t> targetBasicBlocks = targetFunction->GetBasicBlocks();
-
-	return DoBlocksInstructionHashMatch(sourceBasicBlocks, targetBasicBlocks);
 }
 
 string DiffAlgorithms::GetMatchTypeStr(int Type)
