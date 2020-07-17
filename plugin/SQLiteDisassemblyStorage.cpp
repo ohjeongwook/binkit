@@ -38,7 +38,7 @@ void SQLiteDisassemblyStorage::CreateTables()
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCKS_TABLE_END_ADDRESS_INDEX_STATEMENT);
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_CONTROL_FLOWS_TABLE_STATEMENT);
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT);
-    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_FILE_INFO_TABLE_STATEMENT);
+    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_BINARIES_TABLE_STATEMENT);
 }
 
 bool SQLiteDisassemblyStorage::Open(char *databaseName)
@@ -48,7 +48,7 @@ bool SQLiteDisassemblyStorage::Open(char *databaseName)
 
 void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
 {
-    m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_FILE_INFO_TABLE_STATEMENT,
+    m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BINARIES_TABLE_STATEMENT,
         pFileInfo->OriginalFilePath,
         pFileInfo->ComputerName,
         pFileInfo->UserName,
