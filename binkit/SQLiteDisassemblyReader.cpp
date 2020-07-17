@@ -57,7 +57,7 @@ void SQLiteDisassemblyReader::ReadBasicBlockHashes(char *conditionStr, Disassemb
 {
     m_sqliteTool.ExecuteStatement(ReadBasicBlockHashCallback,
         (void*)DisassemblyHashMaps,
-        "SELECT StartAddress, InstructionHash, Name, BlockType FROM BasicBlock WHERE FileID = %u %s",
+        "SELECT StartAddress, InstructionHash, Name, BlockType FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u %s",
         m_fileId,
         conditionStr);
 }
@@ -86,14 +86,14 @@ int SQLiteDisassemblyReader::ReadFunctionAddressesCallback(void *arg, int argc, 
 
 void SQLiteDisassemblyReader::ReadFunctionAddressMap(unordered_set <va_t>& functionAddressMap)
 {
-    m_sqliteTool.ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM BasicBlock WHERE FileID = %u AND BlockType = %u", m_fileId, FUNCTION_BLOCK);
+    m_sqliteTool.ExecuteStatement(ReadFunctionAddressesCallback, &functionAddressMap, "SELECT DISTINCT(FunctionAddress) FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u AND BlockType = %u", m_fileId, FUNCTION_BLOCK);
 }
 
 char *SQLiteDisassemblyReader::ReadInstructionHash(va_t address)
 {
     char *instructionHash = NULL;
 
-    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &instructionHash, "SELECT InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &instructionHash, "SELECT InstructionHash FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return instructionHash;
 }
 
@@ -101,7 +101,7 @@ string SQLiteDisassemblyReader::ReadSymbol(va_t address)
 {
     string name;
     m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &name,
-        "SELECT Name FROM BasicBlock WHERE FileID = %u and StartAddress = %u", m_fileId, address);
+        "SELECT Name FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress = %u", m_fileId, address);
     return name;
 }
 
@@ -109,7 +109,7 @@ va_t SQLiteDisassemblyReader::ReadBlockStartAddress(va_t address)
 {
     va_t blockAddress;
     m_sqliteTool.ExecuteStatement(ReadRecordIntegerCallback, &blockAddress,
-        "SELECT StartAddress FROM BasicBlock WHERE FileID = %u and StartAddress <=  %u  and %u <=  EndAddress LIMIT 1",
+        "SELECT StartAddress FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress <=  %u  and %u <=  EndAddress LIMIT 1",
         m_fileId, address, address);
     return blockAddress;
 }
@@ -144,7 +144,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
             m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
                 "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
                 "WHERE FileID = %u "
-                "AND ( SrcBlock IN ( SELECT StartAddress FROM BasicBlock WHERE FunctionAddress='%d') )",
+                "AND ( SrcBlock IN ( SELECT StartAddress FROM " BASIC_BLOCKS_TABLE " WHERE FunctionAddress='%d') )",
                 m_fileId, address);
         }
         else
@@ -176,7 +176,7 @@ list<AddressRange> SQLiteDisassemblyReader::ReadFunctionMemberAddresses(va_t fun
     list<AddressRange> addressRangeList;
 
     m_sqliteTool.ExecuteStatement(ReadFunctionMemberAddressesCallback, (void*)&addressRangeList,
-        "SELECT StartAddress, EndAddress FROM BasicBlock WHERE FileID = '%d' AND FunctionAddress='%d'"
+        "SELECT StartAddress, EndAddress FROM " BASIC_BLOCKS_TABLE " WHERE FileID = '%d' AND FunctionAddress='%d'"
         "ORDER BY ID ASC",
         m_fileId, functionAddress);
 
@@ -195,7 +195,7 @@ string SQLiteDisassemblyReader::GetOriginalFilePath()
 string SQLiteDisassemblyReader::ReadDisasmLine(va_t startAddress)
 {
     string disasmLines;
-    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &disasmLines, "SELECT DisasmLines FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress = %u",
         m_fileId, startAddress);
     return disasmLines;
 }
@@ -217,7 +217,7 @@ PBasicBlock SQLiteDisassemblyReader::ReadBasicBlock(va_t address)
 {
     PBasicBlock p_basic_block = new BasicBlock();
     m_sqliteTool.ExecuteStatement(ReadBasicBlockCallback, p_basic_block,
-        "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, Name, InstructionHash FROM BasicBlock WHERE FileID = %u and StartAddress = %u",
+        "SELECT StartAddress, EndAddress, Flag, FunctionAddress, BlockType, Name, InstructionHash FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress = %u",
         m_fileId,
         address);
 
@@ -232,7 +232,7 @@ bool SQLiteDisassemblyReader::UpdateBasicBlockFunctions(multimap <va_t, va_t> bl
     for (auto& val : blockToFunction)
     {
         LogMessage(0, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
-        m_sqliteTool.ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCK_TABLE_FUNCTION_ADDRESS_STATEMENT,
+        m_sqliteTool.ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCKS_TABLE_FUNCTION_ADDRESS_STATEMENT,
             val.second, val.second == val.first ? FUNCTION_BLOCK : UNKNOWN_BLOCK, m_fileId, val.first);
         isFixed = TRUE;
     }
