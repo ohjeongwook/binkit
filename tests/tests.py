@@ -238,7 +238,13 @@ class TestCase(unittest.TestCase):
             if self.debug_level > 0:
                 print(prefix + 'Match: %x vs %x - match_rate: %d' % (match.source, match.target, match.match_rate))
 
-            match_data = {'source': match.source, 'target': match.target, 'match_rate': match.match_rate}
+            match_data = {
+                'source_parent': match.source_parent,
+                'target_parent': match.target_parent,
+                'source': match.source,
+                'target': match.target,
+                'match_rate': match.match_rate
+            }
             match_data_list.append(match_data)
         return match_data_list
 
@@ -347,11 +353,12 @@ class TestCase(unittest.TestCase):
     def do_control_flow_match(self, function_matches, source_function_address = 0):
         print('* do_control_flow_match:')
         match_sequence = function_matches.do_control_flow_match(source_function_address)
-        function_matches_after_control_flow_match = self.get_function_matches(function_matches, source_function_address)        
+        function_matches_after_control_flow_match = self.get_function_matches(function_matches, source_function_address)
         unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches, source_function_address)
 
         print('\tremove_matches: match_sequence: %d' % match_sequence)
         function_matches.remove_matches(match_sequence)
+        function_matches_after_control_flow_match_remove_matches = self.get_function_matches(function_matches, source_function_address)
 
         if self.write_data:
             with open('function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
@@ -360,14 +367,17 @@ class TestCase(unittest.TestCase):
             with open('unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
                 json.dump(unidentified_blocks_after_control_flow_match, fd, indent = 4)
 
+            with open('function_matches_after_control_flow_match_remove_matches-%.8x.json' % source_function_address, 'w') as fd:
+                json.dump(function_matches_after_control_flow_match_remove_matches, fd, indent = 4)                
+
         with open(r'expected\function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
             expected_function_matches_after_control_flow_match = json.load(fd)
 
         with open(r'expected\unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
             expected_unidentified_blocks_after_control_flow_match = json.load(fd)
 
-        self.assertEqual(expected_function_matches_after_control_flow_match, function_matches_after_control_flow_match)
-        self.assertEqual(expected_unidentified_blocks_after_control_flow_match, unidentified_blocks_after_control_flow_match)
+        self.assertEqual(str(expected_function_matches_after_control_flow_match), str(function_matches_after_control_flow_match))
+        self.assertEqual(str(expected_unidentified_blocks_after_control_flow_match), str(unidentified_blocks_after_control_flow_match))
 
     def test_function_match(self):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
@@ -387,7 +397,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(expected_function_matches_initial, function_matches_initial)
 
         self.do_instruction_hash_match(function_matches)
-        self.do_control_flow_match(function_matches, 0x6c7fc779)
+        #self.do_control_flow_match(function_matches, 0x6c7fc779)
         self.do_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
