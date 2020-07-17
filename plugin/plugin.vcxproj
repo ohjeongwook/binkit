@@ -151,6 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\sqlite3.h" />
+    <ClInclude Include="..\common\SQLiteDisassemblyCommon.h" />
     <ClInclude Include="..\Common\SQLiteTool.h" />
     <ClInclude Include="..\Common\StorageDataStructures.h" />
     <ClInclude Include="..\Common\Utility.h" />
