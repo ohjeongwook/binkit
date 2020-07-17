@@ -397,7 +397,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(expected_function_matches_initial, function_matches_initial)
 
         self.do_instruction_hash_match(function_matches)
-        #self.do_control_flow_match(function_matches, 0x6c7fc779)
+        self.do_control_flow_match(function_matches, 0x6c7fc779)
         self.do_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
