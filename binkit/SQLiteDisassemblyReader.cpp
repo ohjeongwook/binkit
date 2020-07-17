@@ -132,7 +132,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
     if (address == 0)
     {
         m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-            "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow WHERE FileID = %u",
+            "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " WHERE FileID = %u",
             m_fileId);
     }
     else
@@ -142,7 +142,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
             ReadControlFlow(addressToControlFlowMap, address, isFunction);
 
             m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
+                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM " BASIC_BLOCKS_TABLE " WHERE FunctionAddress='%d') )",
                 m_fileId, address);
@@ -150,7 +150,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
         else
         {
             m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From ControlFlow "
+                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
                 m_fileId, address);
