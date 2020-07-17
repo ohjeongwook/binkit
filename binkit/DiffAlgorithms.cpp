@@ -134,6 +134,8 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 			MatchData matchData;
 			memset(&matchData, 0, sizeof(MatchData));
 			matchData.Type = CONTROLFLOW_MATCH;
+			matchData.SourceParent = sourceAddress;
+			matchData.TargetParent = targetAddressess;
 			matchData.Source = sourceAddresses[i];
 			matchData.Target = targetAddresses[i];
 			matchData.MatchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]), m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[i]));
@@ -171,6 +173,8 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				MatchData matchData;
 				memset(&matchData, 0, sizeof(MatchData));
 				matchData.Type = CONTROLFLOW_MATCH;
+				matchData.SourceParent = sourceAddress;
+				matchData.TargetParent = targetAddressess;
 				matchData.Source = sourceAddresses[i];
 				matchData.Target = targetAddresses[j];
 				matchData.ReferenceOrderDifference = abs(i - j);
@@ -182,6 +186,8 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				MatchData matchData;
 				memset(&matchData, 0, sizeof(MatchData));
 				matchData.Type = CONTROLFLOW_MATCH;
+				matchData.SourceParent = sourceAddress;
+				matchData.TargetParent = targetAddressess;
 				matchData.Source = sourceAddresses[i];
 				matchData.Target = targetAddresses[j];
 				matchData.ReferenceOrderDifference = abs(i - j);
