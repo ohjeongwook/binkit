@@ -14,7 +14,7 @@ using namespace std;
 typedef unsigned char BYTE;
 typedef unsigned char *PBYTE;
 
-#define CREATE_FILE_INFO_TABLE_STATEMENT "CREATE TABLE " FILE_INFO_TABLE" (\n\
+#define CREATE_BINARIES_TABLE_STATEMENT "CREATE TABLE " BINARIES_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             OriginalFilePath TEXT,\n\
             ComputerName VARCHAR(100),\n\
@@ -27,7 +27,7 @@ typedef unsigned char *PBYTE;
             ModifiedTime VARCHAR(100),\n\
             MD5Sum VARCHAR(100)\n\
 );"
-#define INSERT_FILE_INFO_TABLE_STATEMENT "INSERT INTO  " FILE_INFO_TABLE" (OriginalFilePath,ComputerName,UserName,CompanyName,FileVersion,FileDescription,InternalName,ProductName,ModifiedTime,MD5Sum) values (%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q);"
+#define INSERT_BINARIES_TABLE_STATEMENT "INSERT INTO  " BINARIES_TABLE" (OriginalFilePath,ComputerName,UserName,CompanyName,FileVersion,FileDescription,InternalName,ProductName,ModifiedTime,MD5Sum) values (%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q);"
 
 #define CREATE_CONTROL_FLOWS_TABLE_STATEMENT "CREATE TABLE " CONTROL_FLOWS_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
