@@ -5,7 +5,7 @@ FunctionMatches::FunctionMatches(Binary& sourceBinary, Binary& targetBinary)
 {
 	m_sourceBinary = sourceBinary;
 	m_targetBinary = targetBinary;
-	m_matchSequence = 0;
+	m_matchSequence = 1;
 	m_pdiffAlgorithms = new DiffAlgorithms(m_sourceBinary, m_targetBinary);
 }
 
@@ -178,13 +178,10 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 
 void FunctionMatches::RemoveMatches(int matchSequence)
 {
-	printf("RemoveMatches %d\n", matchSequence);
 	for (auto& val : m_functionMatches)
 	{
-		va_t sourceFunctionAddress = val.first;
 		for (auto& val2 : val.second)
 		{
-			va_t targetFunctionAddress = val2.first;
 			for (auto it = val2.second.begin(); it != val2.second.end(); ) {
 				if (it->MatchSequence == matchSequence)
 				{
