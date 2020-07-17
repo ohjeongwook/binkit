@@ -221,7 +221,7 @@ InstructionHashMap *BasicBlocks::GetInstructionHashes()
     return &(m_disassemblyHashMaps.instructionHashMap);
 }
 
-vector<va_t> BasicBlocks::GetAddressesForInstructionHash(vector<unsigned char> instructionHash)
+vector<va_t> BasicBlocks::GetInstructionHashMatches(vector<unsigned char> instructionHash)
 {
     vector<va_t> addresses;
     for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash); it != m_disassemblyHashMaps.instructionHashMap.end(); it++)
