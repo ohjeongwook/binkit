@@ -12,6 +12,7 @@ using namespace stdext;
 
 #include "StorageDataStructures.h"
 #include "SQLiteDisassemblyStorage.h"
+
 #include "Log.h"
 
 SQLiteDisassemblyStorage::SQLiteDisassemblyStorage(const char *DatabaseName)
@@ -35,8 +36,8 @@ void SQLiteDisassemblyStorage::CreateTables()
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCKS_TABLE_FUNCTION_ADDRESS_INDEX_STATEMENT);
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCKS_TABLE_START_ADDRESS_INDEX_STATEMENT);
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_BASIC_BLOCKS_TABLE_END_ADDRESS_INDEX_STATEMENT);
-    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_MAP_INFO_TABLE_STATEMENT);
-    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_MAP_INFO_TABLE_SRCBLOCK_INDEX_STATEMENT);
+    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_CONTROL_FLOWS_TABLE_STATEMENT);
+    m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT);
     m_sqliteTool.ExecuteStatement(NULL, NULL, CREATE_FILE_INFO_TABLE_STATEMENT);
 }
 
@@ -78,7 +79,7 @@ void SQLiteDisassemblyStorage::AddBasicBlock(BasicBlock &basicBlock, int fileID)
 
 void SQLiteDisassemblyStorage::AddControlFlow(ControlFlow &controlFlow, int fileID)
 {
-    m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_MAP_INFO_TABLE_STATEMENT,
+    m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_CONTROL_FLOWS_TABLE_STATEMENT,
         fileID,
         controlFlow.Type,
         controlFlow.SrcBlock,

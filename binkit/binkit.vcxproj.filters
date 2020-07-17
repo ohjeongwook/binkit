@@ -78,6 +78,9 @@
     <ClInclude Include="Function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\SQLiteDisassemblyCommon.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Log.cpp">

@@ -5,6 +5,7 @@
 #include "StorageDataStructures.h"
 #include "DisassemblyStorage.h"
 #include "SQLiteTool.h"
+#include "SQLiteDisassemblyCommon.h"
 
 #include "sqlite3.h"
 
@@ -13,7 +14,6 @@ using namespace std;
 typedef unsigned char BYTE;
 typedef unsigned char *PBYTE;
 
-#define FILE_INFO_TABLE "FileInfo"
 #define CREATE_FILE_INFO_TABLE_STATEMENT "CREATE TABLE " FILE_INFO_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             OriginalFilePath TEXT,\n\
@@ -29,8 +29,7 @@ typedef unsigned char *PBYTE;
 );"
 #define INSERT_FILE_INFO_TABLE_STATEMENT "INSERT INTO  " FILE_INFO_TABLE" (OriginalFilePath,ComputerName,UserName,CompanyName,FileVersion,FileDescription,InternalName,ProductName,ModifiedTime,MD5Sum) values (%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q,%Q);"
 
-#define MAP_INFO_TABLE "ControlFlow"
-#define CREATE_MAP_INFO_TABLE_STATEMENT "CREATE TABLE " MAP_INFO_TABLE" (\n\
+#define CREATE_CONTROL_FLOWS_TABLE_STATEMENT "CREATE TABLE " CONTROL_FLOWS_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             FileID INTEGER,\n\
             Type INTEGER,\n\
@@ -38,10 +37,9 @@ typedef unsigned char *PBYTE;
             SrcBlockEnd INTEGER,\n\
             Dst INTEGER\n\
         );"
-#define CREATE_MAP_INFO_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "MAP_INFO_TABLE"Index ON "MAP_INFO_TABLE" (SrcBlock)"
-#define INSERT_MAP_INFO_TABLE_STATEMENT "INSERT INTO  " MAP_INFO_TABLE" (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
+#define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "CONTROL_FLOWS_TABLE"Index ON "CONTROL_FLOWS_TABLE" (SrcBlock)"
+#define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO  " CONTROL_FLOWS_TABLE" (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
 
-#define BASIC_BLOCKS_TABLE "BasicBlocks"
 #define CREATE_BASIC_BLOCKS_TABLE_STATEMENT "CREATE TABLE " BASIC_BLOCKS_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             FileID INTEGER,\n\
