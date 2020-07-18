@@ -31,7 +31,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_code_references", &BasicBlocks::GetCodeReferences)
         .def("get_parents", &BasicBlocks::GetParents)
         .def("get_call_targets", &BasicBlocks::GetCallTargets)
-        .def("get_diasm_lines", &BasicBlocks::GetDisasmLines);
+        .def("get_disasm_lines", &BasicBlocks::GetDisasmLines);
 
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
         .def(py::init<Binary&, Binary&>())
