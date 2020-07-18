@@ -80,7 +80,7 @@ string BasicBlocks::GetSymbol(va_t address)
     return {};
 }
 
-string BasicBlocks::GetDisasmLines(unsigned long startAddress, unsigned long endAddress)
+string BasicBlocks::GetDisasmLines(unsigned long startAddress)
 {
     return m_pdisassemblyReader->ReadDisasmLine(startAddress);
 }
