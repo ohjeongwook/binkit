@@ -46,6 +46,16 @@ bool SQLiteDisassemblyStorage::Open(char *databaseName)
     return m_sqliteTool.Open(databaseName);
 }
 
+int SQLiteDisassemblyStorage::BeginTransaction()
+{
+    return m_sqliteTool.BeginTransaction();
+}
+
+int SQLiteDisassemblyStorage::EndTransaction()
+{
+    return m_sqliteTool.EndTransaction();
+}
+
 void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
 {
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BINARIES_TABLE_STATEMENT,
@@ -73,7 +83,8 @@ void SQLiteDisassemblyStorage::AddBasicBlock(BasicBlock &basicBlock, int fileID)
         basicBlock.BlockType,
         basicBlock.Name.c_str(),
         basicBlock.DisasmLines.c_str(),
-        basicBlock.InstructionHash.c_str()
+        basicBlock.InstructionHash.c_str(),
+        basicBlock.InstructionBytes.c_str()
     );
 }
 

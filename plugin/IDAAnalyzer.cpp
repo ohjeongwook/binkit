@@ -511,7 +511,7 @@ void IDAAnalyzer::UpdateInstructionMap
     }
 }
 
-void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray, flags_t flags, bool gatherCmdArray)
+void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t> *p_cmdArray, flags_t flags, bool gatherCmdArray)
 {
     string disasm_buffer;
 
@@ -520,6 +520,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
     basic_block.BlockType = UNKNOWN_BLOCK;
     basic_block.StartAddress = srcBlockAddress;
     basic_block.Flag = flags;
+    basic_block.EndAddress = 0;
 
     qstring name;
 
@@ -549,89 +550,88 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
     }
 
     vector <unsigned char> instructionHash;
+    list <insn_t>::iterator cmdArrayIt;
+    unsigned char instruction_buffer[0x100];
 
-    basic_block.EndAddress = 0;
-
-    list <insn_t>::iterator CmdArrayIter;
-
-    for (CmdArrayIter = pCmdArray->begin();
-        CmdArrayIter != pCmdArray->end();
-        CmdArrayIter++)
+    for (cmdArrayIt = p_cmdArray->begin(); cmdArrayIt != p_cmdArray->end(); cmdArrayIt++)
     {
-        if (basic_block.EndAddress < (*CmdArrayIter).ea && (*CmdArrayIter).ea != 0xffffffff)
-            basic_block.EndAddress = (*CmdArrayIter).ea;
+        if ((*cmdArrayIt).ea != 0xffffffff && basic_block.EndAddress < ((*cmdArrayIt).ea + (*cmdArrayIt).size))
+        {
+            basic_block.EndAddress = (*cmdArrayIt).ea + (*cmdArrayIt).size;
+        }
 
         if (is_code(flags) &&
-            !( //detect hot patching
+            !(
+                //detect hot patching
                 basic_block.StartAddress == basic_block.FunctionAddress &&
-                CmdArrayIter == pCmdArray->begin() &&
-                (ph.id == PLFM_386 || ph.id == PLFM_IA64) && (*CmdArrayIter).itype == NN_mov && (*CmdArrayIter).ops[0].reg == (*CmdArrayIter).ops[1].reg
+                cmdArrayIt == p_cmdArray->begin() &&
+                (ph.id == PLFM_386 || ph.id == PLFM_IA64) && (*cmdArrayIt).itype == NN_mov && (*cmdArrayIt).ops[0].reg == (*cmdArrayIt).ops[1].reg
                 ) &&
             !(
             ((ph.id == PLFM_386 || ph.id == PLFM_IA64) &&
                 (
-                (*CmdArrayIter).itype == NN_ja ||                  // Jump if Above (CF=0 & ZF=0)
-                    (*CmdArrayIter).itype == NN_jae ||                 // Jump if Above or Equal (CF=0)
-                    (*CmdArrayIter).itype == NN_jc ||                  // Jump if Carry (CF=1)
-                    (*CmdArrayIter).itype == NN_jcxz ||                // Jump if CX is 0
-                    (*CmdArrayIter).itype == NN_jecxz ||               // Jump if ECX is 0
-                    (*CmdArrayIter).itype == NN_jrcxz ||               // Jump if RCX is 0
-                    (*CmdArrayIter).itype == NN_je ||                  // Jump if Equal (ZF=1)
-                    (*CmdArrayIter).itype == NN_jg ||                  // Jump if Greater (ZF=0 & SF=OF)
-                    (*CmdArrayIter).itype == NN_jge ||                 // Jump if Greater or Equal (SF=OF)
-                    (*CmdArrayIter).itype == NN_jo ||                  // Jump if Overflow (OF=1)
-                    (*CmdArrayIter).itype == NN_jp ||                  // Jump if Parity (PF=1)
-                    (*CmdArrayIter).itype == NN_jpe ||                 // Jump if Parity Even (PF=1)
-                    (*CmdArrayIter).itype == NN_js ||                  // Jump if Sign (SF=1)
-                    (*CmdArrayIter).itype == NN_jz ||                  // Jump if Zero (ZF=1)
-                    (*CmdArrayIter).itype == NN_jmp ||                 // Jump
-                    (*CmdArrayIter).itype == NN_jmpfi ||               // Indirect Far Jump
-                    (*CmdArrayIter).itype == NN_jmpni ||               // Indirect Near Jump
-                    (*CmdArrayIter).itype == NN_jmpshort ||            // Jump Short
-                    (*CmdArrayIter).itype == NN_jpo ||                 // Jump if Parity Odd  (PF=0)
-                    (*CmdArrayIter).itype == NN_jl ||                  // Jump if Less (SF!=OF)
-                    (*CmdArrayIter).itype == NN_jle ||                 // Jump if Less or Equal (ZF=1 | SF!=OF)
-                    (*CmdArrayIter).itype == NN_jb ||                  // Jump if Below (CF=1)
-                    (*CmdArrayIter).itype == NN_jbe ||                 // Jump if Below or Equal (CF=1 | ZF=1)
-                    (*CmdArrayIter).itype == NN_jna ||                 // Jump if Not Above (CF=1 | ZF=1)
-                    (*CmdArrayIter).itype == NN_jnae ||                // Jump if Not Above or Equal (CF=1)
-                    (*CmdArrayIter).itype == NN_jnb ||                 // Jump if Not Below (CF=0)
-                    (*CmdArrayIter).itype == NN_jnbe ||                // Jump if Not Below or Equal (CF=0 & ZF=0)
-                    (*CmdArrayIter).itype == NN_jnc ||                 // Jump if Not Carry (CF=0)
-                    (*CmdArrayIter).itype == NN_jne ||                 // Jump if Not Equal (ZF=0)
-                    (*CmdArrayIter).itype == NN_jng ||                 // Jump if Not Greater (ZF=1 | SF!=OF)
-                    (*CmdArrayIter).itype == NN_jnge ||                // Jump if Not Greater or Equal (ZF=1)
-                    (*CmdArrayIter).itype == NN_jnl ||                 // Jump if Not Less (SF=OF)
-                    (*CmdArrayIter).itype == NN_jnle ||                // Jump if Not Less or Equal (ZF=0 & SF=OF)
-                    (*CmdArrayIter).itype == NN_jno ||                 // Jump if Not Overflow (OF=0)
-                    (*CmdArrayIter).itype == NN_jnp ||                 // Jump if Not Parity (PF=0)
-                    (*CmdArrayIter).itype == NN_jns ||                 // Jump if Not Sign (SF=0)
-                    (*CmdArrayIter).itype == NN_jnz                 // Jump if Not Zero (ZF=0)
+                (*cmdArrayIt).itype == NN_ja ||                  // Jump if Above (CF=0 & ZF=0)
+                    (*cmdArrayIt).itype == NN_jae ||                 // Jump if Above or Equal (CF=0)
+                    (*cmdArrayIt).itype == NN_jc ||                  // Jump if Carry (CF=1)
+                    (*cmdArrayIt).itype == NN_jcxz ||                // Jump if CX is 0
+                    (*cmdArrayIt).itype == NN_jecxz ||               // Jump if ECX is 0
+                    (*cmdArrayIt).itype == NN_jrcxz ||               // Jump if RCX is 0
+                    (*cmdArrayIt).itype == NN_je ||                  // Jump if Equal (ZF=1)
+                    (*cmdArrayIt).itype == NN_jg ||                  // Jump if Greater (ZF=0 & SF=OF)
+                    (*cmdArrayIt).itype == NN_jge ||                 // Jump if Greater or Equal (SF=OF)
+                    (*cmdArrayIt).itype == NN_jo ||                  // Jump if Overflow (OF=1)
+                    (*cmdArrayIt).itype == NN_jp ||                  // Jump if Parity (PF=1)
+                    (*cmdArrayIt).itype == NN_jpe ||                 // Jump if Parity Even (PF=1)
+                    (*cmdArrayIt).itype == NN_js ||                  // Jump if Sign (SF=1)
+                    (*cmdArrayIt).itype == NN_jz ||                  // Jump if Zero (ZF=1)
+                    (*cmdArrayIt).itype == NN_jmp ||                 // Jump
+                    (*cmdArrayIt).itype == NN_jmpfi ||               // Indirect Far Jump
+                    (*cmdArrayIt).itype == NN_jmpni ||               // Indirect Near Jump
+                    (*cmdArrayIt).itype == NN_jmpshort ||            // Jump Short
+                    (*cmdArrayIt).itype == NN_jpo ||                 // Jump if Parity Odd  (PF=0)
+                    (*cmdArrayIt).itype == NN_jl ||                  // Jump if Less (SF!=OF)
+                    (*cmdArrayIt).itype == NN_jle ||                 // Jump if Less or Equal (ZF=1 | SF!=OF)
+                    (*cmdArrayIt).itype == NN_jb ||                  // Jump if Below (CF=1)
+                    (*cmdArrayIt).itype == NN_jbe ||                 // Jump if Below or Equal (CF=1 | ZF=1)
+                    (*cmdArrayIt).itype == NN_jna ||                 // Jump if Not Above (CF=1 | ZF=1)
+                    (*cmdArrayIt).itype == NN_jnae ||                // Jump if Not Above or Equal (CF=1)
+                    (*cmdArrayIt).itype == NN_jnb ||                 // Jump if Not Below (CF=0)
+                    (*cmdArrayIt).itype == NN_jnbe ||                // Jump if Not Below or Equal (CF=0 & ZF=0)
+                    (*cmdArrayIt).itype == NN_jnc ||                 // Jump if Not Carry (CF=0)
+                    (*cmdArrayIt).itype == NN_jne ||                 // Jump if Not Equal (ZF=0)
+                    (*cmdArrayIt).itype == NN_jng ||                 // Jump if Not Greater (ZF=1 | SF!=OF)
+                    (*cmdArrayIt).itype == NN_jnge ||                // Jump if Not Greater or Equal (ZF=1)
+                    (*cmdArrayIt).itype == NN_jnl ||                 // Jump if Not Less (SF=OF)
+                    (*cmdArrayIt).itype == NN_jnle ||                // Jump if Not Less or Equal (ZF=0 & SF=OF)
+                    (*cmdArrayIt).itype == NN_jno ||                 // Jump if Not Overflow (OF=0)
+                    (*cmdArrayIt).itype == NN_jnp ||                 // Jump if Not Parity (PF=0)
+                    (*cmdArrayIt).itype == NN_jns ||                 // Jump if Not Sign (SF=0)
+                    (*cmdArrayIt).itype == NN_jnz                 // Jump if Not Zero (ZF=0)
                     )
                 ) ||
                 (
                     ph.id == PLFM_ARM &&
-                    (
-                    (*CmdArrayIter).itype == ARM_b
+                        (
+                            (*cmdArrayIt).itype == ARM_b
                         )
                     )
                 )
             )
         {
-            instructionHash.push_back((unsigned char)(*CmdArrayIter).itype);
+            instructionHash.push_back((unsigned char)(*cmdArrayIt).itype);
             for (int i = 0; i < UA_MAXOP; i++)
             {
-                if ((*CmdArrayIter).ops[i].type != 0)
+                if ((*cmdArrayIt).ops[i].type != 0)
                 {
-                    instructionHash.push_back((*CmdArrayIter).ops[i].type);
-                    instructionHash.push_back((*CmdArrayIter).ops[i].dtype);
+                    instructionHash.push_back((*cmdArrayIt).ops[i].type);
+                    instructionHash.push_back((*cmdArrayIt).ops[i].dtype);
                     /*
-                    if((*CmdArrayIter).ops[i].type == o_imm)
+                    if((*cmdArrayIt).ops[i].type == o_imm)
                     {
-                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>24)&0xff);
-                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>16)&0xff);
-                        InstructionHash.push_back(((*CmdArrayIter).ops[i].value>>8)&0xff);
-                        InstructionHash.push_back((*CmdArrayIter).ops[i].value&0xff);
+                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>24)&0xff);
+                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>16)&0xff);
+                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>8)&0xff);
+                        InstructionHash.push_back((*cmdArrayIt).ops[i].value&0xff);
                     }*/
                 }
             }
@@ -641,11 +641,11 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
         {
             qstring buf;
 
-            generate_disasm_line(&buf, (*CmdArrayIter).ea);
+            generate_disasm_line(&buf, (*cmdArrayIt).ea);
             tag_remove(&buf);
 
             if (Debug > 3)
-                LogMessage(0, __FUNCTION__, "%X(%X): [%s]\n", (*CmdArrayIter).ea, basic_block.StartAddress, buf);
+                LogMessage(0, __FUNCTION__, "%X(%X): [%s]\n", (*cmdArrayIt).ea, basic_block.StartAddress, buf);
 
             buf += "\n";
             disasm_buffer += buf.c_str();
@@ -655,7 +655,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
     /*
     if (gatherCmdArray)
     {
-        basic_block.CmdArrayLen = pCmdArray->size() * sizeof(insn_t);
+        basic_block.CmdArrayLen = p_cmdArray->size() * sizeof(insn_t);
     }
     else
     {
@@ -665,7 +665,7 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
     if (gatherCmdArray)
     {
         int CmdArrayIndex = 0;
-        for (list <insn_t>::iterator iter = pCmdArray->begin(); iter != pCmdArray->end(); iter++, CmdArrayIndex++)
+        for (list <insn_t>::iterator iter = p_cmdArray->begin(); iter != p_cmdArray->end(); iter++, CmdArrayIndex++)
         {
             memcpy(&CmdsPtr[CmdArrayIndex], &(*iter), sizeof(insn_t));
         }
@@ -674,6 +674,12 @@ void IDAAnalyzer::DumpBasicBlock(ea_t srcBlockAddress, list <insn_t> *pCmdArray,
 
     basic_block.DisasmLines = disasm_buffer;
     basic_block.InstructionHash = BytesToHexString(instructionHash);
+
+    int instructionSize = basic_block.EndAddress - srcBlockAddress;
+
+    unsigned char* instructionBytes = new unsigned char[instructionSize];
+    get_bytes((void *) instructionBytes, instructionSize, srcBlockAddress);    
+    basic_block.InstructionBytes = BytesToHexString(instructionBytes, instructionSize);
     m_pdisassemblyWriter->AddBasicBlock(basic_block);
 }
 
@@ -814,7 +820,7 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
 }
 
 
-ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArray, flags_t *p_flags)
+ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *p_cmdArray, flags_t *p_flags)
 {
     while (1)
     {
@@ -857,7 +863,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
 
         insn_t insn;
         decode_insn(&insn, currentAddress);
-        pCmdArray->push_back(insn);
+        p_cmdArray->push_back(insn);
         short current_itype = insn.itype;
 
         ControlFlow controlFlow;
@@ -1197,7 +1203,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *pCmdArra
         m_newBlocks.insert(pair<ea_t, ea_t>(currentBlockStartAddress, currentAddress));
     }
 
-    LogMessage(0, __FUNCTION__, "%s: CmdArray size=%u\n", __FUNCTION__, pCmdArray->size());
+    LogMessage(0, __FUNCTION__, "%s: CmdArray size=%u\n", __FUNCTION__, p_cmdArray->size());
     if (firstBlockEndAddress)
         return firstBlockEndAddress;
 
@@ -1226,21 +1232,21 @@ void IDAAnalyzer::AnalyzeRegion(ea_t startEA, ea_t endEA, bool gatherCmdArray)
             map <ea_t, insn_t> InstructionHash;
             unordered_map <int, ea_t> FlagsHash;
 
-            for (list <insn_t>::iterator CmdArrayIter = CmdArray.begin(); CmdArrayIter != CmdArray.end(); CmdArrayIter++)
+            for (list <insn_t>::iterator cmdArrayIt = CmdArray.begin(); cmdArrayIt != CmdArray.end(); cmdArrayIt++)
             {
-                UpdateInstructionMap(OperandsHash, FlagsHash, InstructionMap, InstructionHash, *CmdArrayIter);
+                UpdateInstructionMap(OperandsHash, FlagsHash, InstructionMap, InstructionHash, *cmdArrayIt);
             }
 
             list <insn_t> *NewCmdArray = ReoderInstructions(InstructionMap, InstructionHash);
             if (NewCmdArray)
             {
-                DumpBasicBlock(currentAddressess, NewCmdArray, Flag, gatherCmdArray);
+                AnalyzeBasicBlock(currentAddressess, NewCmdArray, Flag, gatherCmdArray);
                 delete NewCmdArray;
             }
         }
         else
         {
-            DumpBasicBlock(currentAddressess, &CmdArray, Flag, gatherCmdArray);
+            AnalyzeBasicBlock(currentAddressess, &CmdArray, Flag, gatherCmdArray);
         }
 
         CmdArray.clear();
