@@ -33,8 +33,11 @@ public:
     vector<va_t> GetParents(va_t address);
     vector<va_t> GetCallTargets();
     InstructionHashMap *GetInstructionHashes();
+
     vector<va_t> GetInstructionHashMatches(vector<unsigned char> instructionHash);
     vector<unsigned char> GetInstructionHash(va_t address);
+    vector<unsigned char> GetInstructionBytes(va_t address);
+
     void GenerateTwoLevelInstructionHash();
     void DumpBlockInfo(va_t blockAddress);
 };

@@ -97,6 +97,14 @@ char *SQLiteDisassemblyReader::ReadInstructionHash(va_t address)
     return instructionHash;
 }
 
+char* SQLiteDisassemblyReader::ReadInstructionBytes(va_t address)
+{
+    char* instructionBytes = NULL;
+
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &instructionBytes, "SELECT InstructionBytes FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u and StartAddress = %u", m_fileId, address);
+    return instructionBytes;
+}
+
 string SQLiteDisassemblyReader::ReadSymbol(va_t address)
 {
     string name;
