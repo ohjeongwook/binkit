@@ -37,7 +37,7 @@ typedef unsigned char *PBYTE;
             SrcBlockEnd INTEGER,\n\
             Dst INTEGER\n\
         );"
-#define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX "CONTROL_FLOWS_TABLE"Index ON "CONTROL_FLOWS_TABLE" (SrcBlock)"
+#define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX " CONTROL_FLOWS_TABLE "Index ON "CONTROL_FLOWS_TABLE" (SrcBlock)"
 #define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO  " CONTROL_FLOWS_TABLE" (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
 
 #define CREATE_BASIC_BLOCKS_TABLE_STATEMENT "CREATE TABLE " BASIC_BLOCKS_TABLE" (\n\
@@ -50,7 +50,8 @@ typedef unsigned char *PBYTE;
             BlockType INTEGER,\n\
             Name TEXT,\n\
             DisasmLines TEXT,\n\
-            InstructionHash TEXT\n\
+            InstructionHash TEXT,\n\
+            InstructionBytes TEXT\n\
 );"
 
 #define CREATE_BASIC_BLOCKS_TABLE_FUNCTION_ADDRESS_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCKS_TABLE"FunctionAddressIndex ON "BASIC_BLOCKS_TABLE" (FunctionAddress)"
@@ -60,7 +61,7 @@ typedef unsigned char *PBYTE;
 #define CREATE_BASIC_BLOCKS_TABLE_END_ADDRESS_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCKS_TABLE"EndAddressIndex ON "BASIC_BLOCKS_TABLE" (EndAddress)"
 
 //#define CREATE_BASIC_BLOCKS_TABLE_INDEX_STATEMENT "CREATE INDEX "BASIC_BLOCKS_TABLE"AddressIndex ON "BASIC_BLOCKS_TABLE" (FileID,StartAddress,EndAddress,Name,InstructionHash)"
-#define INSERT_BASIC_BLOCKS_TABLE_STATEMENT "INSERT INTO  " BASIC_BLOCKS_TABLE" (FileID,StartAddress,EndAddress,Flag,FunctionAddress,BlockType,Name,DisasmLines,InstructionHash) values ('%u','%u','%u','%u','%u','%u',%Q,%Q,%Q);"
+#define INSERT_BASIC_BLOCKS_TABLE_STATEMENT "INSERT INTO  " BASIC_BLOCKS_TABLE" (FileID,StartAddress,EndAddress,Flag,FunctionAddress,BlockType,Name,DisasmLines,InstructionHash,InstructionBytes) values ('%u','%u','%u','%u','%u','%u',%Q,%Q,%Q,%Q);"
 #define UPDATE_BASIC_BLOCKS_TABLE_NAME_STATEMENT "UPDATE " BASIC_BLOCKS_TABLE" SET Name=%Q WHERE StartAddress='%u';"
 #define UPDATE_BASIC_BLOCKS_TABLE_BLOCK_TYPE_STATEMENT "UPDATE " BASIC_BLOCKS_TABLE" SET BlockType='%d' WHERE FileID='%u' AND StartAddress='%u';"
 #define UPDATE_BASIC_BLOCKS_TABLE_DISASM_LINES_STATEMENT "UPDATE " BASIC_BLOCKS_TABLE" SET DisasmLines=%Q WHERE StartAddress='%u';"
@@ -79,6 +80,8 @@ public:
 
 public:
     bool Open(char* databaseName);
+    int BeginTransaction();
+    int EndTransaction();
     void AddBasicBlock(BasicBlock& basicBlock, int fileID = 0);
     void AddControlFlow(ControlFlow& controlFlow, int fileID = 0);
 

@@ -50,3 +50,14 @@ string BytesToHexString(vector<unsigned char> bytes)
 
     return stringStream.str();
 }
+
+string BytesToHexString(unsigned char *bytes, int length)
+{
+    std::stringstream stringStream;
+    for (int i = 0; i < length; i++)
+    {
+        stringStream << std::hex << (int)(bytes[i]);
+    }
+
+    return stringStream.str();
+}
