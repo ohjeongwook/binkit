@@ -12,6 +12,10 @@ bool SQLiteTool::Open(string databaseName)
         m_database = NULL;
         return FALSE;
     }
+
+    ExecuteStatement(NULL, NULL, "PRAGMA synchronous = OFF");
+    ExecuteStatement(NULL, NULL, "PRAGMA journal_mode = MEMORY");
+
     return TRUE;
 }
 
@@ -44,7 +48,7 @@ int SQLiteTool::ExecuteStatement(sqlite3_callback callback, void* context, const
 
         if (m_debugLevel > 1)
         {
-            LogMessage(1, __FUNCTION__, "Executing [%s]\n", statement_buffer);
+            LogMessage(0, __FUNCTION__, "Executing [%s]\n", statement_buffer);
         }
 
         if (statement_buffer)
@@ -68,12 +72,12 @@ int SQLiteTool::ExecuteStatement(sqlite3_callback callback, void* context, const
 
 int SQLiteTool::BeginTransaction()
 {
-    return ExecuteStatement(NULL, NULL, "BEGIN TRANSACTION");
+    return ExecuteStatement(NULL, NULL, "BEGIN TRANSACTION;");
 }
 
 int SQLiteTool::EndTransaction()
 {
-    return ExecuteStatement(NULL, NULL, "COMMIT TRANSACTION");
+    return ExecuteStatement(NULL, NULL, "END TRANSACTION;");
 }
 
 int SQLiteTool::GetLastInsertRowID()
