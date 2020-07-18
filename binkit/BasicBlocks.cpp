@@ -216,6 +216,16 @@ vector<unsigned char> BasicBlocks::GetInstructionHash(va_t address)
     return {};
 }
 
+vector<unsigned char> BasicBlocks::GetInstructionBytes(va_t address)
+{
+    char* p_instructionBytes = m_pdisassemblyReader->ReadInstructionBytes(address);
+
+    if (p_instructionBytes)
+    {
+        return HexToBytes(p_instructionBytes);
+    }
+    return {};
+}
 InstructionHashMap *BasicBlocks::GetInstructionHashes()
 {
     return &(m_disassemblyHashMaps.instructionHashMap);

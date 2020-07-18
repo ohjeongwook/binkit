@@ -35,6 +35,11 @@ public:
         return NULL;
     }
 
+    virtual char *ReadInstructionBytes(va_t address)
+    {
+        return NULL;
+    }
+
     virtual string ReadSymbol(va_t address)
     {
         return NULL;

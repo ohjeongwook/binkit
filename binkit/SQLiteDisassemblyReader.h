@@ -30,6 +30,8 @@ public:
     void ReadFunctionAddressMap(unordered_set <va_t>& functionAddressMap);
 
     char *ReadInstructionHash(va_t address);
+    char* ReadInstructionBytes(va_t address);
+
     string ReadSymbol(va_t address);
     va_t ReadBlockStartAddress(va_t address);
 
