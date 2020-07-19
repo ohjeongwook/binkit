@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import pprint
@@ -130,19 +131,19 @@ class Util:
                 prefix = ' ' * 4
                 indent = 8
                 if len(missing_matches1) > 0:
-                    print(prefix + '* missing_matches1:')
+                    print(prefix + '* missing_matches1: %.8x vs %.8x' % (function_match1['source'], function_match1['target']))
                     self.print_matches(missing_matches1, prefix = prefix + (' ' * 4))
 
                 if len(different_matches1) > 0:
-                    print('* different_matches1:')
+                    print(prefix + '* different_matches1: %.8x vs %.8x' % (function_match1['source'], function_match1['target']))
                     print(' ' * indent + pprint.pformat(different_matches1, indent = indent))
 
                 if len(missing_matches2) > 0:
-                    print('* missing_matches2:')
+                    print(prefix + '* missing_matches2: %.8x vs %.8x' % (function_match1['source'], function_match1['target']))
                     self.print_matches(missing_matches2, prefix = prefix + (' ' * 4))
 
                 if len(different_matches2) > 0:
-                    print('* different_matches2:')
+                    print(prefix + '* different_matches2: %.8x vs %.8x' % (function_match1['source'], function_match1['target']))
                     print(' ' * indent + pprint.pformat(different_matches2, indent = indent))
 
         return comparison_result
@@ -164,6 +165,11 @@ class TestCase(unittest.TestCase):
 
         self.debug_level = 0
         self.write_data = True
+
+        current_directory = 'current'
+        if self.write_data and not os.path.isdir(current_directory):
+            os.makedirs(current_directory)
+        
         filenames = [r'examples\EPSIMP32-2006.1200.4518.1014\EPSIMP32.db', r'examples\EPSIMP32-2006.1200.6731.5000\EPSIMP32.db']
         self.binaries = []
         for filename in filenames:
@@ -220,7 +226,7 @@ class TestCase(unittest.TestCase):
             basic_block_data_list.append(basic_block_data_list)
 
         if self.write_data:
-            with open('basic_block_data_list.json', 'w') as fd:
+            with open(r'current\basic_block_data_list.json', 'w') as fd:
                 json.dump(basic_block_data_list, fd, indent = 4)
 
         with open(r'expected\basic_block_data_list.json', 'r') as fd:
@@ -261,7 +267,7 @@ class TestCase(unittest.TestCase):
             function_data_list.append(self.dump_functions(binary))
 
         if self.write_data:
-            with open('function_data_list.json', 'w') as fd:
+            with open(r'current\function_data_list.json', 'w') as fd:
                 json.dump(function_data_list, fd, indent = 4)
 
         with open(r'expected\function_data_list.json', 'r') as fd:
@@ -316,7 +322,7 @@ class TestCase(unittest.TestCase):
             match_data_list.append(match_data)
 
         if self.write_data:
-            with open('match_data_list.json', 'w') as fd:
+            with open(r'current\match_data_list.json', 'w') as fd:
                 json.dump(match_data_list, fd, indent = 4)
 
         with open(r'expected\match_data_list.json', 'r') as fd:
@@ -344,7 +350,7 @@ class TestCase(unittest.TestCase):
         instruction_matches = self.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
 
         if self.write_data:
-            with open('instruction_matches_6C83948B_004496D9.json', 'w') as fd:
+            with open(r'current\instruction_matches_6C83948B_004496D9.json', 'w') as fd:
                 json.dump(instruction_matches, fd, indent = 4)
 
         with open(r'expected\instruction_matches_6C83948B_004496D9.json', 'r') as fd:
@@ -452,10 +458,10 @@ class TestCase(unittest.TestCase):
         unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
 
         if self.write_data:
-            with open('%s-matches.json' % filename_prefix, 'w') as fd:
+            with open(r'current\%s-matches.json' % filename_prefix, 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
-            with open('%s-unidentified_blocks.json' % filename_prefix, 'w') as fd:
+            with open(r'current\%s-unidentified_blocks.json' % filename_prefix, 'w') as fd:
                 json.dump(unidentified_blocks, fd, indent = 4)
 
         with open(r'expected\%s-matches.json' % filename_prefix, 'r') as fd:
@@ -475,14 +481,17 @@ class TestCase(unittest.TestCase):
 
         print('\tremove_matches: match_sequence: %d' % match_sequence)
         function_matches.remove_matches(match_sequence)
-        function_matches_control_flow_match_remove_matches = self.util.get_function_match_list(function_matches, source_function_address)
+        matches_removed = self.util.get_function_match_list(function_matches, source_function_address)
 
         if self.write_data:
-            with open('%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'w') as fd:
+            with open(r'current\%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
-            with open('%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'w') as fd:
+            with open(r'current\%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'w') as fd:
                 json.dump(unidentified_blocks, fd, indent = 4)
+
+            with open(r'current\%s-%.8x-matches_removed.json' % (filename_prefix, source_function_address), 'w') as fd:
+                json.dump(matches_removed, fd, indent = 4)
 
         with open(r'expected\%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'r') as fd:
             expected_matches = json.load(fd)
@@ -502,7 +511,7 @@ class TestCase(unittest.TestCase):
         matches = self.util.get_function_match_list(function_matches)
 
         if self.write_data:            
-            with open('do_instruction_hash_match.json', 'w') as fd:
+            with open(r'current\do_instruction_hash_match.json', 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
         with open(r'expected\do_instruction_hash_match.json', 'r') as fd:
@@ -514,7 +523,7 @@ class TestCase(unittest.TestCase):
     def test_function_match(self):
         function_matches = self.do_instruction_hash_match()
         self.do_function_instruction_hash_match(function_matches)
-        #self.do_control_flow_match(function_matches, 0x6c7fc779)
+        self.do_function_control_flow_match(function_matches, 0x6c7fc779)
         self.do_function_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
