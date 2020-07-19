@@ -1,8 +1,10 @@
-import unittest
-import pybinkit
+import sys
 import json
 import pprint
 import traceback
+
+import unittest
+import pybinkit
 
 CALL = 0
 CREF_FROM = 1
@@ -11,20 +13,10 @@ DREF_FROM = 3
 DREF_TO = 4
 CALLED = 5
 
-class TestCase(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestCase, self).__init__(*args, **kwargs)
-
+class Util:
+    def __init__(self, binaries):
         self.debug_level = 0
-        self.write_data = True
-        filenames = [r'examples\EPSIMP32-2006.1200.4518.1014\EPSIMP32.db', r'examples\EPSIMP32-2006.1200.6731.5000\EPSIMP32.db']
-        self.binaries = []
-        for filename in filenames:
-            binary = pybinkit.Binary()
-            if self.debug_level > 0:
-                print('Opening %s...' % filename)
-            binary.open(filename)
-            self.binaries.append(binary)
+        self.binaries = binaries
 
     def get_match_list(self, matches, level = 1):
         prefix = '\t' * level
@@ -43,6 +35,30 @@ class TestCase(unittest.TestCase):
 
         return match_list
 
+    def print_matches(self, matches, prefix = '', print_disasm = False):
+        basic_blocks1 = self.binaries[0].get_basic_blocks()
+        basic_blocks2 = self.binaries[1].get_basic_blocks()
+
+        source_to_target_map = {}
+        for match in matches:
+            if not match['source'] in source_to_target_map:
+                source_to_target_map[match['source']] = []
+            source_to_target_map[match['source']].append(match['target'])
+
+            print(prefix + 'Match: %x - %x' % (match['source'], match['target']))
+            print(prefix + '    source_parent: %.8x' % match['source_parent'])
+            print(prefix + '    target_parent: %.8x' % match['target_parent'])
+            print(prefix + '    match_rate: %.8x' % match['match_rate'])
+
+            if print_disasm:
+                print(basic_blocks1.get_disasm_lines(match['source']))
+                print('')
+                print(basic_blocks2.get_disasm_lines(match['target']))
+                print('')
+
+        for source, targets in source_to_target_map.items():
+            print('source: %x targets count: %d' % (source, len(targets)))
+
     def get_function_match_list(self, function_matches, source_function_address = 0, level = 1):
         prefix = '\t' * level
         function_match_data_list = []
@@ -60,61 +76,104 @@ class TestCase(unittest.TestCase):
             #self.print_match_data_combinations(match_data_combinations, '\t')
         return function_match_data_list
 
-
     def build_match_map(self, matches):
-        matches_dict = {}
+        matches_map = {}
         for match in matches:
-            key = match['source'] + match['target']
-            matches_dict[key] = match
+            key = match['source'] << 32 + match['target']
+            matches_map[key] = match
 
-        return matches_dict
+        return matches_map
 
     def build_function_match_map(self, function_matches):
-        function_matches_dict = {}
+        function_matches_map = {}
         for function_match in function_matches:
-            key = function_match['source'] + function_match['target']
-            function_matches_dict[key] = function_match
+            key = function_match['source'] << 32 + function_match['target']
+            function_matches_map[key] = function_match
 
-        return function_matches_dict
+        return function_matches_map
 
-    def compare_matches(self, matches1, matches2):
-        self.assertEqual(len(matches1), len(matches2))
-        matches_dict1 = self.build_match_map(matches1)
-        matches_dict2 = self.build_match_map(matches2)
+    def compare_matches(self, matches1, matches2, description = ''):
+        matches_map1 = self.build_match_map(matches1)
+        matches_map2 = self.build_match_map(matches2)
 
-        for k, match1 in matches_dict1.items():
-            self.assertTrue(k in matches_dict2)
-            try:
-                self.assertEqual(match1, matches_dict2[k])
-            except:
-                traceback.print_exc()
-
-                print("* compare_matches failed:")
-                pprint.pprint(match1)
-                print('')
-                pprint.pprint(match2)
-                print('')
-
-    def compare_function_matches_dict(self, function_matches_dict1, function_matches_dict2):
-        for k, function_match1 in function_matches_dict1.items():
-            try:
-                self.assertTrue(k in function_matches_dict2)
-            except:
-                traceback.print_exc()
-
-                print("* compare_function_matches failed:")
-                pprint.pprint(function_match1)
-                print('')                
+        missing_matches = []
+        different_matches = []
+        for k, match1 in matches_map1.items():
+            if not k in matches_map2:
+                missing_matches.append(match1)
                 continue
 
-            self.compare_matches(function_match1['matches'], function_matches_dict2[k]['matches'])
+            match2 = matches_map2[k]
+            if match1 != match2:
+                different_matches.append((match1, match2))
+
+        return (missing_matches, different_matches)
+
+    def compare_function_matches_map(self, function_matches_map1, function_matches_map2, description = ''):
+        comparison_result = True
+        for k, function_match1 in function_matches_map1.items():
+            if not k in function_matches_map2:
+                comparison_result = False
+                print("* compare_function_matches failed: the source/target match not exists (%s)" % description)
+                pprint.pprint(function_match1)
+                print('')
+                continue
+
+            function_match2 = function_matches_map2[k]
+            (missing_matches1, different_matches1) = self.compare_matches(function_match1['matches'], function_match2['matches'], 'orig vs new')
+            (missing_matches2, different_matches2) = self.compare_matches(function_match2['matches'], function_match1['matches'], 'new vs orig')
+
+            if len(missing_matches1) > 0 or len(different_matches1) > 0 or len(missing_matches2) > 0 or len(different_matches2) > 0:
+                comparison_result = False
+                print("* compare_function_matches failed: the source/target match not exists (%s)" % description)
+
+                prefix = ' ' * 4
+                indent = 8
+                if len(missing_matches1) > 0:
+                    print(prefix + '* missing_matches1:')
+                    self.print_matches(missing_matches1, prefix = prefix + (' ' * 4))
+
+                if len(different_matches1) > 0:
+                    print('* different_matches1:')
+                    print(' ' * indent + pprint.pformat(different_matches1, indent = indent))
+
+                if len(missing_matches2) > 0:
+                    print('* missing_matches2:')
+                    self.print_matches(missing_matches2, prefix = prefix + (' ' * 4))
+
+                if len(different_matches2) > 0:
+                    print('* different_matches2:')
+                    print(' ' * indent + pprint.pformat(different_matches2, indent = indent))
+
+        return comparison_result
 
     def compare_function_matches(self, function_matches1, function_matches2):
-        self.assertEqual(len(function_matches1), len(function_matches2))
-        function_matches_dict1 = self.build_function_match_map(function_matches1)
-        function_matches_dict2 = self.build_function_match_map(function_matches2)
-        self.compare_function_matches_dict(function_matches_dict1, function_matches_dict2)
-        self.compare_function_matches_dict(function_matches_dict2, function_matches_dict1)
+        function_matches_map1 = self.build_function_match_map(function_matches1)
+        function_matches_map2 = self.build_function_match_map(function_matches2)
+
+        comparison_result1 = self.compare_function_matches_map(function_matches_map1, function_matches_map2, description = 'orig vs new')
+        comparison_result2 = self.compare_function_matches_map(function_matches_map2, function_matches_map1, description = 'new vs orig')
+
+        if len(function_matches1) == len(function_matches2) and comparison_result1 and comparison_result2:
+            return True
+        return False
+
+class TestCase(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestCase, self).__init__(*args, **kwargs)
+
+        self.debug_level = 0
+        self.write_data = True
+        filenames = [r'examples\EPSIMP32-2006.1200.4518.1014\EPSIMP32.db', r'examples\EPSIMP32-2006.1200.6731.5000\EPSIMP32.db']
+        self.binaries = []
+        for filename in filenames:
+            binary = pybinkit.Binary()
+            if self.debug_level > 0:
+                print('Opening %s...' % filename)
+            binary.open(filename)
+            self.binaries.append(binary)
+
+        self.util = Util(self.binaries)
 
     def dump_basic_blocks(self, basic_blocks):
         if self.debug_level > 0:
@@ -386,81 +445,77 @@ class TestCase(unittest.TestCase):
 
         return unidentified_blocks
 
-    def do_instruction_hash_match(self, function_matches):
-        print('* do_instruction_hash_match:')
+    def do_function_instruction_hash_match(self, function_matches, filename_prefix = 'do_function_instruction_hash_match'):
+        print('* do_function_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
-        function_matches_after_instruction_hash_match = self.get_function_match_list(function_matches)
-        unidentified_blocks_after_instruction_hash_match = self.get_function_unidentified_blocks(function_matches)
+        matches = self.util.get_function_match_list(function_matches)
+        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
 
         if self.write_data:
-            with open('function_matches_after_instruction_hash_match.json', 'w') as fd:
-                json.dump(function_matches_after_instruction_hash_match, fd, indent = 4)
+            with open('%s-matches.json' % filename_prefix, 'w') as fd:
+                json.dump(matches, fd, indent = 4)
 
-            with open('unidentified_blocks_after_instruction_hash_match.json', 'w') as fd:
-                json.dump(unidentified_blocks_after_instruction_hash_match, fd, indent = 4)
+            with open('%s-unidentified_blocks.json' % filename_prefix, 'w') as fd:
+                json.dump(unidentified_blocks, fd, indent = 4)
 
-        with open(r'expected\function_matches_after_instruction_hash_match.json', 'r') as fd:
-            expected_function_matches_after_instruction_hash_match = json.load(fd)
+        with open(r'expected\%s-matches.json' % filename_prefix, 'r') as fd:
+            expected_matches = json.load(fd)
 
-        with open(r'expected\unidentified_blocks_after_instruction_hash_match.json', 'r') as fd:
-            expected_unidentified_blocks_after_instruction_hash_match = json.load(fd)
+        with open(r'expected\%s-unidentified_blocks.json' % filename_prefix, 'r') as fd:
+            expected_unidentified_blocks = json.load(fd)
 
-        self.compare_function_matches(expected_function_matches_after_instruction_hash_match, function_matches_after_instruction_hash_match)
-        self.assertEqual(expected_unidentified_blocks_after_instruction_hash_match, unidentified_blocks_after_instruction_hash_match)
+        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
+        self.assertEqual(expected_unidentified_blocks, unidentified_blocks)
 
-    def do_control_flow_match(self, function_matches, source_function_address = 0):
-        print('* do_control_flow_match:')
+    def do_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'do_function_control_flow_match'):
+        print('* do_function_control_flow_match:')
         match_sequence = function_matches.do_control_flow_match(source_function_address)
-        function_matches_after_control_flow_match = self.get_function_match_list(function_matches, source_function_address)
-        unidentified_blocks_after_control_flow_match = self.get_function_unidentified_blocks(function_matches, source_function_address)
+        matches = self.util.get_function_match_list(function_matches, source_function_address)
+        unidentified_blocks = self.get_function_unidentified_blocks(function_matches, source_function_address)
 
         print('\tremove_matches: match_sequence: %d' % match_sequence)
         function_matches.remove_matches(match_sequence)
-        function_matches_after_control_flow_match_remove_matches = self.get_function_match_list(function_matches, source_function_address)
+        function_matches_control_flow_match_remove_matches = self.util.get_function_match_list(function_matches, source_function_address)
 
         if self.write_data:
-            with open('function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
-                json.dump(function_matches_after_control_flow_match, fd, indent = 4)
+            with open('%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'w') as fd:
+                json.dump(matches, fd, indent = 4)
 
-            with open('unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'w') as fd:
-                json.dump(unidentified_blocks_after_control_flow_match, fd, indent = 4)
+            with open('%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'w') as fd:
+                json.dump(unidentified_blocks, fd, indent = 4)
 
-            with open('function_matches_after_control_flow_match_remove_matches-%.8x.json' % source_function_address, 'w') as fd:
-                json.dump(function_matches_after_control_flow_match_remove_matches, fd, indent = 4)                
+        with open(r'expected\%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'r') as fd:
+            expected_matches = json.load(fd)
 
-        with open(r'expected\function_matches_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
-            expected_function_matches_after_control_flow_match = json.load(fd)
+        with open(r'expected\%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'r') as fd:
+            expected_unidentified_blocks = json.load(fd)
 
-        with open(r'expected\unidentified_blocks_after_control_flow_match-%.8x.json' % source_function_address, 'r') as fd:
-            expected_unidentified_blocks_after_control_flow_match = json.load(fd)
+        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
+        self.assertEqual(str(expected_unidentified_blocks), str(unidentified_blocks))
 
-        self.compare_function_matches(expected_function_matches_after_control_flow_match, function_matches_after_control_flow_match)
-        self.assertEqual(str(expected_unidentified_blocks_after_control_flow_match), str(unidentified_blocks_after_control_flow_match))
-
-    def test_function_match(self):
+    def do_instruction_hash_match(self):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_instruction_hash_match()
-        match_list = self.get_match_list(matches)
 
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
         function_matches.add_matches(matches)
-        function_matches_initial = self.get_function_match_list(function_matches)
+        matches = self.util.get_function_match_list(function_matches)
 
-        if self.write_data:
-            with open('match_list.json', 'w') as fd:
-                json.dump(match_list, fd, indent = 4)
-            
-            with open('function_matches_initial.json', 'w') as fd:
-                json.dump(function_matches_initial, fd, indent = 4)
+        if self.write_data:            
+            with open('do_instruction_hash_match.json', 'w') as fd:
+                json.dump(matches, fd, indent = 4)
 
-        with open(r'expected\function_matches_initial.json', 'r') as fd:
-            expected_function_matches_initial = json.load(fd)
+        with open(r'expected\do_instruction_hash_match.json', 'r') as fd:
+            expected_matches = json.load(fd)
 
-        self.compare_function_matches(expected_function_matches_initial, function_matches_initial)
+        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
+        return function_matches
 
-        self.do_instruction_hash_match(function_matches)
+    def test_function_match(self):
+        function_matches = self.do_instruction_hash_match()
+        self.do_function_instruction_hash_match(function_matches)
         #self.do_control_flow_match(function_matches, 0x6c7fc779)
-        self.do_control_flow_match(function_matches)
+        self.do_function_control_flow_match(function_matches)
 
     def do_function_diff(self, source, target):
         print('* do_function_diff:')
@@ -471,17 +526,17 @@ class TestCase(unittest.TestCase):
         function_matches.add_matches(matches)
 
         self.debug_level = 1
-        self.get_match_list(matches)
+        self.util.get_match_list(matches)
 
         print('* do_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
-        function_matches_list = self.get_function_match_list(function_matches)
+        function_matches_list = self.util.get_function_match_list(function_matches)
         unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
         function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
         print('* do_control_flow_match:')
         function_matches.do_control_flow_match()
-        function_matches_list = self.get_function_match_list(function_matches)        
+        function_matches_list = self.util.get_function_match_list(function_matches)        
         unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
         function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
