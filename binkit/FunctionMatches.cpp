@@ -12,42 +12,35 @@ FunctionMatches::FunctionMatches(Binary& sourceBinary, Binary& targetBinary)
 void FunctionMatches::AddMatchData(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData)
 {
 	matchData.MatchSequence = m_matchSequence;
-	unordered_map<va_t, TargetToMatchDataListMap>::iterator it = m_functionMatches.find(sourceFunctionAddress);
+	unordered_map<va_t, unordered_map<va_t, vector<MatchData*>>>::iterator it = m_functionMatches.find(sourceFunctionAddress);
 	if (it == m_functionMatches.end())
 	{
-		TargetToMatchDataListMap targetToMatchDataList;
-		vector<MatchData> matchDataList;
-		matchDataList.push_back(matchData);
-		targetToMatchDataList.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
-		m_functionMatches.insert(pair<va_t, TargetToMatchDataListMap>(sourceFunctionAddress, targetToMatchDataList));
+		std::pair<unordered_map<va_t, unordered_map<va_t, vector<MatchData*>>>::iterator, bool > result = m_functionMatches.insert(pair<va_t, unordered_map<va_t, vector<MatchData*>>>(sourceFunctionAddress, {}));
+		it = result.first;
 	}
-	else
+
+	unordered_map<va_t, vector<MatchData*>>::iterator targetToMatchDataListMapit = it->second.find(targetFunctionAddress);
+	if (targetToMatchDataListMapit == it->second.end())
 	{
-		TargetToMatchDataListMap::iterator targetToMatchDataListMapit = it->second.find(targetFunctionAddress);
+		std::pair<unordered_map<va_t, vector<MatchData*>>::iterator, bool > result = it->second.insert(pair<va_t, vector<MatchData *>>(targetFunctionAddress, {}));
+		targetToMatchDataListMapit = result.first;
+	}
 
-		if (targetToMatchDataListMapit == it->second.end())
+	bool isNewMatchData = true;
+	for (MatchData *p_currentMatchData : targetToMatchDataListMapit->second)
+	{
+		if (matchData.Source == p_currentMatchData->Source && matchData.Target == p_currentMatchData->Target)
 		{
-			vector<MatchData> matchDataList;
-			matchDataList.push_back(matchData);
-			it->second.insert(pair<va_t, vector<MatchData>>(targetFunctionAddress, matchDataList));
+			isNewMatchData = false;
+			break;
 		}
-		else
-		{
-			bool isNewMatchData = true;
-			for (MatchData currentMatchData : targetToMatchDataListMapit->second)
-			{
-				if (matchData.Source == currentMatchData.Source && matchData.Target == currentMatchData.Target)
-				{
-					isNewMatchData = false;
-					break;
-				}
-			}
+	}
 
-			if (isNewMatchData)
-			{
-				targetToMatchDataListMapit->second.push_back(matchData);
-			}
-		}
+	if (isNewMatchData)
+	{
+		MatchData* p_matchData = new MatchData();
+		memcpy(p_matchData, &matchData, sizeof(matchData));
+		targetToMatchDataListMapit->second.push_back(p_matchData);
 	}
 }
 
@@ -70,9 +63,9 @@ void FunctionMatches::Print()
 
 			printf("==========================================\n");
 			printf("Function: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
-			for (MatchData matchData : val2.second)
+			for (MatchData *p_matchData : val2.second)
 			{
-				printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", matchData.Source, matchData.Target, matchData.MatchRate, matchData.MatchSequence);
+				printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
 			}
 		}
 	}
@@ -138,35 +131,54 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 {
 	if (address != 0)
 	{
-		unordered_map<va_t, TargetToMatchDataListMap>::iterator it = m_functionMatches.find(address);
+		unordered_map<va_t, unordered_map<va_t, vector<MatchData*>>>::iterator it = m_functionMatches.find(address);
 		if (it != m_functionMatches.end())
 		{
 			va_t sourceFunctionAddress = it->first;
 			for (auto& val2 : it->second)
 			{
+				vector<MatchData> fullMatchDataList;
 				va_t targetFunctionAddress = val2.first;
-				for (MatchData matchData : val2.second)
+				for (MatchData *p_matchData : val2.second)
 				{
-					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(matchData.Source, matchData.Target, CREF_FROM);
-					AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, matchDataList);
+					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(p_matchData->Source, p_matchData->Target, CREF_FROM);
+					fullMatchDataList.insert(fullMatchDataList.end(), matchDataList.begin(), matchDataList.end());
+					printf("==========================================\n");
+					printf("DoControlFlowMatch1: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
+					printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
+					for (MatchData currentMatchData : matchDataList)
+					{
+						printf("\t\tMatch: %x-%x %d (MatchSequence: %d)\n", currentMatchData.Source, currentMatchData.Target, currentMatchData.MatchRate, currentMatchData.MatchSequence);
+					}
 				}
+				AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, fullMatchDataList);
 			}
 		}
 	}
 	else
 	{
-
 		for (auto& val : m_functionMatches)
 		{
 			va_t sourceFunctionAddress = val.first;
 			for (auto& val2 : val.second)
 			{
+				vector<MatchData> fullMatchDataList;
 				va_t targetFunctionAddress = val2.first;
-				for (MatchData matchData : val2.second)
+
+				printf("==========================================\n");
+				printf("DoControlFlowMatch: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
+
+				for (MatchData *p_matchData : val2.second)
 				{
-					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(matchData.Source, matchData.Target, CREF_FROM);
-					AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, matchDataList);
+					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(p_matchData->Source, p_matchData->Target, CREF_FROM);
+					fullMatchDataList.insert(fullMatchDataList.end(), matchDataList.begin(), matchDataList.end());
+					printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
+					for (MatchData currentMatchData : matchDataList)
+					{
+						printf("\t\tMatch: %x-%x %d (MatchSequence: %d)\n", currentMatchData.Source, currentMatchData.Target, currentMatchData.MatchRate, currentMatchData.MatchSequence);
+					}
 				}
+				AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, fullMatchDataList);
 			}
 		}
 	}
@@ -183,7 +195,7 @@ void FunctionMatches::RemoveMatches(int matchSequence)
 		for (auto& val2 : val.second)
 		{
 			for (auto it = val2.second.begin(); it != val2.second.end(); ) {
-				if (it->MatchSequence == matchSequence)
+				if ((*it)->MatchSequence == matchSequence)
 				{
 					it = val2.second.erase(it);
 				}

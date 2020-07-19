@@ -7,13 +7,11 @@
 
 using namespace std;
 
-typedef unordered_map<va_t, vector<MatchData>> TargetToMatchDataListMap;
-
 struct FunctionMatch
 {
 	va_t SourceFunction;
 	va_t TargetFunction;
-	vector<MatchData> MatchDataList;
+	vector<MatchData *> MatchDataList;
 };
 
 class DiffAlgorithms;
@@ -25,7 +23,7 @@ private:
 	Binary m_targetBinary;
 	DiffAlgorithms* m_pdiffAlgorithms;
 	int m_matchSequence;
-	unordered_map<va_t, TargetToMatchDataListMap> m_functionMatches;
+	unordered_map<va_t, unordered_map<va_t, vector<MatchData*>>> m_functionMatches;
 	void AddMatchData(va_t sourceFunctionAddress, va_t targetFunctionAddress, MatchData matchData);
 	void AddMatchDataList(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<MatchData> matchDataList);
 
