@@ -10,3 +10,10 @@ tests/tests.cmd
 *.txt
 tmp/
 tests/*.json
+*.db-journal
+*.id0
+*.id1
+*.id2
+*.idb
+*.nam
+*.til
