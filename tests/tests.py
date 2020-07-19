@@ -19,6 +19,55 @@ class Util:
         self.debug_level = 0
         self.binaries = binaries
 
+    def get_basic_blocks_set(self, binary, address):
+        basic_blocks = {}
+        function = binary.get_function(address)
+
+        if not function:
+            return
+
+        for basic_block_address in function.get_basic_blocks():
+            basic_blocks[basic_block_address] = 1
+        return basic_blocks
+
+    def get_function_unidentified_blocks(self, function_matches, source_function_address = 0, level = 0):
+        prefix = '\t' * level
+        unidentified_blocks = []
+        (src_binary, target_binary) = self.binaries
+        for function_match in function_matches.get_matches():
+            if source_function_address !=0 and source_function_address != function_match.source:
+                continue
+
+            src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
+            target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
+            
+            for match in function_match.match_data_list:
+                if match.source in src_basic_blocks:
+                    del src_basic_blocks[match.source]
+
+                if match.target in target_basic_blocks:
+                    del target_basic_blocks[match.target]
+
+            if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
+                unidentified_blocks.append({
+                    'source': function_match.source,
+                    'target': function_match.target,
+                    'source_basic_blocks': list(src_basic_blocks.keys()),
+                    'target_basic_blocks': list(target_basic_blocks.keys())
+                })
+                
+                if self.debug_level > 0:
+                    print(prefix + '%x - %x' % (function_match.source, function_match.target))
+                    print(prefix + '\t- src:')
+
+                    for src_basic_block in src_basic_blocks.keys():
+                        print(prefix + '\t%.8x' % src_basic_block)
+
+                    print('\t- target:')
+                    for target_basic_block in target_basic_blocks.keys():
+                        print(prefix + '\t%.8x' % target_basic_block)
+
+        return unidentified_blocks
     def get_match_list(self, matches, level = 1):
         prefix = '\t' * level
         match_list = []
@@ -37,8 +86,9 @@ class Util:
         return match_list
 
     def print_matches(self, matches, prefix = '', print_disasm = False):
-        basic_blocks1 = self.binaries[0].get_basic_blocks()
-        basic_blocks2 = self.binaries[1].get_basic_blocks()
+        (src_binary, target_binary) = self.binaries
+        src_basic_blocks = src_binary.get_basic_blocks()
+        target_basic_blocks = target_binary.get_basic_blocks()
 
         source_to_target_map = {}
         for match in matches:
@@ -52,9 +102,9 @@ class Util:
             print(prefix + '    match_rate: %.8x' % match['match_rate'])
 
             if print_disasm:
-                print(basic_blocks1.get_disasm_lines(match['source']))
+                print(src_basic_blocks.get_disasm_lines(match['source']))
                 print('')
-                print(basic_blocks2.get_disasm_lines(match['target']))
+                print(target_basic_blocks.get_disasm_lines(match['target']))
                 print('')
 
         for source, targets in source_to_target_map.items():
@@ -166,9 +216,11 @@ class TestCase(unittest.TestCase):
         self.debug_level = 0
         self.write_data = True
 
-        current_directory = 'current'
-        if self.write_data and not os.path.isdir(current_directory):
-            os.makedirs(current_directory)
+        self.current_data_directory = 'current'
+        self.expected_data_directory = 'expected'
+
+        if self.write_data and not os.path.isdir(self.current_data_directory):
+            os.makedirs(self.current_data_directory)
         
         filenames = [r'examples\EPSIMP32-2006.1200.4518.1014\EPSIMP32.db', r'examples\EPSIMP32-2006.1200.6731.5000\EPSIMP32.db']
         self.binaries = []
@@ -388,17 +440,6 @@ class TestCase(unittest.TestCase):
         self.perform_multilevel_control_flow_matches(0x6c81ac85, 0x42aeb8)
         self.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
 
-    def get_basic_blocks_set(self, binary, address):
-        basic_blocks = {}
-        function = binary.get_function(address)
-
-        if not function:
-            return
-
-        for basic_block_address in function.get_basic_blocks():
-            basic_blocks[basic_block_address] = 1
-        return basic_blocks
-
     def check_function_match(self, src_function_address, target_function_address, src_binary, target_binary, function_matches):
         for function_match in function_matches.get_matches():
             function_match.source
@@ -412,97 +453,67 @@ class TestCase(unittest.TestCase):
             if self.debug_level > 0:
                 print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
-    def get_function_unidentified_blocks(self, function_matches, source_function_address = 0, level = 0):
-        prefix = '\t' * level
-        unidentified_blocks = []
-        (src_binary, target_binary) = self.binaries
-        for function_match in function_matches.get_matches():
-            if source_function_address !=0 and source_function_address != function_match.source:
-                continue
 
-            src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
-            target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
-            
-            for match in function_match.match_data_list:
-                if match.source in src_basic_blocks:
-                    del src_basic_blocks[match.source]
-
-                if match.target in target_basic_blocks:
-                    del target_basic_blocks[match.target]
-
-            if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
-                unidentified_blocks.append({
-                    'source': function_match.source,
-                    'target': function_match.target,
-                    'source_basic_blocks': list(src_basic_blocks.keys()),
-                    'target_basic_blocks': list(target_basic_blocks.keys())
-                })
-                
-                if self.debug_level > 0:
-                    print(prefix + '%x - %x' % (function_match.source, function_match.target))
-                    print(prefix + '\t- src:')
-
-                    for src_basic_block in src_basic_blocks.keys():
-                        print(prefix + '\t%.8x' % src_basic_block)
-
-                    print('\t- target:')
-                    for target_basic_block in target_basic_blocks.keys():
-                        print(prefix + '\t%.8x' % target_basic_block)
-
-        return unidentified_blocks
-
-    def do_function_instruction_hash_match(self, function_matches, filename_prefix = 'do_function_instruction_hash_match'):
+    def do_function_instruction_hash_match(self, function_matches, filename_prefix = 'do_function_instruction_hash_match', sequence = 0):
         print('* do_function_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
         matches = self.util.get_function_match_list(function_matches)
-        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
+        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
+
+        matches_filename = r'%s-%.8d-matches.json' % (filename_prefix, sequence)
+        unidentified_blocks_filename = r'%s-%.8d-unidentified_blocks.json' % (filename_prefix, sequence)
 
         if self.write_data:
-            with open(r'current\%s-matches.json' % filename_prefix, 'w') as fd:
+            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
-            with open(r'current\%s-unidentified_blocks.json' % filename_prefix, 'w') as fd:
+            with open(os.path.join(self.current_data_directory, unidentified_blocks_filename), 'w') as fd:
                 json.dump(unidentified_blocks, fd, indent = 4)
 
-        with open(r'expected\%s-matches.json' % filename_prefix, 'r') as fd:
+        with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
             expected_matches = json.load(fd)
 
-        with open(r'expected\%s-unidentified_blocks.json' % filename_prefix, 'r') as fd:
+        with open(os.path.join(self.expected_data_directory, unidentified_blocks_filename), 'r') as fd:
             expected_unidentified_blocks = json.load(fd)
 
         self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
         self.assertEqual(expected_unidentified_blocks, unidentified_blocks)
 
-    def do_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'do_function_control_flow_match'):
+    def do_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'do_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         print('* do_function_control_flow_match:')
         match_sequence = function_matches.do_control_flow_match(source_function_address)
         matches = self.util.get_function_match_list(function_matches, source_function_address)
-        unidentified_blocks = self.get_function_unidentified_blocks(function_matches, source_function_address)
+        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
 
-        print('\tremove_matches: match_sequence: %d' % match_sequence)
-        function_matches.remove_matches(match_sequence)
-        matches_removed = self.util.get_function_match_list(function_matches, source_function_address)
+        matches_filename = r'%s-%.8x-%.8d-matches.json' % (filename_prefix, source_function_address, sequence)
+        unidentified_blocks_filename = r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence)
 
         if self.write_data:
-            with open(r'current\%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'w') as fd:
+            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
-            with open(r'current\%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'w') as fd:
+            with open(os.path.join(self.current_data_directory, unidentified_blocks_filename), 'w') as fd:
                 json.dump(unidentified_blocks, fd, indent = 4)
 
-            with open(r'current\%s-%.8x-matches_removed.json' % (filename_prefix, source_function_address), 'w') as fd:
-                json.dump(matches_removed, fd, indent = 4)
+        if rollback:
+            print('\tremove_matches: match_sequence: %d' % match_sequence)
+            function_matches.remove_matches(match_sequence)
+            matches_removed = self.util.get_function_match_list(function_matches, source_function_address)
+            if self.write_data:
+                with open(os.path.join(self.current_data_directory, r'%s-%.8x-%.8d-matches_removed.json' % (filename_prefix, source_function_address, sequence)), 'w') as fd:
+                    json.dump(matches_removed, fd, indent = 4)
 
-        with open(r'expected\%s-%.8x-matches.json' % (filename_prefix, source_function_address), 'r') as fd:
-            expected_matches = json.load(fd)
+        if verify_results:
+            with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
+                expected_matches = json.load(fd)
 
-        with open(r'expected\%s-%.8x-unidentified_blocks.json' % (filename_prefix, source_function_address), 'r') as fd:
-            expected_unidentified_blocks = json.load(fd)
+            with open(os.path.join(self.expected_data_directory, unidentified_blocks_filename), 'r') as fd:
+                expected_unidentified_blocks = json.load(fd)
 
-        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
-        self.assertEqual(str(expected_unidentified_blocks), str(unidentified_blocks))
+            self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
+            self.assertEqual(str(expected_unidentified_blocks), str(unidentified_blocks))
 
-    def do_instruction_hash_match(self):
+    def do_instruction_hash_match(self, filename_prefix = 'do_instruction_hash_match', sequence = 0):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_instruction_hash_match()
 
@@ -510,21 +521,29 @@ class TestCase(unittest.TestCase):
         function_matches.add_matches(matches)
         matches = self.util.get_function_match_list(function_matches)
 
+        matches_filename = r'%s-%.8d-matches.json' % (filename_prefix, sequence)
+
         if self.write_data:            
-            with open(r'current\do_instruction_hash_match.json', 'w') as fd:
+            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
                 json.dump(matches, fd, indent = 4)
 
-        with open(r'expected\do_instruction_hash_match.json', 'r') as fd:
+        with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
             expected_matches = json.load(fd)
 
         self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
         return function_matches
 
-    def test_function_match(self):
+    def test_function_match(self, generate_test_case_files = False):
         function_matches = self.do_instruction_hash_match()
         self.do_function_instruction_hash_match(function_matches)
-        self.do_function_control_flow_match(function_matches, 0x6c7fc779)
-        self.do_function_control_flow_match(function_matches)
+        self.do_function_control_flow_match(function_matches, 0x6c7fc779, rollback = True)
+        
+        if generate_test_case_files:
+            for sequence in range(0, 20, 1):
+                self.do_function_control_flow_match(function_matches, sequence = sequence, verify_results = False)
+
+        for sequence in range(0, 5, 1):
+            self.do_function_control_flow_match(function_matches, sequence = sequence)
 
     def do_function_diff(self, source, target):
         print('* do_function_diff:')
@@ -540,13 +559,13 @@ class TestCase(unittest.TestCase):
         print('* do_instruction_hash_match:')
         function_matches.do_instruction_hash_match()
         function_matches_list = self.util.get_function_match_list(function_matches)
-        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
+        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
         function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
         print('* do_control_flow_match:')
         function_matches.do_control_flow_match()
         function_matches_list = self.util.get_function_match_list(function_matches)        
-        unidentified_blocks = self.get_function_unidentified_blocks(function_matches)
+        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
         function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
 
         return function_diff_list
