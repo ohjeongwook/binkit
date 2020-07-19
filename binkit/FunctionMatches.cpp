@@ -143,13 +143,6 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 				{
 					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(p_matchData->Source, p_matchData->Target, CREF_FROM);
 					fullMatchDataList.insert(fullMatchDataList.end(), matchDataList.begin(), matchDataList.end());
-					printf("==========================================\n");
-					printf("DoControlFlowMatch1: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
-					printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
-					for (MatchData currentMatchData : matchDataList)
-					{
-						printf("\t\tMatch: %x-%x %d (MatchSequence: %d)\n", currentMatchData.Source, currentMatchData.Target, currentMatchData.MatchRate, currentMatchData.MatchSequence);
-					}
 				}
 				AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, fullMatchDataList);
 			}
@@ -165,18 +158,10 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 				vector<MatchData> fullMatchDataList;
 				va_t targetFunctionAddress = val2.first;
 
-				printf("==========================================\n");
-				printf("DoControlFlowMatch: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
-
 				for (MatchData *p_matchData : val2.second)
 				{
 					vector<MatchData> matchDataList = m_pdiffAlgorithms->DoControlFlowMatch(p_matchData->Source, p_matchData->Target, CREF_FROM);
 					fullMatchDataList.insert(fullMatchDataList.end(), matchDataList.begin(), matchDataList.end());
-					printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
-					for (MatchData currentMatchData : matchDataList)
-					{
-						printf("\t\tMatch: %x-%x %d (MatchSequence: %d)\n", currentMatchData.Source, currentMatchData.Target, currentMatchData.MatchRate, currentMatchData.MatchSequence);
-					}
 				}
 				AddMatchDataList(sourceFunctionAddress, targetFunctionAddress, fullMatchDataList);
 			}
