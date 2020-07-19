@@ -17,3 +17,4 @@ tests/*.json
 *.idb
 *.nam
 *.til
+tests/current/
