@@ -161,13 +161,13 @@ vector<MatchDataCombination*> DiffAlgorithms::GetMatchDataCombinations(vector<Ma
 	return p_matchDataCombinations->GetTopMatches();
 }
 
-vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddressess, int type)
+vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type)
 {
 	bool debug = false;
 	vector<MatchData> controlFlowMatches;
 
 	vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, type);
-	vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddressess, type);
+	vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, type);
 
 	if (sourceAddresses.size() == 0 || targetAddresses.size() == 0)
 	{
@@ -183,7 +183,7 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 			memset(&matchData, 0, sizeof(MatchData));
 			matchData.Type = CONTROLFLOW_MATCH;
 			matchData.SourceParent = sourceAddress;
-			matchData.TargetParent = targetAddressess;
+			matchData.TargetParent = targetAddress;
 			matchData.Source = sourceAddresses[i];
 			matchData.Target = targetAddresses[i];
 			matchData.MatchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]), m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[i]));
@@ -192,56 +192,46 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 		return controlFlowMatches;
 	}
 
-	multimap <va_t, va_t> matchDataMap;
 	for (int i = 0; i < sourceAddresses.size(); i++)
 	{
+		MatchData matchData;
+		memset(&matchData, 0, sizeof(MatchData));
+		int maxMatchRate = 0;
 		vector<unsigned char> srcInstructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]);
-
 		for (int j = 0; j < targetAddresses.size(); j++)
 		{
-			bool skip = false;
-
-			for (multimap <va_t, va_t>::iterator it = matchDataMap.find(sourceAddresses[i]); it != matchDataMap.end() && it->first == sourceAddresses[i]; it++)
-			{
-				if (it->second == targetAddresses[j])
-				{
-					skip = true;
-					break;
-				}
-			}
-
-			if (skip)
-				continue;
-
-			matchDataMap.insert(pair<va_t, va_t>(sourceAddresses[i], targetAddresses[j]));
 			vector<unsigned char> targetInstructionHash = m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[j]);
-
 			if (srcInstructionHash.size() > 0 && targetInstructionHash.size() > 0)
 			{
-				MatchData matchData;
-				memset(&matchData, 0, sizeof(MatchData));
-				matchData.Type = CONTROLFLOW_MATCH;
-				matchData.SourceParent = sourceAddress;
-				matchData.TargetParent = targetAddressess;
-				matchData.Source = sourceAddresses[i];
-				matchData.Target = targetAddresses[j];
-				matchData.ReferenceOrderDifference = abs(i - j);
-				matchData.MatchRate = GetInstructionHashMatchRate(srcInstructionHash, targetInstructionHash);
-				controlFlowMatches.push_back(matchData);
+				int matchRate = GetInstructionHashMatchRate(srcInstructionHash, targetInstructionHash);
+				if (maxMatchRate < matchRate)
+				{
+					maxMatchRate = matchRate;
+					matchData.Type = CONTROLFLOW_MATCH;
+					matchData.SourceParent = sourceAddress;
+					matchData.TargetParent = targetAddress;
+					matchData.Source = sourceAddresses[i];
+					matchData.Target = targetAddresses[j];
+					matchData.ReferenceOrderDifference = abs(i - j);
+					matchData.MatchRate = matchRate;
+				}
 			}
 			else if (srcInstructionHash.size() == 0 && targetInstructionHash.size() == 0)
 			{
-				MatchData matchData;
-				memset(&matchData, 0, sizeof(MatchData));
+				maxMatchRate = 100;
 				matchData.Type = CONTROLFLOW_MATCH;
 				matchData.SourceParent = sourceAddress;
-				matchData.TargetParent = targetAddressess;
+				matchData.TargetParent = targetAddress;
 				matchData.Source = sourceAddresses[i];
 				matchData.Target = targetAddresses[j];
 				matchData.ReferenceOrderDifference = abs(i - j);
 				matchData.MatchRate = 100;
-				controlFlowMatches.push_back(matchData);
 			}
+		}
+
+		if (maxMatchRate > 0)
+		{
+			controlFlowMatches.push_back(matchData);
 		}
 	}
 
