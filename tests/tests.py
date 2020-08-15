@@ -157,6 +157,19 @@ class TestCase(unittest.TestCase):
         for i in range(0, len(expected_function_data_list_pair), 1):
             self.compare_function_list(expected_function_data_list_pair[i], current_function_data_list_pair[i])
 
+    def sort_match_data_list(self, match_data_list):
+        match_data_map = {}
+        for match_data in match_data_list:
+            match_data_map[match_data['source']] = match_data
+
+        sorted_match_data_list = []
+        source_addresses = list(match_data_map.keys())
+        source_addresses.sort()
+        for source_address in source_addresses:
+            sorted_match_data_list.append(match_data_map[source_address])
+
+        return sorted_match_data_list
+
     def test_instruction_hash_match(self):
         if self.debug_level > 0:
             print('* test_instruction_hash_match:')
@@ -198,7 +211,7 @@ class TestCase(unittest.TestCase):
 
         if self.write_data:
             with open(r'current\match_data_list.json', 'w') as fd:
-                json.dump(match_data_list, fd, indent = 4)
+                json.dump(self.sort_match_data_list(match_data_list), fd, indent = 4)
 
         with open(r'expected\match_data_list.json', 'r') as fd:
             expected_match_data_list = json.load(fd)
