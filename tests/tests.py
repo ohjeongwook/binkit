@@ -43,6 +43,7 @@ class TestCase(unittest.TestCase):
     def dump_basic_blocks(self, basic_blocks):
         if self.debug_level > 0:
             print('* dump_basic_blocks:')
+
         basic_block_data_list = []
         for basic_block_address in basic_blocks.get_addresses():
             basic_block_data = {}
@@ -73,7 +74,7 @@ class TestCase(unittest.TestCase):
                     print('\tparent: %.8x' % (parent))
                 basic_block_data['parents'].append(parent)
 
-             basic_block_data_list.append(basic_block_data)
+            basic_block_data_list.append(basic_block_data)
 
         return basic_block_data_list
 
