@@ -411,10 +411,10 @@ class TestCase(unittest.TestCase):
 
         filename = 'function_diff_%.8x_%.8x.json' % (src, target)
         if self.write_data:
-            with open(filename, 'w') as fd:
+            with open(os.path.join(self.current_data_directory, filename), 'w') as fd:
                 json.dump(function_diff_list, fd, indent = 4)
 
-        with open(r'expected\%s' % filename, 'r') as fd:
+        with open(os.path.join(self.expected_data_directory, filename), 'r') as fd:
             expected_function_diff_list = json.load(fd)
 
         self.assertEqual(expected_function_diff_list, function_diff_list)
