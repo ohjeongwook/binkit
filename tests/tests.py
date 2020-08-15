@@ -210,10 +210,10 @@ class TestCase(unittest.TestCase):
             match_data_list.append(match_data)
 
         if self.write_data:
-            with open(r'current\match_data_list.json', 'w') as fd:
+            with open(r'current\instruction_hash_match_data_list.json', 'w') as fd:
                 json.dump(self.sort_match_data_list(match_data_list), fd, indent = 4)
 
-        with open(r'expected\match_data_list.json', 'r') as fd:
+        with open(r'expected\instruction_hash_match_data_list.json', 'r') as fd:
             expected_match_data_list = json.load(fd)
 
         self.assertEqual(expected_match_data_list, match_data_list)
