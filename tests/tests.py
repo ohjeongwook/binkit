@@ -79,19 +79,19 @@ class TestCase(unittest.TestCase):
         return basic_block_data_list
 
     def test_dump_basic_blocks(self):
-        basic_block_data_list = []
+        basic_block_data_list_pair = []
         for binary in self.binaries:
             basic_blocks = binary.get_basic_blocks()
-            basic_block_data_list.append(self.dump_basic_blocks(basic_blocks))
+            basic_block_data_list_pair.append(self.dump_basic_blocks(basic_blocks))
 
         if self.write_data:
-            with open(r'current\basic_block_data_list.json', 'w') as fd:
-                json.dump(basic_block_data_list, fd, indent = 4)
+            with open(r'current\basic_block_data_list_pair.json', 'w') as fd:
+                json.dump(basic_block_data_list_pair, fd, indent = 4)
 
-        with open(r'expected\basic_block_data_list.json', 'r') as fd:
-            expected_basic_block_data_list = json.load(fd)
+        with open(r'expected\basic_block_data_list_pair.json', 'r') as fd:
+            expected_basic_block_data_list_pair = json.load(fd)
 
-        self.assertEqual(expected_basic_block_data_list, basic_block_data_list)
+        self.assertEqual(expected_basic_block_data_list_pair, basic_block_data_list_pair)
 
     def dump_functions(self, binary):
         if self.debug_level > 0:
@@ -120,26 +120,31 @@ class TestCase(unittest.TestCase):
 
         return function_data_list
 
+    def get_address_to_function_data_map(self, function_data_list):
+        address_to_function_data_map = {}
+        for function_data in function_data_list:
+            address_to_function_data_map[function_data['address']] = function_data
+        return address_to_function_data_map
+
+    def compare_function_list(self, expected_function_data_list, current_function_data_list):
+        expected_address_to_function_data_map = self.get_address_to_function_data_map(expected_function_data_list)
+        current_address_to_function_data_map = self.get_address_to_function_data_map(current_function_data_list)
+        #self.assertEqual(expected_function_data, current_function_data)
+
     def test_dump_functions(self):
-        function_data_list = []
+        current_function_data_list_pair = []
         for binary in self.binaries:
-            function_data_list.append(self.dump_functions(binary))
+            current_function_data_list_pair.append(self.dump_functions(binary))
 
         if self.write_data:
             with open(r'current\function_data_list.json', 'w') as fd:
-                json.dump(function_data_list, fd, indent = 4)
+                json.dump(current_function_data_list_pair, fd, indent = 4)
 
         with open(r'expected\function_data_list.json', 'r') as fd:
-            expected_function_data_list = json.load(fd)
+            expected_function_data_list_pair = json.load(fd)
 
-            for expected_function_data_list in expected_function_data_list:
-                for expected_function_data in expected_function_data_list:
-                    expected_function_data['basic_block_addresses'].sort()
-
-        with open(r'expected\function_data_list.json', 'w') as fd:
-            json.dump(expected_function_data_list, fd, indent = 4)
-
-        self.assertEqual(expected_function_data_list, function_data_list)
+        for i in range(0, len(expected_function_data_list_pair), 1):
+            self.compare_function_list(expected_function_data_list_pair[i], current_function_data_list_pair[i])
 
     def test_instruction_hash_match(self):
         if self.debug_level > 0:
