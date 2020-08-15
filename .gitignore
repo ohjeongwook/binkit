@@ -18,3 +18,8 @@ tests/*.json
 *.nam
 *.til
 tests/current/
+tests/__pycache__/util.cpython-38.pyc
+tests/examples/EPSIMP32-2006.1200.4518.1014/EPSIMP32.FLT
+tests/examples/EPSIMP32-2006.1200.4518.1014/EPSIMP32.pdb
+tests/examples/EPSIMP32-2006.1200.6731.5000/EPSIMP32.FLT
+tests/examples/EPSIMP32-2006.1200.6731.5000/EPSIMP32.pdb
