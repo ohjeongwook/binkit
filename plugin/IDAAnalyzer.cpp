@@ -523,8 +523,12 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t> *p_cmdAr
     basic_block.EndAddress = 0;
 
     qstring name;
-
     get_short_name(&name, srcBlockAddress);
+
+    if (name[0] != NULL)
+    {
+        basic_block.Name = name.c_str();
+    }    
 
     if (is_code(flags))
     {
@@ -818,7 +822,6 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
     */
     return regions;
 }
-
 
 ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *p_cmdArray, flags_t *p_flags)
 {
