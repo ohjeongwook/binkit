@@ -50,7 +50,7 @@ class TestCase(unittest.TestCase):
             symbol = basic_blocks.get_symbol(basic_block_address)
             basic_block_data['symbol'] = symbol
             if self.debug_level > 0:
-                if symbol:
+                if symbol :
                     print('basic_block_address: %.8x: %s' % (basic_block_address, symbol))
                 else:
                     print('basic_block_address: %.8x:' % (basic_block_address))
@@ -73,7 +73,7 @@ class TestCase(unittest.TestCase):
                     print('\tparent: %.8x' % (parent))
                 basic_block_data['parents'].append(parent)
 
-            basic_block_data_list.append(basic_block_data)
+             basic_block_data_list.append(basic_block_data)
 
         return basic_block_data_list
 
@@ -81,8 +81,7 @@ class TestCase(unittest.TestCase):
         basic_block_data_list = []
         for binary in self.binaries:
             basic_blocks = binary.get_basic_blocks()
-            basic_block_data_list = self.dump_basic_blocks(basic_blocks)
-            basic_block_data_list.append(basic_block_data_list)
+            basic_block_data_list.append(self.dump_basic_blocks(basic_blocks))
 
         if self.write_data:
             with open(r'current\basic_block_data_list.json', 'w') as fd:
