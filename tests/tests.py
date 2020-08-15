@@ -129,7 +129,18 @@ class TestCase(unittest.TestCase):
     def compare_function_list(self, expected_function_data_list, current_function_data_list):
         expected_address_to_function_data_map = self.get_address_to_function_data_map(expected_function_data_list)
         current_address_to_function_data_map = self.get_address_to_function_data_map(current_function_data_list)
-        #self.assertEqual(expected_function_data, current_function_data)
+
+        for address, function_data in expected_address_to_function_data_map.items():
+            if not address in current_address_to_function_data_map:
+                print(f"Missing address in current_address_to_function_data_map: %d" % address)
+            self.assertTrue(address in current_address_to_function_data_map)
+            self.assertEqual(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])
+
+        for address, function_data in current_address_to_function_data_map.items():
+            if not address in expected_address_to_function_data_map:
+                print(f"Missing address in expected_address_to_function_data_map: %d" % address)
+            self.assertTrue(address in expected_address_to_function_data_map)
+            self.assertEqual(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])            
 
     def test_dump_functions(self):
         current_function_data_list_pair = []
@@ -137,10 +148,10 @@ class TestCase(unittest.TestCase):
             current_function_data_list_pair.append(self.dump_functions(binary))
 
         if self.write_data:
-            with open(r'current\function_data_list.json', 'w') as fd:
+            with open(r'current\function_data_list_pair.json', 'w') as fd:
                 json.dump(current_function_data_list_pair, fd, indent = 4)
 
-        with open(r'expected\function_data_list.json', 'r') as fd:
+        with open(r'expected\function_data_list_pair.json', 'r') as fd:
             expected_function_data_list_pair = json.load(fd)
 
         for i in range(0, len(expected_function_data_list_pair), 1):

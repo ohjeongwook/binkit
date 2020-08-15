@@ -3581,19 +3581,19 @@
             ]
         },
         {
+            "address": 1820266892,
+            "symbol": "",
+            "basic_block_addresses": [
+                1820266892
+            ]
+        },
+        {
             "address": 1820501026,
             "symbol": "o_currentsystemparams(CInterpretator *)",
             "basic_block_addresses": [
                 1820501026,
                 1820501064,
                 1820501075
-            ]
-        },
-        {
-            "address": 1820266892,
-            "symbol": "",
-            "basic_block_addresses": [
-                1820266892
             ]
         },
         {
@@ -4806,13 +4806,6 @@
             ]
         },
         {
-            "address": 1820651633,
-            "symbol": "$LN12_6",
-            "basic_block_addresses": [
-                1820651633
-            ]
-        },
-        {
             "address": 1820371005,
             "symbol": "CInterpretator::ReadAllDSC(void)",
             "basic_block_addresses": [
@@ -5423,14 +5416,6 @@
             "symbol": "PathBoolean::LineTo(double,double,bool)",
             "basic_block_addresses": [
                 1820366604
-            ]
-        },
-        {
-            "address": 1820426177,
-            "symbol": "",
-            "basic_block_addresses": [
-                1820426177,
-                1820426184
             ]
         },
         {
@@ -6229,20 +6214,6 @@
                 1820338637,
                 1820338645,
                 1820338658
-            ]
-        },
-        {
-            "address": 1820426198,
-            "symbol": "$LN33_1",
-            "basic_block_addresses": [
-                1820426184,
-                1820426198,
-                1820426218,
-                1820426228,
-                1820426248,
-                1820426262,
-                1820426281,
-                1820426291
             ]
         },
         {
@@ -8764,13 +8735,6 @@
             ]
         },
         {
-            "address": 1820652178,
-            "symbol": "loc_6C84F292",
-            "basic_block_addresses": [
-                1820652178
-            ]
-        },
-        {
             "address": 1820527964,
             "symbol": "ColorInfo::GetCMYKResolved(float &,float &,float &,float &)",
             "basic_block_addresses": [
@@ -10827,13 +10791,6 @@
             ]
         },
         {
-            "address": 1820426184,
-            "symbol": "loc_6C817FC8",
-            "basic_block_addresses": [
-                1820426184
-            ]
-        },
-        {
             "address": 1820364868,
             "symbol": "PathBoolean::StartAt(double,double)",
             "basic_block_addresses": [
@@ -12691,13 +12648,6 @@
             "symbol": "GetFilterPref(x,x,x,x)",
             "basic_block_addresses": [
                 1820422004
-            ]
-        },
-        {
-            "address": 1820651532,
-            "symbol": "$LN11_7",
-            "basic_block_addresses": [
-                1820651532
             ]
         },
         {
@@ -23297,13 +23247,6 @@
             ]
         },
         {
-            "address": 1820650698,
-            "symbol": "$LN21",
-            "basic_block_addresses": [
-                1820650698
-            ]
-        },
-        {
             "address": 1820544510,
             "symbol": "RobustIntersections::OppositeComparison(RobustIntersections::COMPARISON)",
             "basic_block_addresses": [
@@ -28176,13 +28119,6 @@
             ]
         },
         {
-            "address": 1820650761,
-            "symbol": "__ftol2_pentium4",
-            "basic_block_addresses": [
-                1820650761
-            ]
-        },
-        {
             "address": 1820651004,
             "symbol": "",
             "basic_block_addresses": [
@@ -28303,14 +28239,6 @@
                 1820652034,
                 1820652069,
                 1820652081,
-                1820652175,
-                1820652178
-            ]
-        },
-        {
-            "address": 1820652175,
-            "symbol": "$LN9_13",
-            "basic_block_addresses": [
                 1820652175,
                 1820652178
             ]
@@ -31962,19 +31890,19 @@
             ]
         },
         {
+            "address": 1820266892,
+            "symbol": "",
+            "basic_block_addresses": [
+                1820266892
+            ]
+        },
+        {
             "address": 1820501026,
             "symbol": "o_currentsystemparams(CInterpretator *)",
             "basic_block_addresses": [
                 1820501026,
                 1820501064,
                 1820501075
-            ]
-        },
-        {
-            "address": 1820266892,
-            "symbol": "",
-            "basic_block_addresses": [
-                1820266892
             ]
         },
         {
@@ -33187,13 +33115,6 @@
             ]
         },
         {
-            "address": 1820651633,
-            "symbol": "$LN12_6",
-            "basic_block_addresses": [
-                1820651633
-            ]
-        },
-        {
             "address": 1820371005,
             "symbol": "CInterpretator::ReadAllDSC(void)",
             "basic_block_addresses": [
@@ -33804,14 +33725,6 @@
             "symbol": "PathBoolean::LineTo(double,double,bool)",
             "basic_block_addresses": [
                 1820366604
-            ]
-        },
-        {
-            "address": 1820426177,
-            "symbol": "",
-            "basic_block_addresses": [
-                1820426177,
-                1820426184
             ]
         },
         {
@@ -34610,20 +34523,6 @@
                 1820338637,
                 1820338645,
                 1820338658
-            ]
-        },
-        {
-            "address": 1820426198,
-            "symbol": "$LN33_1",
-            "basic_block_addresses": [
-                1820426184,
-                1820426198,
-                1820426218,
-                1820426228,
-                1820426248,
-                1820426262,
-                1820426281,
-                1820426291
             ]
         },
         {
@@ -37145,13 +37044,6 @@
             ]
         },
         {
-            "address": 1820652178,
-            "symbol": "loc_6C84F292",
-            "basic_block_addresses": [
-                1820652178
-            ]
-        },
-        {
             "address": 1820527964,
             "symbol": "ColorInfo::GetCMYKResolved(float &,float &,float &,float &)",
             "basic_block_addresses": [
@@ -39208,13 +39100,6 @@
             ]
         },
         {
-            "address": 1820426184,
-            "symbol": "loc_6C817FC8",
-            "basic_block_addresses": [
-                1820426184
-            ]
-        },
-        {
             "address": 1820364868,
             "symbol": "PathBoolean::StartAt(double,double)",
             "basic_block_addresses": [
@@ -41072,13 +40957,6 @@
             "symbol": "GetFilterPref(x,x,x,x)",
             "basic_block_addresses": [
                 1820422004
-            ]
-        },
-        {
-            "address": 1820651532,
-            "symbol": "$LN11_7",
-            "basic_block_addresses": [
-                1820651532
             ]
         },
         {
@@ -51678,13 +51556,6 @@
             ]
         },
         {
-            "address": 1820650698,
-            "symbol": "$LN21",
-            "basic_block_addresses": [
-                1820650698
-            ]
-        },
-        {
             "address": 1820544510,
             "symbol": "RobustIntersections::OppositeComparison(RobustIntersections::COMPARISON)",
             "basic_block_addresses": [
@@ -56557,13 +56428,6 @@
             ]
         },
         {
-            "address": 1820650761,
-            "symbol": "__ftol2_pentium4",
-            "basic_block_addresses": [
-                1820650761
-            ]
-        },
-        {
             "address": 1820651004,
             "symbol": "",
             "basic_block_addresses": [
@@ -56684,14 +56548,6 @@
                 1820652034,
                 1820652069,
                 1820652081,
-                1820652175,
-                1820652178
-            ]
-        },
-        {
-            "address": 1820652175,
-            "symbol": "$LN9_13",
-            "basic_block_addresses": [
                 1820652175,
                 1820652178
             ]
@@ -65002,13 +64858,6 @@
             ]
         },
         {
-            "address": 4335848,
-            "symbol": "GDIStateT3::StartPage(PSBoundBox *)",
-            "basic_block_addresses": [
-                4335848
-            ]
-        },
-        {
             "address": 4455437,
             "symbol": "PSFont::CreateEmptyCharStrings(PSDict *)",
             "basic_block_addresses": [
@@ -65026,15 +64875,6 @@
                 4455681,
                 4455684,
                 4455801
-            ]
-        },
-        {
-            "address": 4433651,
-            "symbol": "o_currentuserparams(CInterpretator *)",
-            "basic_block_addresses": [
-                4433651,
-                4433689,
-                4433700
             ]
         },
         {
@@ -65062,6 +64902,22 @@
                 4263349,
                 4263358,
                 4263366
+            ]
+        },
+        {
+            "address": 4433651,
+            "symbol": "o_currentuserparams(CInterpretator *)",
+            "basic_block_addresses": [
+                4433651,
+                4433689,
+                4433700
+            ]
+        },
+        {
+            "address": 4335848,
+            "symbol": "GDIStateT3::StartPage(PSBoundBox *)",
+            "basic_block_addresses": [
+                4335848
             ]
         },
         {
@@ -72114,42 +71970,6 @@
             ]
         },
         {
-            "address": 4358644,
-            "symbol": "",
-            "basic_block_addresses": [
-                4358644,
-                4358651
-            ]
-        },
-        {
-            "address": 4467400,
-            "symbol": "PSPattern::GetPatternType(PSDict *)",
-            "basic_block_addresses": [
-                4467400
-            ]
-        },
-        {
-            "address": 4358651,
-            "symbol": "loc_4281FB",
-            "basic_block_addresses": [
-                4358651
-            ]
-        },
-        {
-            "address": 4358665,
-            "symbol": "$LN33_1",
-            "basic_block_addresses": [
-                4358651,
-                4358665,
-                4358685,
-                4358695,
-                4358715,
-                4358729,
-                4358748,
-                4358758
-            ]
-        },
-        {
             "address": 4554979,
             "symbol": "h2v2_fancy_upsample",
             "basic_block_addresses": [
@@ -72931,13 +72751,6 @@
             "symbol": "o_currentcolortransfer(CInterpretator *)",
             "basic_block_addresses": [
                 4365913
-            ]
-        },
-        {
-            "address": 4584850,
-            "symbol": "loc_45F592",
-            "basic_block_addresses": [
-                4584850
             ]
         },
         {
@@ -76360,6 +76173,15 @@
             ]
         },
         {
+            "address": 4433557,
+            "symbol": "o_currentsystemparams(CInterpretator *)",
+            "basic_block_addresses": [
+                4433557,
+                4433595,
+                4433606
+            ]
+        },
+        {
             "address": 4422699,
             "symbol": "o_instroke(CInterpretator *)",
             "basic_block_addresses": [
@@ -76945,15 +76767,6 @@
                 4433511,
                 4433515,
                 4433533
-            ]
-        },
-        {
-            "address": 4433557,
-            "symbol": "o_currentsystemparams(CInterpretator *)",
-            "basic_block_addresses": [
-                4433557,
-                4433595,
-                4433606
             ]
         },
         {
@@ -78973,6 +78786,13 @@
             "symbol": "PSPattern::GetPaintProc(PSDict *,PSObj &)",
             "basic_block_addresses": [
                 4467373
+            ]
+        },
+        {
+            "address": 4467400,
+            "symbol": "PSPattern::GetPatternType(PSDict *)",
+            "basic_block_addresses": [
+                4467400
             ]
         },
         {
@@ -93398,13 +93218,6 @@
             ]
         },
         {
-            "address": 4335848,
-            "symbol": "GDIStateT3::StartPage(PSBoundBox *)",
-            "basic_block_addresses": [
-                4335848
-            ]
-        },
-        {
             "address": 4455437,
             "symbol": "PSFont::CreateEmptyCharStrings(PSDict *)",
             "basic_block_addresses": [
@@ -93422,15 +93235,6 @@
                 4455681,
                 4455684,
                 4455801
-            ]
-        },
-        {
-            "address": 4433651,
-            "symbol": "o_currentuserparams(CInterpretator *)",
-            "basic_block_addresses": [
-                4433651,
-                4433689,
-                4433700
             ]
         },
         {
@@ -93458,6 +93262,22 @@
                 4263349,
                 4263358,
                 4263366
+            ]
+        },
+        {
+            "address": 4433651,
+            "symbol": "o_currentuserparams(CInterpretator *)",
+            "basic_block_addresses": [
+                4433651,
+                4433689,
+                4433700
+            ]
+        },
+        {
+            "address": 4335848,
+            "symbol": "GDIStateT3::StartPage(PSBoundBox *)",
+            "basic_block_addresses": [
+                4335848
             ]
         },
         {
@@ -100510,42 +100330,6 @@
             ]
         },
         {
-            "address": 4358644,
-            "symbol": "",
-            "basic_block_addresses": [
-                4358644,
-                4358651
-            ]
-        },
-        {
-            "address": 4467400,
-            "symbol": "PSPattern::GetPatternType(PSDict *)",
-            "basic_block_addresses": [
-                4467400
-            ]
-        },
-        {
-            "address": 4358651,
-            "symbol": "loc_4281FB",
-            "basic_block_addresses": [
-                4358651
-            ]
-        },
-        {
-            "address": 4358665,
-            "symbol": "$LN33_1",
-            "basic_block_addresses": [
-                4358651,
-                4358665,
-                4358685,
-                4358695,
-                4358715,
-                4358729,
-                4358748,
-                4358758
-            ]
-        },
-        {
             "address": 4554979,
             "symbol": "h2v2_fancy_upsample",
             "basic_block_addresses": [
@@ -101327,13 +101111,6 @@
             "symbol": "o_currentcolortransfer(CInterpretator *)",
             "basic_block_addresses": [
                 4365913
-            ]
-        },
-        {
-            "address": 4584850,
-            "symbol": "loc_45F592",
-            "basic_block_addresses": [
-                4584850
             ]
         },
         {
@@ -104756,6 +104533,15 @@
             ]
         },
         {
+            "address": 4433557,
+            "symbol": "o_currentsystemparams(CInterpretator *)",
+            "basic_block_addresses": [
+                4433557,
+                4433595,
+                4433606
+            ]
+        },
+        {
             "address": 4422699,
             "symbol": "o_instroke(CInterpretator *)",
             "basic_block_addresses": [
@@ -105341,15 +105127,6 @@
                 4433511,
                 4433515,
                 4433533
-            ]
-        },
-        {
-            "address": 4433557,
-            "symbol": "o_currentsystemparams(CInterpretator *)",
-            "basic_block_addresses": [
-                4433557,
-                4433595,
-                4433606
             ]
         },
         {
@@ -107369,6 +107146,13 @@
             "symbol": "PSPattern::GetPaintProc(PSDict *,PSObj &)",
             "basic_block_addresses": [
                 4467373
+            ]
+        },
+        {
+            "address": 4467400,
+            "symbol": "PSPattern::GetPatternType(PSDict *)",
+            "basic_block_addresses": [
+                4467400
             ]
         },
         {
