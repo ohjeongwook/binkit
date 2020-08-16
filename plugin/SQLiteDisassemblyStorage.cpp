@@ -60,15 +60,8 @@ void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
 {
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BINARIES_TABLE_STATEMENT,
         pFileInfo->OriginalFilePath,
-        pFileInfo->ComputerName,
-        pFileInfo->UserName,
-        pFileInfo->CompanyName,
-        pFileInfo->FileVersion,
-        pFileInfo->FileDescription,
-        pFileInfo->InternalName,
-        pFileInfo->ProductName,
-        pFileInfo->ModifiedTime,
-        pFileInfo->MD5Sum
+        pFileInfo->MD5.c_str(),
+        pFileInfo->SHA256.c_str()
     );
 }
 

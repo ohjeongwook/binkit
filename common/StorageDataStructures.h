@@ -39,15 +39,8 @@ enum { BASIC_BLOCK, MAP_INFO, FILE_INFO, END_OF_DATA, DISASM_LINES, INPUT_NAME }
 typedef struct _FileInfo_
 {
 	TCHAR OriginalFilePath[MAX_PATH + 1];
-	TCHAR ComputerName[100];
-	TCHAR UserName[100];
-	TCHAR CompanyName[100];
-	TCHAR FileVersion[100];
-	TCHAR FileDescription[100];
-	TCHAR InternalName[100];
-	TCHAR ProductName[100];
-	TCHAR ModifiedTime[100];
-	TCHAR MD5Sum[100];
+	string MD5;
+	string SHA256;
 } FileInfo,  *PFileInfo;
 
 typedef struct _BasicBlock_ {

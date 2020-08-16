@@ -1272,15 +1272,30 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
     memset((char*)&file_info, 0, sizeof(file_info));
 
     LogMessage(1, __FUNCTION__, "Analyze: Retrieving File Information\n");
-    DWORD ComputerNameLen = sizeof(file_info.ComputerName);
-    GetComputerName(file_info.ComputerName, &ComputerNameLen);
-    DWORD UserNameLen = sizeof(file_info.UserName);
-    GetUserName(file_info.UserName, &UserNameLen);
-
     m_pdisassemblyWriter->BeginTransaction();
-
     char *input_file_path = NULL;
     get_input_file_path(file_info.OriginalFilePath, sizeof(file_info.OriginalFilePath) - 1);
+
+    uchar md5hash[16];
+    retrieve_input_file_md5(md5hash);
+    vector<unsigned char> md5hash_bytes;
+    for (int i = 0; i < sizeof(md5hash); i++)
+    {
+        md5hash_bytes.push_back(md5hash[i]);
+    }
+
+    file_info.MD5 = BytesToHexString(md5hash_bytes);
+
+    uchar sha256_hash[32];
+    retrieve_input_file_sha256(sha256_hash);
+    vector<unsigned char> sha256_bytes;
+    for (int i = 0; i < 32; i++)
+    {
+        sha256_bytes.push_back(sha256_hash[i]);
+    }
+
+    file_info.SHA256 = BytesToHexString(sha256_bytes);
+
     m_pdisassemblyWriter->SetFileInfo(&file_info);
 
     LogMessage(1, __FUNCTION__, "Analyze: %x ~ %x\n", startEA, endEA);
