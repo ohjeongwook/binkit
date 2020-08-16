@@ -1,7 +1,8 @@
 #pragma warning(disable:4996)
 #pragma warning(disable:4200)
 #include <ios>
-#include <sstream> 
+#include <sstream>
+#include <iomanip>
 #include "Utility.h"
 
 unsigned char HexToByte(char * hexString)
@@ -56,7 +57,7 @@ string BytesToHexString(unsigned char *bytes, int length)
     std::stringstream stringStream;
     for (int i = 0; i < length; i++)
     {
-        stringStream << std::hex << (int)(bytes[i]);
+        stringStream << std::setfill('0') << std::setw(sizeof(unsigned char) * 2) << std::hex << (int)(bytes[i]);
     }
 
     return stringStream.str();
