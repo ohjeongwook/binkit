@@ -407,17 +407,17 @@ class TestCase(unittest.TestCase):
         return function_diff_list
 
     def do_function_pair_diff(self, src, target):
-        function_diff_list = self.do_function_diff(src, target)
+        current_function_diff_list = self.do_function_diff(src, target)
 
         filename = 'function_diff_%.8x_%.8x.json' % (src, target)
         if self.write_data:
             with open(os.path.join(self.current_data_directory, filename), 'w') as fd:
-                json.dump(function_diff_list, fd, indent = 4)
+                json.dump(current_function_diff_list, fd, indent = 4)
 
         with open(os.path.join(self.expected_data_directory, filename), 'r') as fd:
             expected_function_diff_list = json.load(fd)
 
-        self.assertEqual(expected_function_diff_list, function_diff_list)
+        self.assertEqual(expected_function_diff_list, current_function_diff_list)
 
     def test_function_pair_diffs(self):
         self.do_function_pair_diff(0x6c822ee8, 0x43313a)
