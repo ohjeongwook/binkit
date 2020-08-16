@@ -177,7 +177,7 @@ class TestCase(unittest.TestCase):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
         matches = diff_algorithms.do_instruction_hash_match()
 
-        match_data_list = []
+        current_match_data_list = []
         for match in matches:
             if self.debug_level > 0:
                 print('>> Match: %x vs %x - match_rate: %d' % (match.source, match.target, match.match_rate))
@@ -207,16 +207,17 @@ class TestCase(unittest.TestCase):
                         print('\t\t\t%x - %x : %d%%' % (match_data.source, match_data.target, match_data.match_rate))
             """
 
-            match_data_list.append(match_data)
+            current_match_data_list.append(match_data)
 
+        current_match_data_list = self.sort_match_data_list(current_match_data_list)
         if self.write_data:
             with open(r'current\instruction_hash_match_data_list.json', 'w') as fd:
-                json.dump(self.sort_match_data_list(match_data_list), fd, indent = 4)
+                json.dump(current_match_data_list, fd, indent = 4)
 
         with open(r'expected\instruction_hash_match_data_list.json', 'r') as fd:
             expected_match_data_list = json.load(fd)
 
-        self.assertEqual(expected_match_data_list, match_data_list)
+        self.assertEqual(expected_match_data_list, current_match_data_list)
 
     def do_instruction_hash_match_in_functions(self, src_function_address, target_function_address):
         if self.debug_level > 0:
