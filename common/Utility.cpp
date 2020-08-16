@@ -46,7 +46,7 @@ string BytesToHexString(vector<unsigned char> bytes)
     std::stringstream stringStream;
     for (unsigned char ch : bytes)
     {
-        stringStream << std::hex << (int)ch;
+        stringStream << std::setfill('0') << std::setw(sizeof(unsigned char) * 2) << std::hex << (int)(ch);
     }
 
     return stringStream.str();
