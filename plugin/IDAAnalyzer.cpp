@@ -1278,23 +1278,11 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
 
     uchar md5hash[16];
     retrieve_input_file_md5(md5hash);
-    vector<unsigned char> md5hash_bytes;
-    for (int i = 0; i < sizeof(md5hash); i++)
-    {
-        md5hash_bytes.push_back(md5hash[i]);
-    }
-
-    file_info.MD5 = BytesToHexString(md5hash_bytes);
+    file_info.MD5 = BytesToHexString(md5hash, 16);
 
     uchar sha256_hash[32];
     retrieve_input_file_sha256(sha256_hash);
-    vector<unsigned char> sha256_bytes;
-    for (int i = 0; i < 32; i++)
-    {
-        sha256_bytes.push_back(sha256_hash[i]);
-    }
-
-    file_info.SHA256 = BytesToHexString(sha256_bytes);
+    file_info.SHA256 = BytesToHexString(sha256_hash, 32);
 
     m_pdisassemblyWriter->SetFileInfo(&file_info);
 
