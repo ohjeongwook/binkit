@@ -60,6 +60,7 @@ class Util:
                         print(prefix + '\t%.8x' % target_basic_block)
 
         return unidentified_blocks
+
     def get_match_list(self, matches, level = 1):
         prefix = '\t' * level
         match_list = []
