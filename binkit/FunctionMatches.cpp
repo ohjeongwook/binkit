@@ -26,17 +26,31 @@ void FunctionMatches::AddMatchData(va_t sourceFunctionAddress, va_t targetFuncti
 		targetToMatchDataListMapit = result.first;
 	}
 
-	bool isNewMatchData = true;
-	for (MatchData *p_currentMatchData : targetToMatchDataListMapit->second)
+	bool addMatchData = true;
+	for (auto it = targetToMatchDataListMapit->second.begin(); it != targetToMatchDataListMapit->second.end(); it++)
 	{
+		MatchData* p_currentMatchData = (*it);
 		if (matchData.Source == p_currentMatchData->Source && matchData.Target == p_currentMatchData->Target)
 		{
-			isNewMatchData = false;
+			addMatchData = false;
 			break;
+		}
+
+		if (matchData.Source == p_currentMatchData->Source || matchData.Target == p_currentMatchData->Target)
+		{
+			if (matchData.MatchRate > p_currentMatchData->MatchRate)
+			{
+				it = targetToMatchDataListMapit->second.erase(it);
+				break;
+			}
+			else
+			{
+				addMatchData = false;
+			}
 		}
 	}
 
-	if (isNewMatchData)
+	if (addMatchData)
 	{
 		MatchData* p_matchData = new MatchData();
 		memcpy(p_matchData, &matchData, sizeof(matchData));
@@ -179,7 +193,8 @@ void FunctionMatches::RemoveMatches(int matchSequence)
 	{
 		for (auto& val2 : val.second)
 		{
-			for (auto it = val2.second.begin(); it != val2.second.end(); ) {
+			for (auto it = val2.second.begin(); it != val2.second.end(); )
+			{
 				if ((*it)->MatchSequence == matchSequence)
 				{
 					it = val2.second.erase(it);
