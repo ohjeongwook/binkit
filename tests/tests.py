@@ -3,10 +3,8 @@ import sys
 import json
 import pprint
 import traceback
-
 import unittest
 import pybinkit
-
 from util import *
 
 CALL = 0
@@ -79,19 +77,19 @@ class TestCase(unittest.TestCase):
         return basic_block_data_list
 
     def test_dump_basic_blocks(self):
-        basic_block_data_list_pair = []
+        current_basic_block_data_list_pair = []
         for binary in self.binaries:
             basic_blocks = binary.get_basic_blocks()
-            basic_block_data_list_pair.append(self.dump_basic_blocks(basic_blocks))
+            current_basic_block_data_list_pair.append(self.dump_basic_blocks(basic_blocks))
 
         if self.write_data:
             with open(r'current\basic_block_data_list_pair.json', 'w') as fd:
-                json.dump(basic_block_data_list_pair, fd, indent = 4)
+                json.dump(current_basic_block_data_list_pair, fd, indent = 4)
 
         with open(r'expected\basic_block_data_list_pair.json', 'r') as fd:
             expected_basic_block_data_list_pair = json.load(fd)
 
-        self.assertEqual(expected_basic_block_data_list_pair, basic_block_data_list_pair)
+        self.assertEqual(expected_basic_block_data_list_pair, current_basic_block_data_list_pair)
 
     def dump_functions(self, binary):
         if self.debug_level > 0:
@@ -290,139 +288,92 @@ class TestCase(unittest.TestCase):
             if self.debug_level > 0:
                 print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
+    def compare_function_matches(self, current_matches, matches_filename):
+        current_function_match_tool = FunctionMatchTool(match_list = current_matches)
+        current_function_match_tool.sort()
+        if self.write_data:            
+            current_function_match_tool.write(os.path.join(self.current_data_directory, matches_filename))
 
-    def do_function_instruction_hash_match(self, function_matches, filename_prefix = 'do_function_instruction_hash_match', sequence = 0):
-        print('* do_function_instruction_hash_match:')
+        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, matches_filename))
+        expected_function_match_tool.sort()
+
+        try:
+            self.assertTrue(self.util.compare_function_matches(expected_function_match_tool.match_list, current_function_match_tool.match_list))
+        except:
+            traceback.print_exc()
+
+    def compare_unidentified_blocks(self, function_matches, unidentified_blocks_filename, source_function_address = 0):
+        current_unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
+        current_function_match_tool = FunctionMatchTool(match_list = current_unidentified_blocks)
+        current_function_match_tool.sort()
+        if self.write_data:
+            current_function_match_tool.write(os.path.join(self.current_data_directory, unidentified_blocks_filename))
+
+        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, unidentified_blocks_filename))
+        expected_function_match_tool.sort()
+
+        try:
+            self.assertEqual(expected_function_match_tool.match_list, current_function_match_tool.match_list)
+        except:
+            traceback.print_exc()
+
+    def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()
-        matches = self.util.get_function_match_list(function_matches)
-        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+        self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence))
 
-        matches_filename = r'%s-%.8d-matches.json' % (filename_prefix, sequence)
-        unidentified_blocks_filename = r'%s-%.8d-unidentified_blocks.json' % (filename_prefix, sequence)
-
-        if self.write_data:
-            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
-                json.dump(matches, fd, indent = 4)
-
-            with open(os.path.join(self.current_data_directory, unidentified_blocks_filename), 'w') as fd:
-                json.dump(unidentified_blocks, fd, indent = 4)
-
-        with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
-            expected_matches = json.load(fd)
-
-        with open(os.path.join(self.expected_data_directory, unidentified_blocks_filename), 'r') as fd:
-            expected_unidentified_blocks = json.load(fd)
-
-        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
-        self.assertEqual(expected_unidentified_blocks, unidentified_blocks)
-
-    def do_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'do_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
-        print('* do_function_control_flow_match:')
+    def _test_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         match_sequence = function_matches.do_control_flow_match(source_function_address)
-        matches = self.util.get_function_match_list(function_matches, source_function_address)
-        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
+        if verify_results:
+            self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+            self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence), source_function_address = source_function_address)
 
-        matches_filename = r'%s-%.8x-%.8d-matches.json' % (filename_prefix, source_function_address, sequence)
-        unidentified_blocks_filename = r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence)
-
-        if self.write_data:
-            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
-                json.dump(matches, fd, indent = 4)
-
-            with open(os.path.join(self.current_data_directory, unidentified_blocks_filename), 'w') as fd:
-                json.dump(unidentified_blocks, fd, indent = 4)
-
+        """
         if rollback:
             print('\tremove_matches: match_sequence: %d' % match_sequence)
             function_matches.remove_matches(match_sequence)
             matches_removed = self.util.get_function_match_list(function_matches, source_function_address)
             if self.write_data:
-                with open(os.path.join(self.current_data_directory, r'%s-%.8x-%.8d-matches_removed.json' % (filename_prefix, source_function_address, sequence)), 'w') as fd:
+                with open(os.path.join(self.current_data_directory, r'%s-%.8x-%.8d_removed.json' % (filename_prefix, source_function_address, sequence)), 'w') as fd:
                     json.dump(matches_removed, fd, indent = 4)
+        """
 
-        if verify_results:
-            with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
-                expected_matches = json.load(fd)
-
-            with open(os.path.join(self.expected_data_directory, unidentified_blocks_filename), 'r') as fd:
-                expected_unidentified_blocks = json.load(fd)
-
-            self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
-            self.assertEqual(str(expected_unidentified_blocks), str(unidentified_blocks))
-
-    def do_instruction_hash_match(self, filename_prefix = 'do_instruction_hash_match', sequence = 0):
+    def _test_instruction_hash_match(self, filename_prefix = 'test_instruction_hash_match', sequence = 0):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        matches = diff_algorithms.do_instruction_hash_match()
-
+        current_matches = diff_algorithms.do_instruction_hash_match()
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
-        function_matches.add_matches(matches)
-        matches = self.util.get_function_match_list(function_matches)
-
-        matches_filename = r'%s-%.8d-matches.json' % (filename_prefix, sequence)
-
-        if self.write_data:            
-            with open(os.path.join(self.current_data_directory, matches_filename), 'w') as fd:
-                json.dump(matches, fd, indent = 4)
-
-        with open(os.path.join(self.expected_data_directory, matches_filename), 'r') as fd:
-            expected_matches = json.load(fd)
-
-        self.assertTrue(self.util.compare_function_matches(expected_matches, matches))
+        function_matches.add_matches(current_matches)
+        current_matches = self.util.get_function_match_list(function_matches)
+        matches_filename = r'%s-%.8d.json' % (filename_prefix, sequence)
         return function_matches
 
-    def test_function_match(self, generate_test_case_files = False):
-        function_matches = self.do_instruction_hash_match()
-        self.do_function_instruction_hash_match(function_matches)
-        self.do_function_control_flow_match(function_matches, 0x6c7fc779, rollback = True)
-        
-        if generate_test_case_files:
-            for sequence in range(0, 20, 1):
-                self.do_function_control_flow_match(function_matches, sequence = sequence, verify_results = False)
+    def test_function_match(self):
+        function_matches = self._test_instruction_hash_match()
+        self._test_function_instruction_hash_match(function_matches)
+        self._test_function_control_flow_match(function_matches, 0x6c7fc779, rollback = True)
+        for sequence in range(0, 20, 1):
+            try:
+                self._test_function_control_flow_match(function_matches, sequence = sequence)
+            except:
+                traceback.print_exc()
 
-        for sequence in range(0, 5, 1):
-            self.do_function_control_flow_match(function_matches, sequence = sequence)
-
-    def do_function_diff(self, source, target):
-        print('* do_function_diff:')
-        function_diff_list = []
+    def do_function_instruction_hash_match(self, source_function_address, target_function_address, filename_prefix = 'do_function_instruction_hash_match', sequence = 0):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(source), self.binaries[1].get_function(target))
+        matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(source_function_address), self.binaries[1].get_function(target_function_address))              
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
         function_matches.add_matches(matches)
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+        return function_matches
 
-        self.debug_level = 1
-        self.util.get_match_list(matches)
+    def _test_function_match(self, source_function_address, target_function_address):
+        function_matches = self.do_function_instruction_hash_match(source_function_address, target_function_address, filename_prefix = 'test_function_match', sequence = 0)
+        self._test_function_instruction_hash_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 1)
+        self._test_function_control_flow_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 2)
 
-        print('* do_instruction_hash_match:')
-        function_matches.do_instruction_hash_match()
-        function_matches_list = self.util.get_function_match_list(function_matches)
-        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
-        function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
-
-        print('* do_control_flow_match:')
-        function_matches.do_control_flow_match()
-        function_matches_list = self.util.get_function_match_list(function_matches)        
-        unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches)
-        function_diff_list.append({'function_matches': function_matches_list, 'unidentified_blocks': unidentified_blocks})
-
-        return function_diff_list
-
-    def do_function_pair_diff(self, src, target):
-        current_function_diff_list = self.do_function_diff(src, target)
-
-        filename = 'function_diff_%.8x_%.8x.json' % (src, target)
-        if self.write_data:
-            with open(os.path.join(self.current_data_directory, filename), 'w') as fd:
-                json.dump(current_function_diff_list, fd, indent = 4)
-
-        with open(os.path.join(self.expected_data_directory, filename), 'r') as fd:
-            expected_function_diff_list = json.load(fd)
-
-        self.assertEqual(expected_function_diff_list, current_function_diff_list)
-
-    def test_function_pair_diffs(self):
-        self.do_function_pair_diff(0x6c822ee8, 0x43313a)
-        self.do_function_pair_diff(0x6c7fc779, 0x40c78a)
+    def test_function_matches(self):
+        self._test_function_match(0x6c822ee8, 0x43313a)
+        self._test_function_match(0x6c7fc779, 0x40c78a)
+        self._test_function_match(0x6C7FCCF4, 0x40CCCF)
 
 if __name__ == '__main__':
     unittest.main()
