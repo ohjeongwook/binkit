@@ -216,13 +216,16 @@ class FunctionMatchTool:
     def sort_matches(self, matches):
         source_to_match_map = {}
         for match in matches:
-            source_to_match_map[match['source']] = match
+            if not match['source'] in source_to_match_map:
+                source_to_match_map[match['source']] = []
+            source_to_match_map[match['source']].append(match)
 
         source_list = list(source_to_match_map.keys())
         source_list.sort()
+
         matches = []
         for source in source_list:
-            matches.append(source_to_match_map[source])
+            matches += source_to_match_map[source]
         return matches
 
     def sort(self):
@@ -237,12 +240,16 @@ class FunctionMatchTool:
             if 'target_basic_blocks' in match:
                 match['target_basic_blocks'].sort()
 
-            source_to_match_map[match['source']] = match
+            if not match['source'] in source_to_match_map:
+                source_to_match_map[match['source']] = []
+
+            source_to_match_map[match['source']].append(match)
+
         source_list = list(source_to_match_map.keys())
         source_list.sort()
         self.match_list = []
         for source in source_list:
-            self.match_list.append(source_to_match_map[source])
+            self.match_list += source_to_match_map[source]
 
     def write(self, filename):
         with open(filename, 'w') as fd:
