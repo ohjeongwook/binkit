@@ -81,15 +81,6 @@ typedef struct _DisassemblyHashMaps_ {
     void DumpDisassemblyHashMaps()
     {
         LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", file_info.OriginalFilePath);
-        LogMessage(10, __FUNCTION__, "ComputerName = %s\n", file_info.ComputerName);
-        LogMessage(10, __FUNCTION__, "UserName = %s\n", file_info.UserName);
-        LogMessage(10, __FUNCTION__, "CompanyName = %s\n", file_info.CompanyName);
-        LogMessage(10, __FUNCTION__, "FileVersion = %s\n", file_info.FileVersion);
-        LogMessage(10, __FUNCTION__, "FileDescription = %s\n", file_info.FileDescription);
-        LogMessage(10, __FUNCTION__, "InternalName = %s\n", file_info.InternalName);
-        LogMessage(10, __FUNCTION__, "ProductName = %s\n", file_info.ProductName);
-        LogMessage(10, __FUNCTION__, "ModifiedTime = %s\n", file_info.ModifiedTime);
-        LogMessage(10, __FUNCTION__, "MD5Sum = %s\n", file_info.MD5Sum);
         LogMessage(10, __FUNCTION__, "instructionHashMap = %u\n", instructionHashMap.size());
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
