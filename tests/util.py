@@ -73,6 +73,8 @@ class Util:
                 'target_parent': match.target_parent,
                 'source': match.source,
                 'target': match.target,
+                'type': match.type,
+                'sub_type': match.sub_type,
                 'match_rate': match.match_rate
             })
 
@@ -116,8 +118,6 @@ class Util:
             function_match_data = {'source': function_match.source, 'target': function_match.target}
             function_match_data['matches'] = self.get_match_list(function_match.match_data_list, level = level + 1)
             function_match_data_list.append(function_match_data)
-            #match_data_combinations = diff_algorithms.get_match_data_combinations(function_match.match_data_list)
-            #self.print_match_data_combinations(match_data_combinations, '\t')
         return function_match_data_list
 
     def build_match_map(self, matches):
@@ -194,10 +194,78 @@ class Util:
     def compare_function_matches(self, function_matches1, function_matches2):
         function_matches_map1 = self.build_function_match_map(function_matches1)
         function_matches_map2 = self.build_function_match_map(function_matches2)
-
         comparison_result1 = self.compare_function_matches_map(function_matches_map1, function_matches_map2, description = 'orig vs new')
         comparison_result2 = self.compare_function_matches_map(function_matches_map2, function_matches_map1, description = 'new vs orig')
-
         if len(function_matches1) == len(function_matches2) and comparison_result1 and comparison_result2:
             return True
+
         return False
+
+class FunctionMatchTool:
+    def __init__(self, filename = '', match_list = []):
+        if filename:
+            try:
+                with open(filename, 'r') as fd:
+                    self.match_list = json.load(fd)
+            except:
+                traceback.print_exc()
+                self.match_list = []
+        else:
+            self.match_list = match_list
+
+    def sort_matches(self, matches):
+        source_to_match_map = {}
+        for match in matches:
+            source_to_match_map[match['source']] = match
+
+        source_list = list(source_to_match_map.keys())
+        source_list.sort()
+        matches = []
+        for source in source_list:
+            matches.append(source_to_match_map[source])
+        return matches
+
+    def sort(self):
+        source_to_match_map = {}
+        for match in self.match_list:
+            if 'matches' in match:
+                match['matches'] = self.sort_matches(match['matches'])
+
+            if 'source_basic_blocks' in match:
+                match['source_basic_blocks'].sort()
+
+            if 'target_basic_blocks' in match:
+                match['target_basic_blocks'].sort()
+
+            source_to_match_map[match['source']] = match
+        source_list = list(source_to_match_map.keys())
+        source_list.sort()
+        self.match_list = []
+        for source in source_list:
+            self.match_list.append(source_to_match_map[source])
+
+    def write(self, filename):
+        with open(filename, 'w') as fd:
+            json.dump(self.match_list, fd, indent = 4)
+
+if __name__ == '__main__':
+    import os
+    import sys
+    import glob
+    import argparse
+
+    def auto_int(x):
+        return int(x, 0)
+
+    parser = argparse.ArgumentParser(description='monitor_memory')    
+    parser.add_argument('-c', dest = "command", default = 'sort')
+    parser.add_argument('-d', dest = "debug_level", default = 0, type = auto_int)
+    parser.add_argument('-a', dest = "address", default = 0x0, type = auto_int)
+    parser.add_argument('filenames', metavar='FILENAMES', nargs='+', help = "filenames")
+    args = parser.parse_args()
+
+    for filename_pattern in args.filenames:
+        for filename in glob.glob(filename_pattern):
+            function_match_tool = FunctionMatchTool(filename)
+            function_match_tool.sort()
+            function_match_tool.write(filename)
