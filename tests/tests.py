@@ -320,13 +320,13 @@ class TestCase(unittest.TestCase):
     def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()
         self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
-        self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence))
+        #self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence))
 
     def _test_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         match_sequence = function_matches.do_control_flow_match(source_function_address)
         if verify_results:
             self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
-            self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence), source_function_address = source_function_address)
+            #self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence), source_function_address = source_function_address)
 
         """
         if rollback:
