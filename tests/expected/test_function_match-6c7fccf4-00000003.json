@@ -33,15 +33,6 @@
             {
                 "source_parent": 1820314933,
                 "target_parent": 4246800,
-                "source": 1820315070,
-                "target": 4246944,
-                "type": 6,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 1820314933,
-                "target_parent": 4246800,
                 "source": 1820315077,
                 "target": 4246944,
                 "type": 6,
@@ -63,24 +54,6 @@
                 "source": 1820315094,
                 "target": 4246961,
                 "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 1820315103,
-                "target_parent": 4247148,
-                "source": 1820315094,
-                "target": 4247139,
-                "type": 6,
-                "sub_type": 0,
-                "match_rate": 95
-            },
-            {
-                "source_parent": 1820315082,
-                "target_parent": 4246949,
-                "source": 1820315103,
-                "target": 4247148,
-                "type": 6,
                 "sub_type": 0,
                 "match_rate": 100
             },
@@ -107,15 +80,6 @@
                 "target_parent": 4246990,
                 "source": 1820315241,
                 "target": 4247108,
-                "type": 6,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 1820315103,
-                "target_parent": 4247148,
-                "source": 1820315241,
-                "target": 4247286,
                 "type": 6,
                 "sub_type": 0,
                 "match_rate": 100
