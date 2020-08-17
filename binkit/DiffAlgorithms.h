@@ -267,6 +267,5 @@ public:
 	vector<MatchDataCombination*> GetMatchDataCombinations(vector<MatchData> matchDataList);
 	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);
 	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
-	FunctionMatches DoFunctionMatch(vector<MatchData> currentMatchDataList);
 	string GetMatchTypeStr(int Type);
 };
