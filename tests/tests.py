@@ -344,14 +344,13 @@ class TestCase(unittest.TestCase):
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
         function_matches.add_matches(current_matches)
         current_matches = self.util.get_function_match_list(function_matches)
-        matches_filename = r'%s-%.8d.json' % (filename_prefix, sequence)
         return function_matches
 
     def test_function_match(self):
         function_matches = self._test_instruction_hash_match()
         self._test_function_instruction_hash_match(function_matches)
         self._test_function_control_flow_match(function_matches, 0x6c7fc779, rollback = True)
-        for sequence in range(0, 20, 1):
+        for sequence in range(0, 5, 1):
             try:
                 self._test_function_control_flow_match(function_matches, sequence = sequence)
             except:
@@ -369,6 +368,7 @@ class TestCase(unittest.TestCase):
         function_matches = self.do_function_instruction_hash_match(source_function_address, target_function_address, filename_prefix = 'test_function_match', sequence = 0)
         self._test_function_instruction_hash_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 1)
         self._test_function_control_flow_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 2)
+        self._test_function_control_flow_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 3)
 
     def test_function_matches(self):
         self._test_function_match(0x6c822ee8, 0x43313a)
