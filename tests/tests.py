@@ -38,6 +38,18 @@ class TestCase(unittest.TestCase):
 
         self.util = Util(self.binaries)
 
+    def assert_true(self, obj):
+        try:
+            self.assertTrue(obj)
+        except:
+            traceback.print_exc()
+
+    def assert_equal(self, obj1, obj2):
+        try:
+            self.assertEqual(obj1, obj2)
+        except:
+            traceback.print_exc()
+
     def dump_basic_blocks(self, basic_blocks):
         if self.debug_level > 0:
             print('* dump_basic_blocks:')
@@ -89,7 +101,7 @@ class TestCase(unittest.TestCase):
         with open(r'expected\basic_block_data_list_pair.json', 'r') as fd:
             expected_basic_block_data_list_pair = json.load(fd)
 
-        self.assertEqual(expected_basic_block_data_list_pair, current_basic_block_data_list_pair)
+        self.assert_equal(expected_basic_block_data_list_pair, current_basic_block_data_list_pair)
 
     def dump_functions(self, binary):
         if self.debug_level > 0:
@@ -131,14 +143,14 @@ class TestCase(unittest.TestCase):
         for address, function_data in expected_address_to_function_data_map.items():
             if not address in current_address_to_function_data_map:
                 print(f"Missing address in current_address_to_function_data_map: %d" % address)
-            self.assertTrue(address in current_address_to_function_data_map)
-            self.assertEqual(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])
+            self.assert_true(address in current_address_to_function_data_map)
+            self.assert_equal(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])
 
         for address, function_data in current_address_to_function_data_map.items():
             if not address in expected_address_to_function_data_map:
                 print(f"Missing address in expected_address_to_function_data_map: %d" % address)
-            self.assertTrue(address in expected_address_to_function_data_map)
-            self.assertEqual(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])            
+            self.assert_true(address in expected_address_to_function_data_map)
+            self.assert_equal(expected_address_to_function_data_map[address], current_address_to_function_data_map[address])            
 
     def test_dump_functions(self):
         current_function_data_list_pair = []
@@ -215,7 +227,7 @@ class TestCase(unittest.TestCase):
         with open(r'expected\instruction_hash_match_data_list.json', 'r') as fd:
             expected_match_data_list = json.load(fd)
 
-        self.assertEqual(expected_match_data_list, current_match_data_list)
+        self.assert_equal(expected_match_data_list, current_match_data_list)
 
     def do_instruction_hash_match_in_functions(self, src_function_address, target_function_address):
         if self.debug_level > 0:
@@ -243,7 +255,7 @@ class TestCase(unittest.TestCase):
         with open(r'expected\instruction_matches_6C83948B_004496D9.json', 'r') as fd:
             expected_instruction_matches = json.load(fd)        
 
-        self.assertEqual(expected_instruction_matches, instruction_matches)
+        self.assert_equal(expected_instruction_matches, instruction_matches)
 
     def print_match_data_combination(self, match_data_combination, prefix = ''):
         print(prefix + '* print_match_data_combination: count: %d match_rate: %d%%' % (match_data_combination.count(), match_data_combination.get_match_rate()))
@@ -296,11 +308,8 @@ class TestCase(unittest.TestCase):
 
         expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, matches_filename))
         expected_function_match_tool.sort()
+        self.assert_true(self.util.compare_function_matches(expected_function_match_tool.match_list, current_function_match_tool.match_list))
 
-        try:
-            self.assertTrue(self.util.compare_function_matches(expected_function_match_tool.match_list, current_function_match_tool.match_list))
-        except:
-            traceback.print_exc()
 
     def compare_unidentified_blocks(self, function_matches, unidentified_blocks_filename, source_function_address = 0):
         current_unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
@@ -311,11 +320,7 @@ class TestCase(unittest.TestCase):
 
         expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, unidentified_blocks_filename))
         expected_function_match_tool.sort()
-
-        try:
-            self.assertEqual(expected_function_match_tool.match_list, current_function_match_tool.match_list)
-        except:
-            traceback.print_exc()
+        self.assert_equal(expected_function_match_tool.match_list, current_function_match_tool.match_list)
 
     def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()
