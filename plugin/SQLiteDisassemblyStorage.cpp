@@ -56,12 +56,16 @@ int SQLiteDisassemblyStorage::EndTransaction()
     return m_sqliteTool.EndTransaction();
 }
 
-void SQLiteDisassemblyStorage::SetFileInfo(FileInfo *pFileInfo)
+void SQLiteDisassemblyStorage::SetBinaryMetaData(BinaryMetaData *pBinaryMetaData, int fileID)
 {
+    LogMessage(2, __FUNCTION__, "OriginalFilePath: %s\n", pBinaryMetaData->OriginalFilePath);
+    LogMessage(2, __FUNCTION__, "MD5: %s\n", pBinaryMetaData->MD5.c_str());
+    LogMessage(2, __FUNCTION__, "SHA256: %s\n", pBinaryMetaData->SHA256.c_str());
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BINARIES_TABLE_STATEMENT,
-        pFileInfo->OriginalFilePath,
-        pFileInfo->MD5.c_str(),
-        pFileInfo->SHA256.c_str()
+        fileID,
+        pBinaryMetaData->OriginalFilePath,
+        pBinaryMetaData->MD5.c_str(),
+        pBinaryMetaData->SHA256.c_str()
     );
 }
 

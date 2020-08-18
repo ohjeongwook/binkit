@@ -195,9 +195,18 @@ string SQLiteDisassemblyReader::GetOriginalFilePath()
 {
     string originalFilePath;
     m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &originalFilePath,
-        "SELECT OriginalFilePath FROM FileInfo WHERE id = %u", m_fileId);
+        "SELECT OriginalFilePath FROM " BINARIES_TABLE " WHERE FileID = %u", m_fileId);
 
     return originalFilePath;
+}
+
+string SQLiteDisassemblyReader::GetMD5()
+{
+    string md5;
+    m_sqliteTool.ExecuteStatement(ReadRecordStringCallback, &md5,
+        "SELECT MD5 FROM " BINARIES_TABLE " WHERE FileID = %u", m_fileId);
+
+    return md5;
 }
 
 string SQLiteDisassemblyReader::ReadDisasmLine(va_t startAddress)

@@ -10,7 +10,7 @@ using namespace stdext;
 class DisassemblyStorage
 {
 public:
-    virtual void SetFileInfo(FileInfo *p_file_info)
+    virtual void SetBinaryMetaData(BinaryMetaData *pBinaryMetaData, int fileID = 0)
     {
     }
 
@@ -40,10 +40,5 @@ public:
     {
         list<AddressRange> ret;
         return ret;
-    }
-
-    virtual string GetOriginalFilePath(int fileID)
-    {
-        return {};
     }
 };

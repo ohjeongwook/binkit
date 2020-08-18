@@ -159,7 +159,6 @@ void SaveAnalysis(const char *output_file_path)
 
 bool idaapi run(size_t arg)
 {
-    SetLogLevel(1);
     LogMessage(1, __FUNCTION__, "BinKit plugin started...\n");
 
     if (arg == 1)

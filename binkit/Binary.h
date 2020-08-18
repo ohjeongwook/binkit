@@ -32,9 +32,9 @@ public:
     ~Binary();
     void Open(string databaseFileName, int fileId = 0);
     int GetFileID();
+    string GetMD5();
 
     BasicBlocks* GetBasicBlocks();
-
     vector<Function*>* GetFunctions();
     Function* GetFunction(va_t address);
     bool IsInFunction(va_t basicBlockAddress, va_t functionAddress);

@@ -16,12 +16,13 @@ typedef unsigned char *PBYTE;
 
 #define CREATE_BINARIES_TABLE_STATEMENT "CREATE TABLE " BINARIES_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
+            FileID INTEGER,\n\
             OriginalFilePath TEXT,\n\
             MD5 VARCHAR(32),\n\
             SHA256 VARCHAR(64)\n\
 );"
 
-#define INSERT_BINARIES_TABLE_STATEMENT "INSERT INTO  " BINARIES_TABLE" (OriginalFilePath,MD5,SHA256) values (%Q,%Q,%Q);"
+#define INSERT_BINARIES_TABLE_STATEMENT "INSERT INTO " BINARIES_TABLE " (FileID,OriginalFilePath,MD5,SHA256) values ('%u',%Q,%Q,%Q);"
 
 #define CREATE_CONTROL_FLOWS_TABLE_STATEMENT "CREATE TABLE " CONTROL_FLOWS_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
@@ -32,9 +33,9 @@ typedef unsigned char *PBYTE;
             Dst INTEGER\n\
         );"
 #define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX " CONTROL_FLOWS_TABLE "Index ON "CONTROL_FLOWS_TABLE" (SrcBlock)"
-#define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO  " CONTROL_FLOWS_TABLE" (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
+#define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO " CONTROL_FLOWS_TABLE " (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
 
-#define CREATE_BASIC_BLOCKS_TABLE_STATEMENT "CREATE TABLE " BASIC_BLOCKS_TABLE" (\n\
+#define CREATE_BASIC_BLOCKS_TABLE_STATEMENT "CREATE TABLE " BASIC_BLOCKS_TABLE " (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             FileID INTEGER,\n\
             StartAddress INTEGER,\n\
@@ -79,6 +80,6 @@ public:
     void AddBasicBlock(BasicBlock& basicBlock, int fileID = 0);
     void AddControlFlow(ControlFlow& controlFlow, int fileID = 0);
 
-    void SetFileInfo(FileInfo *p_file_info);
+    void SetBinaryMetaData(BinaryMetaData *pBinaryMetaData, int fileID = 0);
     void CreateTables();
 };
