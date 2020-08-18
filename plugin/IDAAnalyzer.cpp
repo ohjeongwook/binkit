@@ -849,9 +849,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *p_cmdArr
     ea_t currentBlockStartAddress = currentAddress;
 
     int instructionCount = 0;
-
-    int logLevel = 0;
-    LogMessage(logLevel, __FUNCTION__, "Analyzing %X ~ %X\n", startEA, endEA);
+    // LogMessage(0, __FUNCTION__, "Analyzing %X ~ %X\n", startEA, endEA);
 
     bool found_branch = FALSE; //first we branch
     for (; currentAddress <= endEA; )
@@ -1268,26 +1266,26 @@ void IDAAnalyzer::AnalyzeRegion(AddressRegion& region, bool gatherCmdArray)
 
 void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
 {
-    FileInfo file_info;
-    memset((char*)&file_info, 0, sizeof(file_info));
+    BinaryMetaData binaryMetaData;
+    memset((char*)&binaryMetaData, 0, sizeof(binaryMetaData));
 
-    LogMessage(1, __FUNCTION__, "Analyze: Retrieving File Information\n");
-    m_pdisassemblyWriter->BeginTransaction();
+    LogMessage(1, __FUNCTION__, "Retrieving File Information\n");
     char *input_file_path = NULL;
-    get_input_file_path(file_info.OriginalFilePath, sizeof(file_info.OriginalFilePath) - 1);
+    get_input_file_path(binaryMetaData.OriginalFilePath, sizeof(binaryMetaData.OriginalFilePath) - 1);
 
     uchar md5hash[16];
     retrieve_input_file_md5(md5hash);
-    file_info.MD5 = BytesToHexString(md5hash, 16);
+    binaryMetaData.MD5 = BytesToHexString(md5hash, 16);
 
     uchar sha256_hash[32];
     retrieve_input_file_sha256(sha256_hash);
-    file_info.SHA256 = BytesToHexString(sha256_hash, 32);
+    binaryMetaData.SHA256 = BytesToHexString(sha256_hash, 32);
 
-    m_pdisassemblyWriter->SetFileInfo(&file_info);
+    m_pdisassemblyWriter->SetBinaryMetaData(&binaryMetaData);
 
     LogMessage(1, __FUNCTION__, "Analyze: %x ~ %x\n", startEA, endEA);
 
+    m_pdisassemblyWriter->BeginTransaction();
     if (startEA == 0 && endEA == 0)
     {
         for (int i = 0; i < get_segm_qty(); i++)
