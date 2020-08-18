@@ -288,6 +288,8 @@ class TestCase(unittest.TestCase):
         self.perform_multilevel_control_flow_matches(0x6c8395e3, 0x00449831)
 
     def check_function_match(self, src_function_address, target_function_address, src_binary, target_binary, function_matches):
+        diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+
         for function_match in function_matches.get_matches():
             function_match.source
             function_match.target
@@ -301,26 +303,26 @@ class TestCase(unittest.TestCase):
                 print('\t\t%d: %x - %x vs %x - match_rate: %d' % (control_flow_type, child_match.type, child_match.source, child_match.target, child_match.match_rate))
 
     def compare_function_matches(self, current_matches, matches_filename):
-        current_function_match_tool = FunctionMatchTool(match_list = current_matches)
+        current_function_match_tool = FunctionMatchTool(function_matches = current_matches, binaries = self.binaries)
         current_function_match_tool.sort()
         if self.write_data:            
             current_function_match_tool.write(os.path.join(self.current_data_directory, matches_filename))
 
-        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, matches_filename))
+        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, matches_filename), binaries = self.binaries)
         expected_function_match_tool.sort()
-        self.assert_true(self.util.compare_function_matches(expected_function_match_tool.match_list, current_function_match_tool.match_list))
+        self.assert_true(self.util.compare_function_matches(expected_function_match_tool.match_results['function_matches'], current_function_match_tool.match_results['function_matches']))
 
 
     def compare_unidentified_blocks(self, function_matches, unidentified_blocks_filename, source_function_address = 0):
         current_unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
-        current_function_match_tool = FunctionMatchTool(match_list = current_unidentified_blocks)
+        current_function_match_tool = FunctionMatchTool(function_matches = current_unidentified_blocks, binaries = self.binaries)
         current_function_match_tool.sort()
         if self.write_data:
             current_function_match_tool.write(os.path.join(self.current_data_directory, unidentified_blocks_filename))
 
-        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, unidentified_blocks_filename))
+        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, unidentified_blocks_filename), binaries = self.binaries)
         expected_function_match_tool.sort()
-        self.assert_equal(expected_function_match_tool.match_list, current_function_match_tool.match_list)
+        self.assert_equal(expected_function_match_tool.match_results['function_matches'], current_function_match_tool.match_results['function_matches'])
 
     def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()

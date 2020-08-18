@@ -202,16 +202,24 @@ class Util:
         return False
 
 class FunctionMatchTool:
-    def __init__(self, filename = '', match_list = []):
+    def __init__(self, filename = '', function_matches = [], binaries = None):
+        self.binaries = binaries
+        self.match_results = {'function_matches': function_matches}        
         if filename:
             try:
                 with open(filename, 'r') as fd:
-                    self.match_list = json.load(fd)
+                    data = json.load(fd)
+
+                if type(data) is dict and 'function_matches' in data:
+                    self.match_results = data
+                else:
+                    self.match_results['function_matches'] = data
             except:
                 traceback.print_exc()
-                self.match_list = []
-        else:
-            self.match_list = match_list
+
+        pprint.pprint(self.match_results)
+        self.add_binary_meta_data()
+        self.add_basic_block_data()
 
     def sort_matches(self, matches):
         source_to_match_map = {}
@@ -230,7 +238,7 @@ class FunctionMatchTool:
 
     def sort(self):
         source_to_match_map = {}
-        for match in self.match_list:
+        for match in self.match_results['function_matches']:
             if 'matches' in match:
                 match['matches'] = self.sort_matches(match['matches'])
 
@@ -247,13 +255,46 @@ class FunctionMatchTool:
 
         source_list = list(source_to_match_map.keys())
         source_list.sort()
-        self.match_list = []
+        self.match_results['function_matches'] = []
         for source in source_list:
-            self.match_list += source_to_match_map[source]
+            self.match_results['function_matches'] += source_to_match_map[source]
+
+    def add_binary_meta_data(self):
+        if not self.binaries:
+            return
+
+
+        print('* self.match_results:')
+        pprint.pprint(self.match_results)
+        print('-'*80)
+
+        self.match_results['binaries'] = {
+            'source':
+                {
+                    'md5': self.binaries[0].get_md5()
+                },
+            'target':
+                {
+                    'md5': self.binaries[1].get_md5()
+                },
+        }
+
+    def add_basic_block_data(self):
+        if not self.binaries:
+            return
+
+        source_basic_blocks = self.binaries[0].get_basic_blocks()
+        target_basic_blocks = self.binaries[1].get_basic_blocks()
+        for function_match in self.match_results['function_matches']:
+            for basic_block_match in function_match['matches']:
+                source_basic_block = source_basic_blocks.get_basic_block(basic_block_match['source'])
+                basic_block_match['source_end'] = source_basic_block.end_address
+                target_basic_block = target_basic_blocks.get_basic_block(basic_block_match['target'])
+                basic_block_match['target_end'] = target_basic_block.end_address
 
     def write(self, filename):
         with open(filename, 'w') as fd:
-            json.dump(self.match_list, fd, indent = 4)
+            json.dump(self.match_results, fd, indent = 4)
 
 if __name__ == '__main__':
     import os
