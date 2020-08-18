@@ -22,42 +22,41 @@ class Util:
             basic_blocks[basic_block_address] = 1
         return basic_blocks
 
-    def get_function_unidentified_blocks(self, function_matches, source_function_address = 0, level = 0):
+    def get_function_unidentified_blocks(self, function_match, source_function_address = 0, level = 0):
         prefix = '\t' * level
-        unidentified_blocks = []
         (src_binary, target_binary) = self.binaries
-        for function_match in function_matches.get_matches():
-            if source_function_address !=0 and source_function_address != function_match.source:
-                continue
+        if source_function_address !=0 and source_function_address != function_match.source:
+            return {}
 
-            src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
-            target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
+        unidentified_blocks = {}
+        src_basic_blocks = self.get_basic_blocks_set(src_binary, function_match.source)
+        target_basic_blocks = self.get_basic_blocks_set(target_binary, function_match.target)
+        
+        for match in function_match.match_data_list:
+            if match.source in src_basic_blocks:
+                del src_basic_blocks[match.source]
+
+            if match.target in target_basic_blocks:
+                del target_basic_blocks[match.target]
+
+        if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
+            unidentified_blocks = {'sources': [], 'targets': []}
+            for source in src_basic_blocks.keys():
+                unidentified_blocks['sources'].append({'start': source})
             
-            for match in function_match.match_data_list:
-                if match.source in src_basic_blocks:
-                    del src_basic_blocks[match.source]
+            for target in target_basic_blocks.keys():
+                unidentified_blocks['targets'].append({'start': target})
 
-                if match.target in target_basic_blocks:
-                    del target_basic_blocks[match.target]
+            if self.debug_level > 0:
+                print(prefix + '%x - %x' % (function_match.source, function_match.target))
+                print(prefix + '\t- src:')
 
-            if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
-                unidentified_blocks.append({
-                    'source': function_match.source,
-                    'target': function_match.target,
-                    'source_basic_blocks': list(src_basic_blocks.keys()),
-                    'target_basic_blocks': list(target_basic_blocks.keys())
-                })
-                
-                if self.debug_level > 0:
-                    print(prefix + '%x - %x' % (function_match.source, function_match.target))
-                    print(prefix + '\t- src:')
+                for src_basic_block in src_basic_blocks.keys():
+                    print(prefix + '\t%.8x' % src_basic_block)
 
-                    for src_basic_block in src_basic_blocks.keys():
-                        print(prefix + '\t%.8x' % src_basic_block)
-
-                    print('\t- target:')
-                    for target_basic_block in target_basic_blocks.keys():
-                        print(prefix + '\t%.8x' % target_basic_block)
+                print('\t- target:')
+                for target_basic_block in target_basic_blocks.keys():
+                    print(prefix + '\t%.8x' % target_basic_block)
 
         return unidentified_blocks
 
@@ -117,6 +116,11 @@ class Util:
 
             function_match_data = {'source': function_match.source, 'target': function_match.target}
             function_match_data['matches'] = self.get_match_list(function_match.match_data_list, level = level + 1)
+            unidentified_blocks = self.get_function_unidentified_blocks(function_match, source_function_address)
+
+            if len(unidentified_blocks) > 0:
+                function_match_data['unidentified_blocks'] = unidentified_blocks
+
             function_match_data_list.append(function_match_data)
         return function_match_data_list
 
@@ -263,11 +267,6 @@ class FunctionMatchTool:
         if not self.binaries:
             return
 
-
-        print('* self.match_results:')
-        pprint.pprint(self.match_results)
-        print('-'*80)
-
         self.match_results['binaries'] = {
             'source':
                 {
@@ -285,12 +284,22 @@ class FunctionMatchTool:
 
         source_basic_blocks = self.binaries[0].get_basic_blocks()
         target_basic_blocks = self.binaries[1].get_basic_blocks()
+
         for function_match in self.match_results['function_matches']:
             for basic_block_match in function_match['matches']:
                 source_basic_block = source_basic_blocks.get_basic_block(basic_block_match['source'])
                 basic_block_match['source_end'] = source_basic_block.end_address
                 target_basic_block = target_basic_blocks.get_basic_block(basic_block_match['target'])
                 basic_block_match['target_end'] = target_basic_block.end_address
+
+            if 'unidentified_blocks' in function_match:
+                for source in function_match['unidentified_blocks']['sources']:
+                    source_block = source_basic_blocks.get_basic_block(source['start'])
+                    source['end'] = source_block.end_address
+
+                for target in function_match['unidentified_blocks']['targets']:
+                    target_block = target_basic_blocks.get_basic_block(target['start'])
+                    target['end'] = target_block.end_address
 
     def write(self, filename):
         with open(filename, 'w') as fd:

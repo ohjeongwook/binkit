@@ -312,28 +312,14 @@ class TestCase(unittest.TestCase):
         expected_function_match_tool.sort()
         self.assert_true(self.util.compare_function_matches(expected_function_match_tool.match_results['function_matches'], current_function_match_tool.match_results['function_matches']))
 
-
-    def compare_unidentified_blocks(self, function_matches, unidentified_blocks_filename, source_function_address = 0):
-        current_unidentified_blocks = self.util.get_function_unidentified_blocks(function_matches, source_function_address)
-        current_function_match_tool = FunctionMatchTool(function_matches = current_unidentified_blocks, binaries = self.binaries)
-        current_function_match_tool.sort()
-        if self.write_data:
-            current_function_match_tool.write(os.path.join(self.current_data_directory, unidentified_blocks_filename))
-
-        expected_function_match_tool = FunctionMatchTool(os.path.join(self.expected_data_directory, unidentified_blocks_filename), binaries = self.binaries)
-        expected_function_match_tool.sort()
-        self.assert_equal(expected_function_match_tool.match_results['function_matches'], current_function_match_tool.match_results['function_matches'])
-
     def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()
         self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
-        #self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence))
 
     def _test_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         match_sequence = function_matches.do_control_flow_match(source_function_address)
         if verify_results:
             self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
-            #self.compare_unidentified_blocks(function_matches, r'%s-%.8x-%.8d-unidentified_blocks.json' % (filename_prefix, source_function_address, sequence), source_function_address = source_function_address)
 
         """
         if rollback:
