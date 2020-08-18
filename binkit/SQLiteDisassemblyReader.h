@@ -47,6 +47,7 @@ public:
     static int QueryFunctionMatchesCallback(void *arg, int argc, char **argv, char **names);
 
     string GetOriginalFilePath();
+    string GetMD5();
 
     string ReadDisasmLine(va_t startAddress);
 

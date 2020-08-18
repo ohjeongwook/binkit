@@ -13,10 +13,6 @@ protected:
     int m_fileId;
 
 public:
-    virtual void SetFileInfo(FileInfo *p_file_info)
-    {
-    }
-
     virtual void Close()
     {
     }
@@ -68,7 +64,12 @@ public:
 
     virtual string GetOriginalFilePath()
     {
-        return NULL;
+        return {};
+    }
+
+    virtual string GetMD5()
+    {
+        return {};
     }
 
     virtual string ReadDisasmLine(va_t startAddress)

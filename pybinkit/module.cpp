@@ -18,13 +18,40 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<Binary>(m, "Binary")
         .def(py::init())
         .def("open", &Binary::Open, "A function to open binary", py::arg("filename"), py::arg("file_id") = 0)
+        .def("get_md5", &Binary::GetMD5)
         .def("get_basic_blocks", &Binary::GetBasicBlocks, py::return_value_policy::reference)
         .def("get_functions", &Binary::GetFunctions)
         .def("get_function", &Binary::GetFunction, py::return_value_policy::reference);
 
+    /*
+    typedef struct _BasicBlock_ {
+        va_t StartAddress;
+        va_t EndAddress;
+        char Flag; //Flag_t
+        va_t FunctionAddress;
+        char BlockType; // FUNCTION, UNKNOWN
+        string Name;
+        string InstructionHash;
+        string InstructionBytes;
+        string DisasmLines;
+    } BasicBlock,  *PBasicBlock;
+    */
+    py::class_<BasicBlock>(m, "BasicBlock")
+        .def(py::init())
+        .def_readonly("start_address", &BasicBlock::StartAddress)
+        .def_readonly("end_address", &BasicBlock::EndAddress)
+        .def_readonly("flag", &BasicBlock::Flag)
+        .def_readonly("function_address", &BasicBlock::FunctionAddress)
+        .def_readonly("block_type", &BasicBlock::BlockType)
+        .def_readonly("name", &BasicBlock::Name)        
+        .def_readonly("instruction_hash", &BasicBlock::InstructionHash)
+        .def_readonly("instruction_bytes", &BasicBlock::InstructionBytes)
+        .def_readonly("disasm_lines", &BasicBlock::DisasmLines);
+
     py::class_<BasicBlocks>(m, "BasicBlocks")
         .def(py::init())
         .def("get_addresses", &BasicBlocks::GetAddresses)
+        .def("get_basic_block", &BasicBlocks::GetBasicBlock)
         .def("get_symbol", &BasicBlocks::GetSymbol)
         .def("get_instruction_hash", &BasicBlocks::GetInstructionHash)
         .def("get_instruction_bytes", &BasicBlocks::GetInstructionBytes)

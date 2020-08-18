@@ -37,6 +37,11 @@ int Binary::GetFileID()
     return m_fileId;
 }
 
+string Binary::GetMD5()
+{
+    return m_pdisassemblyReader->GetMD5();
+}
+
 BasicBlocks* Binary::GetBasicBlocks()
 {
     return m_pbasicBlocks;

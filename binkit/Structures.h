@@ -70,7 +70,7 @@ public:
 typedef multimap <vector<unsigned char>, va_t> InstructionHashMap;
 
 typedef struct _DisassemblyHashMaps_ {
-    FileInfo file_info;
+    BinaryMetaData binaryMetaData;
     InstructionHashMap instructionHashMap;
     multimap <va_t, vector<unsigned char>> addressToInstructionHashMap;
     multimap <string, va_t> symbolMap;
@@ -80,7 +80,7 @@ typedef struct _DisassemblyHashMaps_ {
 
     void DumpDisassemblyHashMaps()
     {
-        LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", file_info.OriginalFilePath);
+        LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", binaryMetaData.OriginalFilePath);
         LogMessage(10, __FUNCTION__, "instructionHashMap = %u\n", instructionHashMap.size());
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;

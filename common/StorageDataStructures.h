@@ -36,12 +36,13 @@ static const char* SubTypeStr[] = {
 
 enum { BASIC_BLOCK, MAP_INFO, FILE_INFO, END_OF_DATA, DISASM_LINES, INPUT_NAME };
 
-typedef struct _FileInfo_
+typedef struct _BinaryMetaData_
 {
+	int FileID;
 	TCHAR OriginalFilePath[MAX_PATH + 1];
 	string MD5;
 	string SHA256;
-} FileInfo,  *PFileInfo;
+} BinaryMetaData,  *PBinaryMetaData;
 
 typedef struct _BasicBlock_ {
 	va_t StartAddress;
