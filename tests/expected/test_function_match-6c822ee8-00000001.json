@@ -1,62 +1,84 @@
-[
-    {
-        "source": 1820471016,
-        "target": 4403514,
-        "matches": [
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471016,
-                "target": 4403514,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471028,
-                "target": 4403526,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471035,
-                "target": 4403533,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471039,
-                "target": 4403537,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471050,
-                "target": 4403548,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            },
-            {
-                "source_parent": 0,
-                "target_parent": 0,
-                "source": 1820471057,
-                "target": 4403555,
-                "type": 4,
-                "sub_type": 0,
-                "match_rate": 100
-            }
-        ]
+{
+    "function_matches": [
+        {
+            "source": 1820471016,
+            "target": 4403514,
+            "matches": [
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471016,
+                    "target": 4403514,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471026,
+                    "target_end": 4403524
+                },
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471028,
+                    "target": 4403526,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471035,
+                    "target_end": 4403533
+                },
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471035,
+                    "target": 4403533,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471039,
+                    "target_end": 4403537
+                },
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471039,
+                    "target": 4403537,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471050,
+                    "target_end": 4403548
+                },
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471050,
+                    "target": 4403548,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471057,
+                    "target_end": 4403555
+                },
+                {
+                    "source_parent": 0,
+                    "target_parent": 0,
+                    "source": 1820471057,
+                    "target": 4403555,
+                    "type": 4,
+                    "sub_type": 0,
+                    "match_rate": 100,
+                    "source_end": 1820471061,
+                    "target_end": 4403559
+                }
+            ]
+        }
+    ],
+    "binaries": {
+        "source": {
+            "md5": "b8e114bf915b74e9e64aba6888c46cb6"
+        },
+        "target": {
+            "md5": "b4be1f81a7f4521b2bc2abf72785493d"
+        }
     }
-]
+}
