@@ -17,7 +17,6 @@ class BinKitService(rpyc.Service):
         return os.getpid()
     
     def jumpto(self, address):
-        print('jumpto: %x' % address)
         self.ida.jumpto(address)
         
     def get_md5(self):
@@ -46,19 +45,17 @@ class BinkitPlugin(idaapi.plugin_t):
     help = "TestPlugin..."
 
     def init(self): 
-        idaapi.msg("init\n")
         thread.start_new_thread(start_binkit_server, ())  
         return idaapi.PLUGIN_KEEP
 
     def run(self, arg):
-        idaapi.msg("run\n")
         viewer = Viewer(get_filename())
         viewer.show_functions_match_viewer()
         viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
         idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_TAB)
 
     def term(self):
-        idaapi.msg("term\n")
+        pass
 
 def PLUGIN_ENTRY():
     return BinkitPlugin()
