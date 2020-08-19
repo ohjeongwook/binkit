@@ -130,14 +130,14 @@ class TestCase(unittest.TestCase):
 
         return function_data_list
 
-    def get_address_to_function_data_map(self, function_data_list):
+    def get_address_to_function_data_map(self, function_data_list, image_base = 0):
         address_to_function_data_map = {}
         for function_data in function_data_list:
-            address_to_function_data_map[function_data['address']] = function_data
+            address_to_function_data_map[function_data['address'] - image_base] = function_data
         return address_to_function_data_map
 
-    def compare_function_list(self, expected_function_data_list, current_function_data_list):
-        expected_address_to_function_data_map = self.get_address_to_function_data_map(expected_function_data_list)
+    def compare_function_list(self, expected_function_data_list, image_base, current_function_data_list):
+        expected_address_to_function_data_map = self.get_address_to_function_data_map(expected_function_data_list, image_base)
         current_address_to_function_data_map = self.get_address_to_function_data_map(current_function_data_list)
 
         for address, function_data in expected_address_to_function_data_map.items():
@@ -165,7 +165,7 @@ class TestCase(unittest.TestCase):
             expected_function_data_list_pair = json.load(fd)
 
         for i in range(0, len(expected_function_data_list_pair), 1):
-            self.compare_function_list(expected_function_data_list_pair[i], current_function_data_list_pair[i])
+            self.compare_function_list(expected_function_data_list_pair[i], self.binaries[i].get_image_base(), current_function_data_list_pair[i])
 
     def sort_match_data_list(self, match_data_list):
         match_data_map = {}
@@ -314,14 +314,10 @@ class TestCase(unittest.TestCase):
         expected_function_match_tool.sort()
         self.assert_true(self.util.compare_function_matches(expected_function_match_tool.match_results['function_matches'], current_function_match_tool.match_results['function_matches']))
 
-    def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
-        function_matches.do_instruction_hash_match()
-        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
-
     def _test_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         match_sequence = function_matches.do_control_flow_match(source_function_address)
         if verify_results:
-            self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
+            self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), self._get_filename(filename_prefix, source_function_address, sequence))
 
         """
         if rollback:
@@ -341,6 +337,15 @@ class TestCase(unittest.TestCase):
         current_matches = self.util.get_function_match_list(function_matches)
         return function_matches
 
+    def _get_filename(self, filename_prefix, source_function_address, sequence):
+        if source_function_address > 0:
+            source_function_address += self.binaries[0].get_image_base()
+        return r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence)
+
+    def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
+        function_matches.do_instruction_hash_match()
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), self._get_filename(filename_prefix, source_function_address, sequence))
+
     def test_function_match(self):
         function_matches = self._test_instruction_hash_match()
         self._test_function_instruction_hash_match(function_matches)
@@ -356,7 +361,7 @@ class TestCase(unittest.TestCase):
         matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(int(source_function_address)), self.binaries[1].get_function(int(target_function_address)))
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
         function_matches.add_matches(matches)
-        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), self._get_filename(filename_prefix, source_function_address, sequence))
         return function_matches
 
     def _test_function_match(self, source_function_address, target_function_address):
