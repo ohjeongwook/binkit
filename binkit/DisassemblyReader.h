@@ -72,6 +72,11 @@ public:
         return {};
     }
 
+    virtual unsigned long long GetImageBase()
+    {
+        return 0L;
+    }
+
     virtual string ReadDisasmLine(va_t startAddress)
     {
         return NULL;

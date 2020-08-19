@@ -208,6 +208,15 @@ string SQLiteDisassemblyReader::GetMD5()
     return md5;
 }
 
+unsigned long long SQLiteDisassemblyReader::GetImageBase()
+{
+    unsigned long long image_base;
+    m_sqliteTool.ExecuteStatement(ReadRecordIntegerCallback, &image_base,
+        "SELECT ImageBase FROM " BINARIES_TABLE " WHERE FileID = %u", m_fileId);
+
+    return image_base;
+}
+
 string SQLiteDisassemblyReader::ReadDisasmLine(va_t startAddress)
 {
     string disasmLines;
