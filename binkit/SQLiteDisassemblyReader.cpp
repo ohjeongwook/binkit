@@ -128,10 +128,9 @@ int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char *
 
     PControlFlow p_control_flow = new ControlFlow;
     p_control_flow->Type = strtoul10(argv[0]);
-    p_control_flow->SrcBlock = strtoul10(argv[1]);
-    p_control_flow->SrcBlockEnd = strtoul10(argv[2]);
-    p_control_flow->Dst = strtoul10(argv[3]);
-    p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->SrcBlock, p_control_flow));
+    p_control_flow->Src = strtoul10(argv[1]);
+    p_control_flow->Dst = strtoul10(argv[2]);
+    p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
     return 0;
 }
 
@@ -140,7 +139,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
     if (address == 0)
     {
         m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-            "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " WHERE FileID = %u",
+            "SELECT Type, Src, Dst From " CONTROL_FLOWS_TABLE " WHERE FileID = %u",
             m_fileId);
     }
     else
@@ -150,7 +149,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
             ReadControlFlow(addressToControlFlowMap, address, isFunction);
 
             m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " "
+                "SELECT Type, Src, Dst From " CONTROL_FLOWS_TABLE " "
                 "WHERE FileID = %u "
                 "AND ( SrcBlock IN ( SELECT StartAddress FROM " BASIC_BLOCKS_TABLE " WHERE FunctionAddress='%d') )",
                 m_fileId, address);
@@ -158,7 +157,7 @@ void SQLiteDisassemblyReader::ReadControlFlow(multimap <va_t, PControlFlow> &add
         else
         {
             m_sqliteTool.ExecuteStatement(ReadControlFlowCallback, (void*)&addressToControlFlowMap,
-                "SELECT Type, SrcBlock, SrcBlockEnd, Dst From " CONTROL_FLOWS_TABLE " "
+                "SELECT Type, Src, Dst From " CONTROL_FLOWS_TABLE " "
                 "WHERE FileID = %u "
                 "AND SrcBlock  = '%d'",
                 m_fileId, address);
