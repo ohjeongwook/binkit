@@ -187,7 +187,7 @@ char help[] =
 "A BinKit Plugin module\n"
 "This will generate hash values for basic blocks to be used for identifying similar matching blocks from other binaries.\n";
 
-char wanted_name[] = "BinKit";
+char wanted_name[] = "BinKit Exporter";
 char wanted_hotkey[] = "Alt-8";
 
 plugin_t PLUGIN =
