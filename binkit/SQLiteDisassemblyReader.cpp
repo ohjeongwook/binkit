@@ -68,6 +68,12 @@ int SQLiteDisassemblyReader::ReadRecordIntegerCallback(void *arg, int argc, char
     return 0;
 }
 
+int SQLiteDisassemblyReader::ReadRecordUllCallback(void* arg, int argc, char** argv, char** names)
+{
+    *(unsigned long long*)arg = strtoull(argv[0], NULL, 0);
+    return 0;
+}
+
 int SQLiteDisassemblyReader::ReadRecordStringCallback(void *arg, int argc, char **argv, char **names)
 {
     *(string *)arg = string(argv[0]);
@@ -211,7 +217,7 @@ string SQLiteDisassemblyReader::GetMD5()
 unsigned long long SQLiteDisassemblyReader::GetImageBase()
 {
     unsigned long long image_base;
-    m_sqliteTool.ExecuteStatement(ReadRecordIntegerCallback, &image_base,
+    m_sqliteTool.ExecuteStatement(ReadRecordUllCallback, &image_base,
         "SELECT ImageBase FROM " BINARIES_TABLE " WHERE FileID = %u", m_fileId);
 
     return image_base;
