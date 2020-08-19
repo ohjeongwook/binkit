@@ -20,11 +20,9 @@ def execute_sync(function, sync_type):
             output[0] = function(*args, **kwargs)
             return 1
 
-        print(threading.current_thread().name)
         if threading.current_thread().name == 'MainThread':
             thunk()
         else:
-            print('execute_sync:')
             idaapi.execute_sync(thunk, sync_type)
         return output[0]
     return wrapper
