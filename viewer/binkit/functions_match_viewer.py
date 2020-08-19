@@ -12,7 +12,6 @@ def sync_worker(queue):
         data = queue.get()
         queue.task_done()
 
-        print(data)
         if not data['md5'] in syncers or syncers[data['md5']].connection == None:
             syncers[data['md5']] = Syncer(data['md5'])
 
