@@ -23,9 +23,8 @@ def sync_worker(queue):
                 del syncers[data['md5']]
 
 def tree_double_clicked_handler(item, column_no):
-    if idc.isEnabled(item.source_address):
-        idaapi.jumpto(item.source_address)
-        item.queue.put({'command': 'jumpto', 'md5': item.target_md5, 'address': item.target_address})
+    idaapi.jumpto(idaapi.get_imagebase() + item.source_address)
+    item.queue.put({'command': 'jumpto', 'md5': item.target_md5, 'address': item.target_address})
 
 class FunctionsMatchViewer(idaapi.PluginForm):
     def add_item(self, source_address, target_address, matched_block_counts, self_unidentified_block_counts, peer_unidentified_block_counts, target_md5):

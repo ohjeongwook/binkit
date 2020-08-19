@@ -69,7 +69,7 @@ class IDA:
 
     @ExecuteSyncDefs.execute_read
     def jumpto(self, address):
-        return idaapi.jumpto(address)
+        return idaapi.jumpto(idaapi.get_imagebase() + address)
 
     @ExecuteSyncDefs.execute_read
     def navigate_to_function(self, function_address, address):
