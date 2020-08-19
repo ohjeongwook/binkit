@@ -6,7 +6,6 @@ class Syncer:
     def __init__(self, md5):
         for port in range(18861, 18861 + 5, 1):
             try:
-                print('rpyc.connect: %d' % port)
                 self.connection = rpyc.connect("127.0.0.1", port)
                 self.connection._config['sync_request_timeout'] = 1
             except:
@@ -18,7 +17,6 @@ class Syncer:
                 continue
 
             if self.connection.root.get_md5() == md5:
-                print('found %s at %d' % (md5, port))
                 break
                 
             self.connection = None
