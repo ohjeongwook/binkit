@@ -3,11 +3,11 @@ import idautils
 import idaapi
 import idc
 import traceback
-from threadtool import *
 import rpyc
 from rpyc.utils.server import ThreadedServer
 
-from binkit_viewer import *
+from binkit.viewer import *
+from binkit.threadtool import *
 
 class BinKitService(rpyc.Service):
     def on_connect(self, conn):
