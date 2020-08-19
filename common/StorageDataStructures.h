@@ -42,6 +42,7 @@ typedef struct _BinaryMetaData_
 	TCHAR OriginalFilePath[MAX_PATH + 1];
 	string MD5;
 	string SHA256;
+	unsigned long long ImageBase;
 } BinaryMetaData,  *PBinaryMetaData;
 
 typedef struct _BasicBlock_ {
@@ -65,8 +66,7 @@ typedef struct
 class ControlFlow {
 public:
 	unsigned char Type;
-	va_t SrcBlock;
-	va_t SrcBlockEnd;
+	va_t Src;
 	va_t Dst;
 };
 

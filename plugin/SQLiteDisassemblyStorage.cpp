@@ -65,7 +65,8 @@ void SQLiteDisassemblyStorage::SetBinaryMetaData(BinaryMetaData *pBinaryMetaData
         fileID,
         pBinaryMetaData->OriginalFilePath,
         pBinaryMetaData->MD5.c_str(),
-        pBinaryMetaData->SHA256.c_str()
+        pBinaryMetaData->SHA256.c_str(),
+        pBinaryMetaData->ImageBase
     );
 }
 
@@ -73,10 +74,10 @@ void SQLiteDisassemblyStorage::AddBasicBlock(BasicBlock &basicBlock, int fileID)
 {
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BASIC_BLOCKS_TABLE_STATEMENT,
         fileID,
-        basicBlock.StartAddress,
-        basicBlock.EndAddress,
+        basicBlock.StartAddress - m_imageBase,
+        basicBlock.EndAddress - m_imageBase,
         basicBlock.Flag,
-        basicBlock.FunctionAddress,
+        basicBlock.FunctionAddress - m_imageBase,
         basicBlock.BlockType,
         basicBlock.Name.c_str(),
         basicBlock.DisasmLines.c_str(),
@@ -89,9 +90,8 @@ void SQLiteDisassemblyStorage::AddControlFlow(ControlFlow &controlFlow, int file
 {
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_CONTROL_FLOWS_TABLE_STATEMENT,
         fileID,
-        controlFlow.Type,
-        controlFlow.SrcBlock,
-        controlFlow.SrcBlockEnd,
-        controlFlow.Dst
+        controlFlow.Type - m_imageBase,
+        controlFlow.Src - m_imageBase,
+        controlFlow.Dst - m_imageBase
     );
 }

@@ -9,6 +9,9 @@ using namespace stdext;
 
 class DisassemblyStorage
 {
+protected:
+    unsigned long long m_imageBase;
+
 public:
     virtual void SetBinaryMetaData(BinaryMetaData *pBinaryMetaData, int fileID = 0)
     {
@@ -26,6 +29,11 @@ public:
 
     virtual void Close()
     {
+    }
+
+    void SetImageBase(unsigned long long imageBase)
+    {
+        m_imageBase = imageBase;
     }
 
     virtual void AddBasicBlock(BasicBlock &basicBlock, int fileID = 0)

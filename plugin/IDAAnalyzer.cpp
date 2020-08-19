@@ -869,7 +869,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t> *p_cmdArr
 
         ControlFlow controlFlow;
         //New Location Found
-        controlFlow.SrcBlock = srcBlockAddress;
+        controlFlow.Src = srcBlockAddress;
 
         //Finding Next CREF
         vector<ea_t> cref_list;
@@ -1280,7 +1280,9 @@ void IDAAnalyzer::Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray)
     uchar sha256_hash[32];
     retrieve_input_file_sha256(sha256_hash);
     binaryMetaData.SHA256 = BytesToHexString(sha256_hash, 32);
+    binaryMetaData.ImageBase = get_imagebase();
 
+    m_pdisassemblyWriter->SetImageBase(binaryMetaData.ImageBase);
     m_pdisassemblyWriter->SetBinaryMetaData(&binaryMetaData);
 
     LogMessage(1, __FUNCTION__, "Analyze: %x ~ %x\n", startEA, endEA);
