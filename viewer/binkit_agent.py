@@ -7,7 +7,9 @@ from threadtool import *
 import rpyc
 from rpyc.utils.server import ThreadedServer
 
-class MyService(rpyc.Service):
+from binkit_viewer import *
+
+class BinKitService(rpyc.Service):
     def on_connect(self, conn):
         self.ida = IDA()
 
@@ -21,11 +23,11 @@ class MyService(rpyc.Service):
     def get_md5(self):
         return self.ida.get_md5()
 
-def run():
+def start_binkit_server():
     port = 18861
     while 1:
         try:
-            t = ThreadedServer(MyService(), port = port, protocol_config = {
+            t = ThreadedServer(BinKitService(), port = port, protocol_config = {
                 'allow_public_attrs': True,
             })
             print('Listening on %d\n' % port)
@@ -34,8 +36,6 @@ def run():
         except:
             port += 1
             traceback.print_exc()
-            
-    print("run end\n")
 
 class BinkitPlugin(idaapi.plugin_t):
     flags = idaapi.PLUGIN_UNL
@@ -47,14 +47,17 @@ class BinkitPlugin(idaapi.plugin_t):
 
     def init(self): 
         idaapi.msg("init\n")
-        thread.start_new_thread(run, ())  
+        thread.start_new_thread(start_binkit_server, ())  
         return idaapi.PLUGIN_KEEP
 
     def run(self, arg):
         idaapi.msg("run\n")
-    
+        viewer = Viewer(get_filename())
+        viewer.show_functions_match_viewer()
+        viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
+
     def term(self):
         idaapi.msg("term\n")
 
 def PLUGIN_ENTRY():
-   return BinkitPlugin()
+    return BinkitPlugin()
