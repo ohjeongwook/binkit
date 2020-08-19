@@ -1,3 +1,5 @@
+import idaapi
+import ida_bytes
 import json
 from functions_match_viewer import *
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -54,7 +56,7 @@ class Viewer:
         address = start
         while address < end:
             idaapi.set_item_color(address, color)
-            address += ItemSize(address)
+            address += ida_bytes.get_item_size(address)
                 
     def set_basic_blocks_color(self, color, color_for_unidentified):
         for function_match in self.match_results['function_matches']:
@@ -66,13 +68,14 @@ class Viewer:
                 for basic_block in function_match['unidentified_blocks'][self.self_name+'s']:
                     self.color(basic_block['start'], basic_block['end'], color_for_unidentified)
 
-if __name__ == '__main__':
-    idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_RIGHT)
+def get_filename():
     options = QtWidgets.QFileDialog.Options()
     options |= QtWidgets.QFileDialog.DontUseNativeDialog
     filename, _ = QtWidgets.QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "","All Files (*);;JSON (*.json)", options=options)
-    if filename:
-        print(filename)    
-    viewer = Viewer(filename)
+    return filename
+
+if __name__ == '__main__':
+    idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_RIGHT)
+    viewer = Viewer(get_filename())
     viewer.show_functions_match_viewer()
     viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
