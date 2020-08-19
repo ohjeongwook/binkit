@@ -19,21 +19,21 @@ typedef unsigned char *PBYTE;
             FileID INTEGER,\n\
             OriginalFilePath TEXT,\n\
             MD5 VARCHAR(32),\n\
-            SHA256 VARCHAR(64)\n\
+            SHA256 VARCHAR(64),\n\
+            ImageBase INTEGER\n\
 );"
 
-#define INSERT_BINARIES_TABLE_STATEMENT "INSERT INTO " BINARIES_TABLE " (FileID,OriginalFilePath,MD5,SHA256) values ('%u',%Q,%Q,%Q);"
+#define INSERT_BINARIES_TABLE_STATEMENT "INSERT INTO " BINARIES_TABLE " (FileID,OriginalFilePath,MD5,SHA256,ImageBase) values ('%u',%Q,%Q,%Q,'%u');"
 
 #define CREATE_CONTROL_FLOWS_TABLE_STATEMENT "CREATE TABLE " CONTROL_FLOWS_TABLE" (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
             FileID INTEGER,\n\
             Type INTEGER,\n\
-            SrcBlock INTEGER,\n\
-            SrcBlockEnd INTEGER,\n\
+            Src INTEGER,\n\
             Dst INTEGER\n\
         );"
-#define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX " CONTROL_FLOWS_TABLE "Index ON "CONTROL_FLOWS_TABLE" (SrcBlock)"
-#define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO " CONTROL_FLOWS_TABLE " (FileID,Type,SrcBlock,SrcBlockEnd,Dst) values ('%u','%u','%u','%u','%u');"
+#define CREATE_CONTROL_FLOWS_TABLE_SRCBLOCK_INDEX_STATEMENT "CREATE INDEX " CONTROL_FLOWS_TABLE "Index ON "CONTROL_FLOWS_TABLE" (Src)"
+#define INSERT_CONTROL_FLOWS_TABLE_STATEMENT "INSERT INTO " CONTROL_FLOWS_TABLE " (FileID,Type,Src,Dst) values ('%u','%u','%u','%u');"
 
 #define CREATE_BASIC_BLOCKS_TABLE_STATEMENT "CREATE TABLE " BASIC_BLOCKS_TABLE " (\n\
             id INTEGER PRIMARY KEY AUTOINCREMENT,\n\
@@ -77,6 +77,7 @@ public:
     bool Open(char* databaseName);
     int BeginTransaction();
     int EndTransaction();
+
     void AddBasicBlock(BasicBlock& basicBlock, int fileID = 0);
     void AddControlFlow(ControlFlow& controlFlow, int fileID = 0);
 
