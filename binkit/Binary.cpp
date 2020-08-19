@@ -42,6 +42,11 @@ string Binary::GetMD5()
     return m_pdisassemblyReader->GetMD5();
 }
 
+unsigned long long Binary::GetImageBase()
+{
+    return m_pdisassemblyReader->GetImageBase();
+}
+
 BasicBlocks* Binary::GetBasicBlocks()
 {
     return m_pbasicBlocks;

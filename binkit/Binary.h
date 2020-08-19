@@ -33,6 +33,7 @@ public:
     void Open(string databaseFileName, int fileId = 0);
     int GetFileID();
     string GetMD5();
+    unsigned long long GetImageBase();
 
     BasicBlocks* GetBasicBlocks();
     vector<Function*>* GetFunctions();

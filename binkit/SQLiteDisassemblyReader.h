@@ -48,6 +48,7 @@ public:
 
     string GetOriginalFilePath();
     string GetMD5();
+    unsigned long long GetImageBase();
 
     string ReadDisasmLine(va_t startAddress);
 
