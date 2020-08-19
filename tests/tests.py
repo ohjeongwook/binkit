@@ -229,11 +229,11 @@ class TestCase(unittest.TestCase):
 
         self.assert_equal(expected_match_data_list, current_match_data_list)
 
-    def do_instruction_hash_match_in_functions(self, src_function_address, target_function_address):
+    def do_instruction_hash_match_in_functions(self, source_function_address, target_function_address):
         if self.debug_level > 0:
-            print('* do_instruction_hash_match_in_functions: %x - %x' % (src_function_address, target_function_address))
+            print('* do_instruction_hash_match_in_functions: %x - %x' % (source_function_address, target_function_address))
 
-        src_function = self.binaries[0].get_function(src_function_address)
+        src_function = self.binaries[0].get_function(source_function_address)
         target_function = self.binaries[1].get_function(target_function_address)
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
 
@@ -246,7 +246,9 @@ class TestCase(unittest.TestCase):
         return matches
 
     def test_do_instruction_hash_match_in_functions(self):
-        instruction_matches = self.do_instruction_hash_match_in_functions(0x6C83948B, 0x004496D9)
+        source_function_address -= 0x6C83948B - self.binaries[0].get_image_base()
+        target_function_address -= 0x004496D9 - self.binaries[1].get_image_base()
+        instruction_matches = self.do_instruction_hash_match_in_functions(source_function_address, target_function_address)
 
         if self.write_data:
             with open(r'current\instruction_matches_6C83948B_004496D9.json', 'w') as fd:
@@ -314,12 +316,12 @@ class TestCase(unittest.TestCase):
 
     def _test_function_instruction_hash_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_instruction_hash_match', sequence = 0):
         function_matches.do_instruction_hash_match()
-        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
 
     def _test_function_control_flow_match(self, function_matches, source_function_address = 0, filename_prefix = 'test_function_control_flow_match', sequence = 0, verify_results = True, rollback = False):
         match_sequence = function_matches.do_control_flow_match(source_function_address)
         if verify_results:
-            self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+            self.compare_function_matches(self.util.get_function_match_list(function_matches, source_function_address), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
 
         """
         if rollback:
@@ -342,7 +344,7 @@ class TestCase(unittest.TestCase):
     def test_function_match(self):
         function_matches = self._test_instruction_hash_match()
         self._test_function_instruction_hash_match(function_matches)
-        self._test_function_control_flow_match(function_matches, 0x6c7fc779, rollback = True)
+        self._test_function_control_flow_match(function_matches, 0x6c7fc779 - self.binaries[0].get_image_base(), rollback = True)
         for sequence in range(0, 5, 1):
             try:
                 self._test_function_control_flow_match(function_matches, sequence = sequence)
@@ -351,13 +353,15 @@ class TestCase(unittest.TestCase):
 
     def do_function_instruction_hash_match(self, source_function_address, target_function_address, filename_prefix = 'do_function_instruction_hash_match', sequence = 0):
         diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
-        matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(source_function_address), self.binaries[1].get_function(target_function_address))              
+        matches = diff_algorithms.do_function_instruction_hash_match(self.binaries[0].get_function(int(source_function_address)), self.binaries[1].get_function(int(target_function_address)))
         function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
         function_matches.add_matches(matches)
-        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, source_function_address, sequence))
+        self.compare_function_matches(self.util.get_function_match_list(function_matches), r'%s-%.8x-%.8d.json' % (filename_prefix, self.binaries[0].get_image_base() + source_function_address, sequence))
         return function_matches
 
     def _test_function_match(self, source_function_address, target_function_address):
+        source_function_address -= self.binaries[0].get_image_base()
+        target_function_address -= self.binaries[1].get_image_base()
         function_matches = self.do_function_instruction_hash_match(source_function_address, target_function_address, filename_prefix = 'test_function_match', sequence = 0)
         self._test_function_instruction_hash_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 1)
         self._test_function_control_flow_match(function_matches, source_function_address, filename_prefix = 'test_function_match',sequence = 2)
