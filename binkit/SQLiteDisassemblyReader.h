@@ -24,6 +24,7 @@ public:
     ~SQLiteDisassemblyReader();
 
     static int ReadRecordIntegerCallback(void *arg, int argc, char **argv, char **names);
+    static int ReadRecordUllCallback(void* arg, int argc, char** argv, char** names);
     static int ReadRecordStringCallback(void *arg, int argc, char **argv, char **names);
 
     static int ReadFunctionAddressesCallback(void *arg, int argc, char **argv, char **names);
