@@ -103,6 +103,11 @@ vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sou
 
 vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
 {
+	if (sourceFunction == NULL || targetFunction == NULL)
+	{
+		return {};
+	}
+
 	vector<va_t> sourceBasicBlocks = sourceFunction->GetBasicBlocks();
 	vector<va_t> targetBasicBlocks = targetFunction->GetBasicBlocks();
 
