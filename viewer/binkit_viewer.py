@@ -17,7 +17,7 @@ class Viewer:
         else:
             self.self_name = 'source'
             self.peer_name = 'target'
-            
+
         self.count_blocks()
 
     def count_blocks(self):
@@ -42,7 +42,13 @@ class Viewer:
         form.Show("Function Matches")
         
         for function_match in self.match_results['function_matches']:
-            form.add_item(function_match[self.self_name], function_match[self.peer_name], function_match['matched_block_counts'], function_match['self_unidentified_block_counts'], function_match['peer_unidentified_block_counts'])
+            form.add_item(function_match[self.self_name],
+                          function_match[self.peer_name],
+                          function_match['matched_block_counts'],
+                          function_match['self_unidentified_block_counts'],
+                          function_match['peer_unidentified_block_counts'],
+                          self.match_results['binaries'][self.peer_name]['md5']
+                    )
 
     def color(self, start, end, color):
         address = start
