@@ -55,6 +55,7 @@ class BinkitPlugin(idaapi.plugin_t):
         viewer = Viewer(get_filename())
         viewer.show_functions_match_viewer()
         viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
+        idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_TAB)
 
     def term(self):
         idaapi.msg("term\n")
