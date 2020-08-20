@@ -125,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;%PYTHONHOME%\include;$(SolutionDir)\Common;$(SolutionDir)\binkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;%PYTHONHOME%\include;$(SolutionDir)\Common;$(SolutionDir)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,7 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;%PYTHONHOME%\include;$(SolutionDir)\Common;$(SolutionDir)\binkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;%PYTHONHOME%\include;$(SolutionDir)\Common;$(SolutionDir)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -197,7 +197,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;$(SolutionDir)\Common;$(SolutionDir)\binkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%PYTHONHOME%\includes;C:\Python27\include;$(SolutionDir)\Common;$(SolutionDir)\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -212,7 +212,7 @@
     <ClCompile Include="module.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\binkit\binkit.vcxproj">
+    <ProjectReference Include="..\engine\engine.vcxproj">
       <Project>{6828fc8f-ee18-46bd-8454-9c733fad403d}</Project>
     </ProjectReference>
   </ItemGroup>
