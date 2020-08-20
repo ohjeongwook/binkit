@@ -20,17 +20,17 @@ using namespace std;
 
 void SaveAnalysis(const char* output_file_path);
 
-static error_t idaapi save_ida_hasher_analysis(idc_value_t* argv, idc_value_t* res)
+static error_t idaapi save_binkit_analysis(idc_value_t* argv, idc_value_t* res)
 {
     SaveAnalysis(argv[0].c_str());
     res->num = 0;
     return eOk;
 }
-static const char save_ida_hasher_analysis_args[] = { VT_STR, 0 };
-static const ext_idcfunc_t save_ida_hasher_analysis_desc = {
+static const char save_binkit_analysis_args[] = { VT_STR, 0 };
+static const ext_idcfunc_t save_binkit_analysis_desc = {
     "SaveBinKitAnalysis",
-    save_ida_hasher_analysis,
-    save_ida_hasher_analysis_args,
+    save_binkit_analysis,
+    save_binkit_analysis_args,
     NULL,
     0,
     0
@@ -38,13 +38,13 @@ static const ext_idcfunc_t save_ida_hasher_analysis_desc = {
 
 int idaapi init(void)
 {
-    add_idc_func(save_ida_hasher_analysis_desc);
+    add_idc_func(save_binkit_analysis_desc);
     return PLUGIN_OK;
 }
 
 void idaapi term(void)
 {
-    del_idc_func(save_ida_hasher_analysis_desc.name);
+    del_idc_func(save_binkit_analysis_desc.name);
 }
 
 bool IsNumber(char *data)
