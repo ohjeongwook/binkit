@@ -13,10 +13,10 @@ def sync_worker(queue):
         queue.task_done()
 
         if not data['md5'] in syncers or syncers[data['md5']].connection == None:
-            syncers[data['md5']] = Syncer(data['md5'])
+            syncers[data['md5']] = IDASessions.connect(data['md5'])
 
         syncer = syncers[data['md5']]
-        if data['command'] == 'jumpto':
+        if syncer and data['command'] == 'jumpto':
             try:
                 syncer.jumpto(data['address'])
             except:
