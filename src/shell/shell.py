@@ -1,10 +1,24 @@
 import os
 import sys
-sys.path.insert(0, "../agent/binkit")
+
 import pprint
 import json
 
 import cmd
+
+try:
+    import idaapi
+    idadir = idaapi.get_user_idadir()
+except:
+    idadir = os.path.join(os.environ['USERPROFILE'], r'AppData\Roaming\Hex-Rays\IDA Pro')
+plugins_folder = os.path.join(idadir, "plugins")
+
+binkit_paths = [os.path.join(plugins_folder, "binkit")]
+
+for binkit_path in binkit_paths:
+    print("Adding path: %s" % binkit_path)
+    sys.path.insert(0, binkit_path)
+
 import client
 import pybinkit
 from matches import *
