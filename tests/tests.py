@@ -107,7 +107,7 @@ class TestCase(unittest.TestCase):
         if self.debug_level > 0:
             print('* dump_functions: ')
 
-        function_data_list = []
+        address_to_data = {}
         for function in binary.get_functions():
             function_address = function.get_address()
             function_data = {'address': function_address}
@@ -126,8 +126,13 @@ class TestCase(unittest.TestCase):
                 function_data['basic_block_addresses'].append(basic_block_address)
 
             function_data['basic_block_addresses'].sort()
-            function_data_list.append(function_data)
+            address_to_data[function_data['address']] = function_data
 
+        function_data_list = []
+        addresses = list(address_to_data)
+        addresses.sort()
+        for address in addresses:
+            function_data_list.append(address_to_data[address])
         return function_data_list
 
     def get_address_to_function_data_map(self, function_data_list, image_base = 0):
@@ -246,8 +251,8 @@ class TestCase(unittest.TestCase):
         return matches
 
     def test_do_instruction_hash_match_in_functions(self):
-        source_function_address -= 0x6C83948B - self.binaries[0].get_image_base()
-        target_function_address -= 0x004496D9 - self.binaries[1].get_image_base()
+        source_function_address = 0x6C83948B - self.binaries[0].get_image_base()
+        target_function_address = 0x004496D9 - self.binaries[1].get_image_base()
         instruction_matches = self.do_instruction_hash_match_in_functions(source_function_address, target_function_address)
 
         if self.write_data:
