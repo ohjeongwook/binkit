@@ -2,6 +2,7 @@ import os
 import idautils
 import idaapi
 import idc
+import thread
 import traceback
 
 from binkit.viewer import *
