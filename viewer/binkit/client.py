@@ -1,11 +1,14 @@
 import os
 import traceback
+import glob
+import json
 import rpyc
 
 class Syncer:
     def __init__(self, md5):
-        for port in range(18861, 18861 + 5, 1):
+        for port in self.get_ports(md5):
             try:
+                print("Connecting to %d" % port)
                 self.connection = rpyc.connect("127.0.0.1", port)
                 self.connection._config['sync_request_timeout'] = 1
             except:
@@ -18,8 +21,17 @@ class Syncer:
 
             if self.connection.root.get_md5() == md5:
                 break
-                
-            self.connection = None
+
+    def get_ports(self, md5):
+        pattern = os.path.join(os.environ['USERPROFILE'], '.binkit\\%s-*.port' % md5)
+        ports = []
+        for filename in glob.glob(pattern):
+            with open(filename, "r") as fd:
+                configuration = json.load(fd)
+                print(configuration)
+                if 'port' in configuration:
+                    ports.append(configuration['port'])
+        return ports
             
     def jumpto(self, address):
         if self.connection != None:
