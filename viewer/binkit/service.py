@@ -112,15 +112,15 @@ class BinKitService(rpyc.Service):
 
     def get_pid(self):
         return os.getpid()
-    
+
     def jumpto(self, address):
         self.ida.jumpto(address)
-        
+
     def get_md5(self):
         return self.ida.get_md5()
-        
+
     def export(self, filename):
-        thread.start_new_thread(export_thread, (filename,))  
+        thread.start_new_thread(export_thread, (filename,))
 
 def start_binkit_server(connection_filename):
     port = 18861
@@ -130,7 +130,6 @@ def start_binkit_server(connection_filename):
                 'allow_public_attrs': True,
             })
             print('Listening on %d\n' % port)
-            
             md5 = idc.GetInputMD5().lower()
             try:
                 with open(connection_filename, "w") as fd:
