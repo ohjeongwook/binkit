@@ -17,34 +17,26 @@ class Profiles:
 
         return profiles
 
-class IDASession:
-    def __init__(self, profile):
-        try:
-            print("Connecting to %d" % profile['port'])
-            self.connection = rpyc.connect("127.0.0.1", profile['port'])
-            self.connection._config['sync_request_timeout'] = 1
-        except:
-            self.connection = None
-
-        if self.connection.root.get_pid() == os.getpid():
-            self.connection = None
-
-        if self.connection.root.get_md5() != profile['md5']:
-            self.connection = None
-
-    def jumpto(self, address):
-        if self.connection != None:
-            self.connection.root.jumpto(address)
-
 class IDASessions:
     @staticmethod
     def connect(md5):
+        connection = None
         profiles = Profiles(md5)
         for profile in profiles.list():
-            session = IDASession(profile)
-            if session.connection != None:
-                return session
-        return None
+            try:
+                print("Connecting to %d" % profile['port'])
+                connection = rpyc.connect("127.0.0.1", profile['port'])
+                connection._config['sync_request_timeout'] = 1
+            except:
+                connection = None
+
+            if connection.root.get_pid() == os.getpid():
+                connection = None
+
+            if connection.root.get_md5() != profile['md5']:
+                connection = None
+
+        return connection
         
 if __name__ == '__main__':
     syncer = Syncer('b8e114bf915b74e9e64aba6888c46cb6')

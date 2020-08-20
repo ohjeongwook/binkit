@@ -1,4 +1,5 @@
 import thread
+import traceback
 import idaapi
 import idc
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -12,14 +13,15 @@ def sync_worker(queue):
         data = queue.get()
         queue.task_done()
 
-        if not data['md5'] in syncers or syncers[data['md5']].connection == None:
+        if not data['md5'] in syncers or syncers[data['md5']] == None:
             syncers[data['md5']] = IDASessions.connect(data['md5'])
 
-        syncer = syncers[data['md5']]
-        if syncer and data['command'] == 'jumpto':
+        connection = syncers[data['md5']]
+        if connection and data['command'] == 'jumpto':
             try:
-                syncer.jumpto(data['address'])
+                connection.root.jumpto(data['address'])
             except:
+                traceback.print_exc()
                 del syncers[data['md5']]
 
 def tree_double_clicked_handler(item, column_no):
