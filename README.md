@@ -8,6 +8,18 @@ Set PYTHONHOME variable to Python home directory.
 setx PYTHONHOME C:\Users\Administrator\AppData\Local\Programs\Python\Python38
 ```
 
+* For Python 2.7.x installation:
+
+```
+setx PYTHONHOME c:\Python27
+```
+
+## Install pybind11
+
+```
+pip install pybind11
+```
+
 Open binkit.sln solution file to compile Loader and pybinkit project
 
 * Use Visual Studio 2019
@@ -19,7 +31,6 @@ Open binkit.sln solution file to compile Loader and pybinkit project
 ```
 import pybinkit
 ```
-
 
 ## Binary
 
@@ -112,4 +123,13 @@ for filename in ('binkit.dll', 'binkit64.dll'):
    response = urllib2.urlopen(url)
    with open(local_filename, 'wb') as fd:
       fd.write(response.read())
+```
+
+
+---
+
+Plugin folder
+
+```
+%USERPROFILE%\AppData\Roaming\Hex-Rays\IDA Pro\plugins
 ```
