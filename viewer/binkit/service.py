@@ -89,6 +89,23 @@ class IDA:
     def get_md5(self):
         return idc.GetInputMD5().lower()
 
+    @ExecuteSyncDefs.execute_read
+    def export(self, filename):
+        print('export %s' % filename)
+        try:
+            binkit = idaapi.load_plugin('BinKit')
+            if binkit:
+                idc_command = ("SaveBinKitAnalysis(\"%s\");" % (filename)).replace("\\", "\\\\")
+                print(idc_command)
+                idc.eval_idc(str(idc_command))
+        except:
+            traceback.print_exc()
+            pass
+
+def export_thread(filename):
+    ida = IDA()
+    ida.export(filename)
+
 class BinKitService(rpyc.Service):
     def on_connect(self, conn):
         self.ida = IDA()
@@ -101,6 +118,9 @@ class BinKitService(rpyc.Service):
         
     def get_md5(self):
         return self.ida.get_md5()
+        
+    def export(self, filename):
+        thread.start_new_thread(export_thread, (filename,))  
 
 def start_binkit_server(connection_filename):
     port = 18861
