@@ -1,15 +1,22 @@
 import os
 import sys
 import pprint
+import json
 
 import cmd
 import client
+import pybinkit
+from matches import *
 
 class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
     prompt = '(binkit) '
 
-    def do_list(self, arg):
+    def __init__(self):
+        cmd.Cmd.__init__(self)
+        self.binaries = []
+
+    def do_sessions(self, arg):
         'List current IDA sessions'
         profiles = client.Profiles()
         self.profiles = profiles.list()
@@ -43,6 +50,48 @@ class BinKitShell(cmd.Cmd):
         connection = client.IDASessions.connect(self.profiles[index]['md5'])
         print(connection)
         print(connection.root.export(filename))
+        
+    def do_load(self, arg):
+        for filename in arg.split():
+            binary = pybinkit.Binary()
+            binary.open(filename)
+            self.binaries.append(binary)
+            
+    def do_list(self, arg):
+        for binary in self.binaries:
+            print(binary.get_md5())
+
+    def do_diff(self, arg):
+        if len(self.binaries) < 2:
+            return
+
+        if arg == '':
+            diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
+            self.basic_block_matches = diff_algorithms.do_instruction_hash_match()
+            #for match in self.basic_block_matches:
+            #    pprint.pprint('%.8x - %.8x (%d)' % (match.source, match.target, match.match_rate))
+
+            self.function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
+            self.function_matches.add_matches(self.basic_block_matches)
+
+        elif arg == 'ins':
+            self.function_matches.do_instruction_hash_match()
+
+        elif arg == 'cf':
+            self.function_matches.do_control_flow_match()
+
+        self.print_function_matches()
+
+    def print_function_matches(self):
+        function_match_tool = FunctionMatchTool(self.function_matches, binaries=self.binaries)
+        print(function_match_tool.get_stats())
+        """
+        for function_match in util.get_function_match_list():
+            print('* %.8x - %.8x' % (function_match['source'], function_match['target']))
+            if 'matches' in function_match:
+                for match in function_match['matches']:
+                    print('    -%.8x - %.8x (%d)' % (match['source'], match['target'], match['match_rate']))
+        """
 
     def do_quit(self, arg):
         'Quit shell.'
