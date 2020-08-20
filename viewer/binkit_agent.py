@@ -3,47 +3,9 @@ import idautils
 import idaapi
 import idc
 import traceback
-import json
-import rpyc
-from rpyc.utils.server import ThreadedServer
 
 from binkit.viewer import *
-from binkit.threadtool import *
-
-class BinKitService(rpyc.Service):
-    def on_connect(self, conn):
-        self.ida = IDA()
-
-    def get_pid(self):
-        return os.getpid()
-    
-    def jumpto(self, address):
-        self.ida.jumpto(address)
-        
-    def get_md5(self):
-        return self.ida.get_md5()
-
-def start_binkit_server(connection_filename):
-    port = 18861
-    while 1:
-        try:
-            t = ThreadedServer(BinKitService(), port = port, protocol_config = {
-                'allow_public_attrs': True,
-            })
-            print('Listening on %d\n' % port)
-            
-            md5 = idc.GetInputMD5().lower()
-            try:
-                with open(connection_filename, "w") as fd:
-                    json.dump({'port': port, 'md5': md5}, fd)
-            except:
-                traceback.print_exc()
-
-            t.start()
-            break
-        except:
-            port += 1
-            traceback.print_exc()
+from binkit.service import *
 
 class BinkitPlugin(idaapi.plugin_t):
     flags = idaapi.PLUGIN_KEEP

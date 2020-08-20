@@ -1,10 +1,16 @@
+import os
 import thread  
 import functools
 import threading
+import traceback
 import time
+import json
 
 import idaapi
 import idc
+
+import rpyc
+from rpyc.utils.server import ThreadedServer
 
 def execute_sync(function, sync_type):
     """
@@ -82,6 +88,41 @@ class IDA:
     @ExecuteSyncDefs.execute_read
     def get_md5(self):
         return idc.GetInputMD5().lower()
+
+class BinKitService(rpyc.Service):
+    def on_connect(self, conn):
+        self.ida = IDA()
+
+    def get_pid(self):
+        return os.getpid()
+    
+    def jumpto(self, address):
+        self.ida.jumpto(address)
+        
+    def get_md5(self):
+        return self.ida.get_md5()
+
+def start_binkit_server(connection_filename):
+    port = 18861
+    while 1:
+        try:
+            t = ThreadedServer(BinKitService(), port = port, protocol_config = {
+                'allow_public_attrs': True,
+            })
+            print('Listening on %d\n' % port)
+            
+            md5 = idc.GetInputMD5().lower()
+            try:
+                with open(connection_filename, "w") as fd:
+                    json.dump({'port': port, 'md5': md5}, fd)
+            except:
+                traceback.print_exc()
+
+            t.start()
+            break
+        except:
+            port += 1
+            traceback.print_exc()
 
 if __name__ == '__main__':
     def run():  
