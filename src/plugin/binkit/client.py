@@ -29,6 +29,7 @@ class IDASessions:
                 connection._config['sync_request_timeout'] = 1
             except:
                 connection = None
+                continue
 
             if connection.root.get_pid() == os.getpid():
                 connection = None
