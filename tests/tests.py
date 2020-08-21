@@ -5,7 +5,7 @@ import pprint
 import traceback
 import unittest
 import pybinkit
-from util import *
+from matches import *
 
 CALL = 0
 CREF_FROM = 1
