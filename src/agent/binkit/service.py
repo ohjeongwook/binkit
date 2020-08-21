@@ -11,6 +11,7 @@ import idc
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
+from binkit.viewer import *
 
 def execute_sync(function, sync_type):
     """
@@ -102,9 +103,20 @@ class IDA:
             traceback.print_exc()
             pass
 
+    @ExecuteSyncDefs.execute_read
+    def show_diff(self, filename):
+        viewer = Viewer(filename)
+        viewer.show_functions_match_viewer()
+        viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
+        idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_TAB)      
+
 def export_thread(filename):
     ida = IDA()
     ida.export(filename)
+
+def show_diff_thread(filename):
+    ida = IDA()
+    ida.show_diff(filename)
 
 class BinKitService(rpyc.Service):
     def on_connect(self, conn):
@@ -121,6 +133,9 @@ class BinKitService(rpyc.Service):
 
     def export(self, filename):
         thread.start_new_thread(export_thread, (filename,))
+
+    def show_diff(self, filename):
+        thread.start_new_thread(show_diff_thread, (filename,))
 
 def start_binkit_server(connection_filename):
     port = 18861

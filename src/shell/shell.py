@@ -30,14 +30,14 @@ class BinKitShell(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         self.binaries = []
+        self.profiles = client.Profiles()
 
     def do_sessions(self, arg):
         'List current IDA sessions'
-        profiles = client.Profiles()
-        self.profiles = profiles.list()
+        self.profile_list = self.profiles.list()
         index = 0
         
-        for profile in self.profiles:
+        for profile in self.profile_list:
             print('%d' % index)
             print(profile)
             index += 1
@@ -53,18 +53,16 @@ class BinKitShell(cmd.Cmd):
             if len(args) > 1:
                 filename = args[1]            
 
-        if index >= len(self.profiles):
-            print("Index is bigger than %d" % len(self.profiles))
+        if index >= len(self.profile_list):
+            print("Index is bigger than %d" % len(self.profile_list))
         else:
-            print(self.profiles[index])
+            print(self.profile_list[index])
             if not filename:
-                filename = '%s.db' % self.profiles[index]['md5']
+                filename = '%s.db' % self.profile_list[index]['md5']
 
-        print(index)
         filename = os.path.abspath(filename)
-        connection = client.IDASessions.connect(self.profiles[index]['md5'])
-        print(connection)
-        print(connection.root.export(filename))
+        connection = client.IDASessions.connect(self.profile_list[index]['md5'])
+        connection.root.export(filename)
         
     def do_load(self, arg):
         for filename in arg.split():
@@ -109,9 +107,27 @@ class BinKitShell(cmd.Cmd):
         """
 
     def do_save(self, arg):
-        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
-        function_match_tool.sort()
-        function_match_tool.write(arg)
+        function_match_storage = FunctionMatchStorageLoader.load(self.function_matches, binaries = self.binaries)
+        function_match_storage.sort()
+        function_match_storage.save(arg)
+
+    def do_show(self, arg):
+        if arg:
+            filename = os.path.abspath(arg)
+        else:
+            filename = os.path.abspath('temp.json')
+
+        if not os.path.isfile(filename):
+            self.do_save(filename)
+
+        profile_list = self.profiles.list()
+        for index in range(0, len(profile_list), 1):
+            try:
+                connection = client.IDASessions.connect(profile_list[index]['md5'])
+            except:
+                traceback.print_exc()
+                continue
+            connection.root.show_diff(filename)
 
     def do_quit(self, arg):
         'Quit shell.'
