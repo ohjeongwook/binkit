@@ -3,7 +3,8 @@ import sys
 
 import pprint
 import json
-
+import tempfile
+import uuid
 import cmd
 
 try:
@@ -27,10 +28,18 @@ class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
     prompt = '(binkit) '
 
-    def __init__(self):
+    def __init__(self, results_directory = 'results'):
         cmd.Cmd.__init__(self)
         self.binaries = []
+        self.function_matches = None
         self.profiles = client.Profiles()
+        self.results_directory = results_directory
+
+        if not os.path.isdir(self.results_directory):
+            try:
+                os.makedirs(self.results_directory)
+            except:
+                pass
 
     def do_s(self, arg):
         'List current IDA sessions'
@@ -117,13 +126,17 @@ class BinKitShell(cmd.Cmd):
         function_match_storage.save(arg)
 
     def do_show(self, arg):
+        filename = ''
         if arg:
             filename = os.path.abspath(arg)
         else:
-            filename = os.path.abspath('temp.json')
+            if not self.function_matches:
+                return
 
-        if not os.path.isfile(filename):
-            self.do_save(filename)
+            filename = os.path.join(self.results_directory, str(uuid.uuid4()) + '.json')
+            function_match_storage = FunctionMatchStorageLoader.load(self.function_matches, binaries = self.binaries)
+            print("Saving diff snapshot to " + filename)
+            function_match_storage.save(filename)            
 
         profile_list = self.profiles.list()
         for index in range(0, len(profile_list), 1):
@@ -132,6 +145,10 @@ class BinKitShell(cmd.Cmd):
             except:
                 traceback.print_exc()
                 continue
+
+            if not connection or not connection.root:
+                continue
+
             connection.root.show_diff(filename)
 
     def do_quit(self, arg):
