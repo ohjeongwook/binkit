@@ -17,6 +17,7 @@ class BinkitPlugin(idaapi.plugin_t):
     help = "TestPlugin..."
 
     def init(self):
+        self.viewer_sequence = 0
         self.get_connection_filename()
         thread.start_new_thread(start_binkit_server, (self.connection_filename,))  
         return idaapi.PLUGIN_KEEP
@@ -35,9 +36,11 @@ class BinkitPlugin(idaapi.plugin_t):
 
     def run(self, arg):
         viewer = Viewer(get_filename())
-        viewer.show_functions_match_viewer()
+        form_name = "Function Matches-%d" % self.viewer_sequence
+        self.viewer_sequence += 1
+        viewer.show_functions_match_viewer(form_name)
         viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
-        idaapi.set_dock_pos("Function Matches", "Functions window", idaapi.DP_TAB)
+        idaapi.set_dock_pos(form_name, "Functions window", idaapi.DP_TAB)
 
     def term(self):
         if os.path.isfile(self.connection_filename):

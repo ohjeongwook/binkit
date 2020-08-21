@@ -39,9 +39,9 @@ class Viewer:
             function_match['self_unidentified_block_counts'] = self_unidentified_block_counts
             function_match['peer_unidentified_block_counts'] = peer_unidentified_block_counts
 
-    def show_functions_match_viewer(self):
+    def show_functions_match_viewer(self, form_name):
         form = FunctionsMatchViewer()
-        form.Show("Function Matches")
+        form.Show(form_name)
         
         for function_match in self.match_results['function_matches']:
             form.add_item(function_match[self.self_name],
