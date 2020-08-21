@@ -9,12 +9,11 @@ from binkit.viewer import *
 from binkit.service import *
 
 class BinkitPlugin(idaapi.plugin_t):
+    wanted_name = "Binkit"    
+    wanted_hotkey = "Alt-F12"
+    comment = "Binkit Plugin For IDA"
+    help = "Use this plugin to load diffing result files (*.json)..."
     flags = idaapi.PLUGIN_KEEP
-    comment = "Binkit Sync Agent"
-
-    wanted_name = "Binkit Agent Plugin"
-    wanted_hotkey = "Alt-F6"
-    help = "TestPlugin..."
 
     def init(self):
         self.viewer_sequence = 0
