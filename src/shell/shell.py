@@ -98,7 +98,7 @@ class BinKitShell(cmd.Cmd):
         self.print_function_matches()
 
     def print_function_matches(self):
-        function_match_tool = FunctionMatchTool(self.function_matches, binaries=self.binaries)
+        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
         print(function_match_tool.get_stats())
         """
         for function_match in util.get_function_match_list():
@@ -107,6 +107,11 @@ class BinKitShell(cmd.Cmd):
                 for match in function_match['matches']:
                     print('    -%.8x - %.8x (%d)' % (match['source'], match['target'], match['match_rate']))
         """
+
+    def do_save(self, arg):
+        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
+        function_match_tool.sort()
+        function_match_tool.write(arg)
 
     def do_quit(self, arg):
         'Quit shell.'
