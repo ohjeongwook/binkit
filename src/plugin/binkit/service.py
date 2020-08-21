@@ -131,6 +131,9 @@ class BinKitService(rpyc.Service):
     def get_md5(self):
         return self.ida.get_md5()
 
+    def get_root_filename(self):
+        return self.ida.get_root_filename()
+
     def export(self, filename):
         thread.start_new_thread(export_thread, (filename,))
 
@@ -148,7 +151,7 @@ def start_binkit_server(connection_filename):
             md5 = idc.GetInputMD5().lower()
             try:
                 with open(connection_filename, "w") as fd:
-                    json.dump({'port': port, 'md5': md5}, fd)
+                    json.dump({'port': port, 'md5': md5, 'root_fileanem': idaapi.get_root_filename(), 'input_filename': idaapi.get_input_file_path()}, fd)
             except:
                 traceback.print_exc()
 
