@@ -133,8 +133,9 @@ class Util:
 
         return False
 
-class FunctionMatchData:
+class FunctionMatchStorage:
     def __init__(self, match_results, binaries = None):
+        self.match_results = match_results
         self.binaries = binaries
         self.add_binary_meta_data()
         self.add_basic_block_data()
@@ -215,11 +216,11 @@ class FunctionMatchData:
                     target_block = target_basic_blocks.get_basic_block(target['start'])
                     target['end'] = target_block.end_address
 
-    def write(self, filename):
+    def save(self, filename):
         with open(filename, 'w') as fd:
             json.dump(self.match_results, fd, indent = 4)
 
-class FunctionMatchDataLoader:
+class FunctionMatchStorageLoader:
     @staticmethod
     def load_file(filename = '', binaries = None):       
         try:
@@ -232,10 +233,12 @@ class FunctionMatchDataLoader:
                 match_results['function_matches'] = data
         except:
             traceback.print_exc()
-        return FunctionMatchData(match_results, binaries)
+        return FunctionMatchStorage(match_results, binaries)
 
-    def load_function_matches(function_matches, binaries = None):
-        return FunctionMatchData({'function_matches': function_matches}, binaries)
+    @staticmethod
+    def load(function_matches, binaries = None):
+        function_match_tool = FunctionMatchTool(function_matches, binaries)
+        return FunctionMatchStorage({'function_matches': function_match_tool.get_storage_data()}, binaries)
 
 class FunctionMatchTool:
     def __init__(self, function_matches, binaries = None):
@@ -315,10 +318,10 @@ class FunctionMatchTool:
 
         return unidentified_blocks
 
-    def get_function_match_data(self, function_matches, source_function_address = 0, level = 1):
+    def get_storage_data(self, source_function_address = 0, level = 1):
         prefix = '\t' * level
         function_match_data_list = []
-        for function_match in function_matches.get_matches():
+        for function_match in self.function_matches.get_matches():
             if source_function_address !=0 and source_function_address != function_match.source:
                 continue
             if self.debug_level > 0:
@@ -328,7 +331,7 @@ class FunctionMatchTool:
             function_match_data['unidentified_blocks'] = self.get_unidentified_blocks(function_match, source_function_address)
             function_match_data_list.append(function_match_data)
 
-        return FunctionMatchData(function_match_data_list = function_match_data_list)
+        return function_match_data_list
 
 if __name__ == '__main__':
     import os
