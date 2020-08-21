@@ -11,7 +11,7 @@ plugins_folder = os.path.join(idadir, "plugins")
 if not os.path.isdir(plugins_folder):
     os.makedirs(plugins_folder)
 
-for filename in (r'..\plugin\x64\IDA32-Debug\binkit.dll', r'..\plugin\x64\IDA64-Debug\binkit64.dll'):
+for filename in (r'..\src\plugin\x64\IDA32-Debug\binkit_exporter.dll', r'..\src\plugin\x64\IDA64-Debug\binkit_exporter64.dll'):
     base_filename = os.path.basename(filename)
     plugin_filename = os.path.join(plugins_folder, base_filename)
     print('Copying %s -> %s' % (filename, plugin_filename))
