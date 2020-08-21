@@ -32,14 +32,19 @@ class BinKitShell(cmd.Cmd):
         self.binaries = []
         self.profiles = client.Profiles()
 
+    def do_s(self, arg):
+        'List current IDA sessions'
+        self.do_sessions(arg)
+
     def do_sessions(self, arg):
         'List current IDA sessions'
         self.profile_list = self.profiles.list()
         index = 0
         
         for profile in self.profile_list:
-            print('%d' % index)
-            print(profile)
+            print('# Index: %d' % index)
+            for k,v in profile.items():
+                print('    %s: %s' % (k, str(v)))
             index += 1
 
     def do_export(self, arg):
@@ -130,6 +135,10 @@ class BinKitShell(cmd.Cmd):
             connection.root.show_diff(filename)
 
     def do_quit(self, arg):
+        'Quit shell.'
+        return True
+
+    def do_q(self, arg):
         'Quit shell.'
         return True
 
