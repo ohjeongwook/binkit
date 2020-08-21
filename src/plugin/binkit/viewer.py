@@ -40,6 +40,7 @@ class Viewer:
             function_match['peer_unidentified_block_counts'] = peer_unidentified_block_counts
 
     def show_functions_match_viewer(self, form_name):
+        idaapi.msg("show_functions_match_viewer\n")
         form = FunctionsMatchViewer()
         form.Show(form_name)
         
@@ -53,8 +54,8 @@ class Viewer:
                     )
 
     def color(self, start, end, color):
-        address = start
-        while address < end:
+        address = idaapi.get_imagebase() + start
+        while address < idaapi.get_imagebase() + end:
             idaapi.set_item_color(address, color)
             address += ida_bytes.get_item_size(address)
                 
