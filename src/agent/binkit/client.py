@@ -33,7 +33,7 @@ class IDASessions:
             if connection.root.get_pid() == os.getpid():
                 connection = None
 
-            if connection.root.get_md5() != profile['md5']:
+            elif connection.root.get_md5() != profile['md5']:
                 connection = None
 
         return connection
