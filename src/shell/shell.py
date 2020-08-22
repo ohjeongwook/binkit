@@ -22,7 +22,7 @@ for binkit_path in binkit_paths:
 
 import client
 import pybinkit
-from matches import *
+from storage import *
 
 class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
