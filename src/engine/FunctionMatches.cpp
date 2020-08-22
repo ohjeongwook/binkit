@@ -66,45 +66,6 @@ void FunctionMatches::AddMatchDataList(va_t sourceFunctionAddress, va_t targetFu
 	}
 }
 
-void FunctionMatches::Print()
-{
-	for (auto& val : m_functionMatches)
-	{
-		va_t sourceFunctionAddress = val.first;
-		for (auto& val2 : val.second)
-		{
-			va_t targetFunctionAddress = val2.first;
-
-			printf("==========================================\n");
-			printf("Function: %x - %x\n", sourceFunctionAddress, targetFunctionAddress);
-			for (MatchData *p_matchData : val2.second)
-			{
-				printf("\tMatch: %x-%x %d (MatchSequence: %d)\n", p_matchData->Source, p_matchData->Target, p_matchData->MatchRate, p_matchData->MatchSequence);
-			}
-		}
-	}
-}
-
-vector<FunctionMatch> FunctionMatches::GetMatches()
-{
-	vector<FunctionMatch> functionMatchDataList;
-
-	for (auto& val : m_functionMatches)
-	{
-		va_t sourceFunctionAddress = val.first;
-		for (auto& val2 : val.second)
-		{
-			FunctionMatch functionMatch;
-			functionMatch.SourceFunction = sourceFunctionAddress;
-			functionMatch.TargetFunction = val2.first;
-			functionMatch.MatchDataList = val2.second;
-			functionMatchDataList.push_back(functionMatch);
-		}
-	}
-
-	return functionMatchDataList;
-}
-
 void FunctionMatches::AddMatches(vector<MatchData> currentMatchDataList)
 {
 	for (MatchData matchData : currentMatchDataList)
@@ -205,4 +166,24 @@ void FunctionMatches::RemoveMatches(int matchSequence)
 			}
 		}
 	}
+}
+
+vector<FunctionMatch> FunctionMatches::GetMatches()
+{
+	vector<FunctionMatch> functionMatchDataList;
+
+	for (auto& val : m_functionMatches)
+	{
+		va_t sourceFunctionAddress = val.first;
+		for (auto& val2 : val.second)
+		{
+			FunctionMatch functionMatch;
+			functionMatch.SourceFunction = sourceFunctionAddress;
+			functionMatch.TargetFunction = val2.first;
+			functionMatch.MatchDataList = val2.second;
+			functionMatchDataList.push_back(functionMatch);
+		}
+	}
+
+	return functionMatchDataList;
 }

@@ -1,5 +1,4 @@
 #include <Windows.h>
-#include <cmath>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
@@ -94,22 +93,22 @@ PYBIND11_MODULE(pybinkit, m) {
     */
     py::class_<MatchData>(m, "MatchData")
         .def(py::init())
-        .def_readonly("type", &MatchData::Type)
-        .def_readonly("sub_type", &MatchData::SubType)
-        .def_readonly("status", &MatchData::Status)
-        .def_readonly("source", &MatchData::Source)
-        .def_readonly("target", &MatchData::Target)
-        .def_readonly("reference_order_difference", &MatchData::ReferenceOrderDifference)        
-        .def_readonly("match_rate", &MatchData::MatchRate)
-        .def_readonly("source_parent", &MatchData::SourceParent)
-        .def_readonly("target_parent", &MatchData::TargetParent)
-        .def_readonly("match_sequence", &MatchData::MatchSequence);
+        .def_readwrite("type", &MatchData::Type)
+        .def_readwrite("sub_type", &MatchData::SubType)
+        .def_readwrite("status", &MatchData::Status)
+        .def_readwrite("source", &MatchData::Source)
+        .def_readwrite("target", &MatchData::Target)
+        .def_readwrite("reference_order_difference", &MatchData::ReferenceOrderDifference)
+        .def_readwrite("match_rate", &MatchData::MatchRate)
+        .def_readwrite("source_parent", &MatchData::SourceParent)
+        .def_readwrite("target_parent", &MatchData::TargetParent)
+        .def_readwrite("match_sequence", &MatchData::MatchSequence);
 
     py::class_<FunctionMatch>(m, "FunctionMatch")
         .def(py::init())
-        .def_readonly("source", &FunctionMatch::SourceFunction)
-        .def_readonly("target", &FunctionMatch::TargetFunction)
-        .def_readonly("match_data_list", &FunctionMatch::MatchDataList);
+        .def_readwrite("source", &FunctionMatch::SourceFunction)
+        .def_readwrite("target", &FunctionMatch::TargetFunction)
+        .def_readwrite("match_data_list", &FunctionMatch::MatchDataList);
 
     py::class_<FunctionMatches>(m, "FunctionMatches")
         .def(py::init<Binary&, Binary&>())
