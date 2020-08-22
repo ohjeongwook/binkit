@@ -133,7 +133,7 @@ int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char *
     multimap <va_t, PControlFlow> *p_controlFlow = (multimap <va_t, PControlFlow>*)arg;
 
     PControlFlow p_control_flow = new ControlFlow;
-    p_control_flow->Type = strtoul10(argv[0]);
+    p_control_flow->Type = atoi(argv[0]);
     p_control_flow->Src = strtoul10(argv[1]);
     p_control_flow->Dst = strtoul10(argv[2]);
     p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
@@ -236,9 +236,9 @@ int SQLiteDisassemblyReader::ReadBasicBlockCallback(void *arg, int argc, char **
     PBasicBlock p_basic_block = (PBasicBlock)arg;
     p_basic_block->StartAddress = strtoul10(argv[0]);
     p_basic_block->EndAddress = strtoul10(argv[1]);
-    p_basic_block->Flag = strtoul10(argv[2]);
+    p_basic_block->Flag = atoi(argv[2]);
     p_basic_block->FunctionAddress = strtoul10(argv[3]);
-    p_basic_block->BlockType = strtoul10(argv[4]);
+    p_basic_block->BlockType = atoi(argv[4]);
     p_basic_block->Name = argv[5];
     p_basic_block->InstructionHash = argv[6];
     return 0;

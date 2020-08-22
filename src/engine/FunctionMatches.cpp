@@ -70,7 +70,6 @@ void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchL
 {
 	for (BasicBlockMatch basicBlockMatch : currentBasicBlockMatchList)
 	{
-		va_t sourceFunctionAddress;
 		Function* p_src_function = m_sourceBinary.GetFunction(basicBlockMatch.Source);
 		Function* p_target_function = m_targetBinary.GetFunction(basicBlockMatch.Target);
 

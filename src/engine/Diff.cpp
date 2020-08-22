@@ -349,8 +349,8 @@ int GetStringSimilarity(const char *a,const char *b)
 	struct varray ses;
 
 	varray_init(&ses,sizeof(DiffEdit),NULL);
-	n=strlen(a);
-	m=strlen(b);
+	n=(int)strlen(a);
+	m= (int)strlen(b);
 	if ((d=DiffArray(
 		a,0,n,
 		b,0,m,
