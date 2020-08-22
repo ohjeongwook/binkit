@@ -67,7 +67,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("do_function_instruction_hash_match", &DiffAlgorithms::DoFunctionInstructionHashMatch)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
-        .def("get_match_data_combinations", &DiffAlgorithms::GetMatchDataCombinations);        
+        .def("get_match_data_combinations", &DiffAlgorithms::GetBasicBlockMatchCombinations);        
 
     py::class_<Function>(m, "Function")
         .def(py::init())
@@ -81,7 +81,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("target", &AddressPair::TargetAddress);
 
     /*
-        typedef struct _MatchData_ {
+        typedef struct _BasicBlockMatch_ {
             short Type;
             short SubType;
             short Status;
@@ -89,26 +89,26 @@ PYBIND11_MODULE(pybinkit, m) {
             short MatchRate;
             va_t UnpatchedParentAddress;
             va_t PatchedParentAddress;
-        } MatchData;
+        } BasicBlockMatch;
     */
-    py::class_<MatchData>(m, "MatchData")
+    py::class_<BasicBlockMatch>(m, "BasicBlockMatch")
         .def(py::init())
-        .def_readwrite("type", &MatchData::Type)
-        .def_readwrite("sub_type", &MatchData::SubType)
-        .def_readwrite("status", &MatchData::Status)
-        .def_readwrite("source", &MatchData::Source)
-        .def_readwrite("target", &MatchData::Target)
-        .def_readwrite("reference_order_difference", &MatchData::ReferenceOrderDifference)
-        .def_readwrite("match_rate", &MatchData::MatchRate)
-        .def_readwrite("source_parent", &MatchData::SourceParent)
-        .def_readwrite("target_parent", &MatchData::TargetParent)
-        .def_readwrite("match_sequence", &MatchData::MatchSequence);
+        .def_readwrite("type", &BasicBlockMatch::Type)
+        .def_readwrite("sub_type", &BasicBlockMatch::SubType)
+        .def_readwrite("status", &BasicBlockMatch::Status)
+        .def_readwrite("source", &BasicBlockMatch::Source)
+        .def_readwrite("target", &BasicBlockMatch::Target)
+        .def_readwrite("reference_order_difference", &BasicBlockMatch::ReferenceOrderDifference)
+        .def_readwrite("match_rate", &BasicBlockMatch::MatchRate)
+        .def_readwrite("source_parent", &BasicBlockMatch::SourceParent)
+        .def_readwrite("target_parent", &BasicBlockMatch::TargetParent)
+        .def_readwrite("match_sequence", &BasicBlockMatch::MatchSequence);
 
     py::class_<FunctionMatch>(m, "FunctionMatch")
         .def(py::init())
         .def_readwrite("source", &FunctionMatch::SourceFunction)
         .def_readwrite("target", &FunctionMatch::TargetFunction)
-        .def_readwrite("match_data_list", &FunctionMatch::MatchDataList);
+        .def_readwrite("match_data_list", &FunctionMatch::BasicBlockMatchList);
 
     py::class_<FunctionMatches>(m, "FunctionMatches")
         .def(py::init<Binary&, Binary&>())
@@ -118,11 +118,11 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0)
         .def("remove_matches", &FunctionMatches::RemoveMatches);
 
-    py::class_<MatchDataCombination>(m, "MatchDataCombination")
+    py::class_<BasicBlockMatchCombination>(m, "BasicBlockMatchCombination")
         .def(py::init())
-        .def("get_match_rate", &MatchDataCombination::GetMatchRate)
-        .def("count", &MatchDataCombination::Count)
-        .def("get", &MatchDataCombination::Get)
-        .def("get_address_pairs", &MatchDataCombination::GetAddressPairs)        
-        .def("get_match_data_list", &MatchDataCombination::GetMatchDataList);        
+        .def("get_match_rate", &BasicBlockMatchCombination::GetMatchRate)
+        .def("count", &BasicBlockMatchCombination::Count)
+        .def("get", &BasicBlockMatchCombination::Get)
+        .def("get_address_pairs", &BasicBlockMatchCombination::GetAddressPairs)        
+        .def("get_match_data_list", &BasicBlockMatchCombination::GetBasicBlockMatchList);        
 }

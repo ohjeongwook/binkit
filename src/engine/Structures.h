@@ -95,7 +95,7 @@ enum {
     CONTROLFLOW_MATCH
 };
 
-static const char* MatchDataTypeStr[] = {
+static const char* BasicBlockMatchTypeStr[] = {
     "Name",
     "InstructionHash",
     "Two Level InstructionHash",
@@ -104,7 +104,7 @@ static const char* MatchDataTypeStr[] = {
     "Function"
 };
 
-typedef struct _MatchData_ {
+typedef struct _BasicBlockMatch_ {
     short Type;
     short SubType;
     short Status;
@@ -115,4 +115,4 @@ typedef struct _MatchData_ {
     va_t SourceParent;
     va_t TargetParent;
     int MatchSequence;
-} MatchData;
+} BasicBlockMatch;

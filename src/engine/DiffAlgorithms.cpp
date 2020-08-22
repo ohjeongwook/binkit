@@ -32,9 +32,9 @@ int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructio
 	return matchRate;
 }
 
-vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()
+vector<BasicBlockMatch> DiffAlgorithms::DoInstructionHashMatch()
 {
-	vector<MatchData> matchDataList;
+	vector<BasicBlockMatch> basicBlockMatchList;
 
 	InstructionHashMap *p_srcInstructionHashMap = m_psourceBasicBlocks->GetInstructionHashes();
 	InstructionHashMap* p_targetInstructionHashMap = m_ptargetBasicBlocks->GetInstructionHashes();
@@ -47,23 +47,23 @@ vector<MatchData> DiffAlgorithms::DoInstructionHashMatch()
 			multimap <vector<unsigned char>, va_t>::iterator patchedInstructionHashIt = p_targetInstructionHashMap->find(val.first);
 			if (patchedInstructionHashIt != p_targetInstructionHashMap->end())
 			{
-				MatchData matchData;
-				memset(&matchData, 0, sizeof(MatchData));
-				matchData.Type = INSTRUCTION_HASH_MATCH;
-				matchData.Source = val.second;
-				matchData.Target = patchedInstructionHashIt->second;
-				matchData.MatchRate = 100;
-				matchDataList.push_back(matchData);
+				BasicBlockMatch basicBlockMatch;
+				memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
+				basicBlockMatch.Type = INSTRUCTION_HASH_MATCH;
+				basicBlockMatch.Source = val.second;
+				basicBlockMatch.Target = patchedInstructionHashIt->second;
+				basicBlockMatch.MatchRate = 100;
+				basicBlockMatchList.push_back(basicBlockMatch);
 			}
 		}
 	}
 
-	return matchDataList;
+	return basicBlockMatchList;
 }
 
-vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
+vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
 {
-	vector<MatchData> matcDataList;
+	vector<BasicBlockMatch> matcDataList;
 	unordered_set<va_t> targetBlockAddressSet;
 
 	for (va_t address : targetBlockAddresses)
@@ -88,20 +88,20 @@ vector<MatchData> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sou
 
 		if (targetAddresses.size() == 1)
 		{
-			MatchData matchData;
-			memset(&matchData, 0, sizeof(MatchData));
-			matchData.Type = INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH;
-			matchData.Source = sourceAddress;
-			matchData.Target = targetAddresses[0];
-			matchData.MatchRate = 100;
-			matcDataList.push_back(matchData);
+			BasicBlockMatch basicBlockMatch;
+			memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
+			basicBlockMatch.Type = INSTRUCTION_HASH_INSIDE_FUNCTION_MATCH;
+			basicBlockMatch.Source = sourceAddress;
+			basicBlockMatch.Target = targetAddresses[0];
+			basicBlockMatch.MatchRate = 100;
+			matcDataList.push_back(basicBlockMatch);
 		}
 	}
 
 	return matcDataList;
 }
 
-vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
+vector<BasicBlockMatch> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
 {
 	if (sourceFunction == NULL || targetFunction == NULL)
 	{
@@ -114,25 +114,25 @@ vector<MatchData> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourc
 	return DoBlocksInstructionHashMatch(sourceBasicBlocks, targetBasicBlocks);
 }
 
-MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<MatchData> matchDataList)
+BasicBlockMatchCombinations* DiffAlgorithms::GenerateBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList)
 {
-	unordered_map<va_t, vector<MatchData>> matchMap;
-	for (MatchData matchData : matchDataList)
+	unordered_map<va_t, vector<BasicBlockMatch>> matchMap;
+	for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 	{
-		LogMessage(0, __FUNCTION__, "%x-%x: %d%%\n", matchData.Source, matchData.Target, matchData.MatchRate);
-		unordered_map<va_t, vector<MatchData>>::iterator it = matchMap.find(matchData.Source);
+		LogMessage(0, __FUNCTION__, "%x-%x: %d%%\n", basicBlockMatch.Source, basicBlockMatch.Target, basicBlockMatch.MatchRate);
+		unordered_map<va_t, vector<BasicBlockMatch>>::iterator it = matchMap.find(basicBlockMatch.Source);
 		if (it == matchMap.end())
 		{
-			vector<MatchData> matchDatalist;
-			matchDatalist.push_back(matchData);
-			matchMap.insert(pair<va_t, vector<MatchData>>(matchData.Source, matchDatalist));
+			vector<BasicBlockMatch> basicBlockMatchlist;
+			basicBlockMatchlist.push_back(basicBlockMatch);
+			matchMap.insert(pair<va_t, vector<BasicBlockMatch>>(basicBlockMatch.Source, basicBlockMatchlist));
 		}
 		else
 		{
 			bool isNew = true;
-			for (MatchData matchData2 : it->second)
+			for (BasicBlockMatch basicBlockMatch2 : it->second)
 			{
-				if (matchData.Source == matchData2.Source && matchData.Target == matchData2.Target)
+				if (basicBlockMatch.Source == basicBlockMatch2.Source && basicBlockMatch.Target == basicBlockMatch2.Target)
 				{
 					isNew = false;
 					break;
@@ -141,35 +141,35 @@ MatchDataCombinations* DiffAlgorithms::GenerateMatchDataCombinations(vector<Matc
 
 			if (isNew)
 			{
-				it->second.push_back(matchData);
+				it->second.push_back(basicBlockMatch);
 			}
 		}
 	}
 
-	MatchDataCombinations* p_matchDataCombinations = new MatchDataCombinations();
+	BasicBlockMatchCombinations* p_basicBlockMatchCombinations = new BasicBlockMatchCombinations();
 
 	if (matchMap.empty())
 	{
-		return p_matchDataCombinations;
+		return p_basicBlockMatchCombinations;
 	}
 
 	for (auto& val : matchMap)
 	{
-		p_matchDataCombinations->AddCombinations(val.first, val.second);
+		p_basicBlockMatchCombinations->AddCombinations(val.first, val.second);
 	}
-	return p_matchDataCombinations;
+	return p_basicBlockMatchCombinations;
 }
 
-vector<MatchDataCombination*> DiffAlgorithms::GetMatchDataCombinations(vector<MatchData> matchDataList)
+vector<BasicBlockMatchCombination*> DiffAlgorithms::GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList)
 {
-	MatchDataCombinations* p_matchDataCombinations = GenerateMatchDataCombinations(matchDataList);
-	return p_matchDataCombinations->GetTopMatches();
+	BasicBlockMatchCombinations* p_basicBlockMatchCombinations = GenerateBasicBlockMatchCombinations(basicBlockMatchList);
+	return p_basicBlockMatchCombinations->GetTopMatches();
 }
 
-vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type)
+vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type)
 {
 	bool debug = false;
-	vector<MatchData> controlFlowMatches;
+	vector<BasicBlockMatch> controlFlowMatches;
 
 	vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, type);
 	vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, type);
@@ -184,23 +184,23 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 		//Special case for switch case
 		for (int i = 0; i < sourceAddresses.size(); i++)
 		{
-			MatchData matchData;
-			memset(&matchData, 0, sizeof(MatchData));
-			matchData.Type = CONTROLFLOW_MATCH;
-			matchData.SourceParent = sourceAddress;
-			matchData.TargetParent = targetAddress;
-			matchData.Source = sourceAddresses[i];
-			matchData.Target = targetAddresses[i];
-			matchData.MatchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]), m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[i]));
-			controlFlowMatches.push_back(matchData);
+			BasicBlockMatch basicBlockMatch;
+			memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
+			basicBlockMatch.Type = CONTROLFLOW_MATCH;
+			basicBlockMatch.SourceParent = sourceAddress;
+			basicBlockMatch.TargetParent = targetAddress;
+			basicBlockMatch.Source = sourceAddresses[i];
+			basicBlockMatch.Target = targetAddresses[i];
+			basicBlockMatch.MatchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]), m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[i]));
+			controlFlowMatches.push_back(basicBlockMatch);
 		}
 		return controlFlowMatches;
 	}
 
 	for (int i = 0; i < sourceAddresses.size(); i++)
 	{
-		MatchData matchData;
-		memset(&matchData, 0, sizeof(MatchData));
+		BasicBlockMatch basicBlockMatch;
+		memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
 		int maxMatchRate = 0;
 		vector<unsigned char> srcInstructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]);
 		for (int j = 0; j < targetAddresses.size(); j++)
@@ -212,56 +212,56 @@ vector<MatchData> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t ta
 				if (maxMatchRate < matchRate)
 				{
 					maxMatchRate = matchRate;
-					matchData.Type = CONTROLFLOW_MATCH;
-					matchData.SourceParent = sourceAddress;
-					matchData.TargetParent = targetAddress;
-					matchData.Source = sourceAddresses[i];
-					matchData.Target = targetAddresses[j];
-					matchData.ReferenceOrderDifference = abs(i - j);
-					matchData.MatchRate = matchRate;
+					basicBlockMatch.Type = CONTROLFLOW_MATCH;
+					basicBlockMatch.SourceParent = sourceAddress;
+					basicBlockMatch.TargetParent = targetAddress;
+					basicBlockMatch.Source = sourceAddresses[i];
+					basicBlockMatch.Target = targetAddresses[j];
+					basicBlockMatch.ReferenceOrderDifference = abs(i - j);
+					basicBlockMatch.MatchRate = matchRate;
 				}
 			}
 			else if (srcInstructionHash.size() == 0 && targetInstructionHash.size() == 0)
 			{
 				maxMatchRate = 100;
-				matchData.Type = CONTROLFLOW_MATCH;
-				matchData.SourceParent = sourceAddress;
-				matchData.TargetParent = targetAddress;
-				matchData.Source = sourceAddresses[i];
-				matchData.Target = targetAddresses[j];
-				matchData.ReferenceOrderDifference = abs(i - j);
-				matchData.MatchRate = 100;
+				basicBlockMatch.Type = CONTROLFLOW_MATCH;
+				basicBlockMatch.SourceParent = sourceAddress;
+				basicBlockMatch.TargetParent = targetAddress;
+				basicBlockMatch.Source = sourceAddresses[i];
+				basicBlockMatch.Target = targetAddresses[j];
+				basicBlockMatch.ReferenceOrderDifference = abs(i - j);
+				basicBlockMatch.MatchRate = 100;
 			}
 		}
 
 		if (maxMatchRate > 0)
 		{
-			controlFlowMatches.push_back(matchData);
+			controlFlowMatches.push_back(basicBlockMatch);
 		}
 	}
 
 	return controlFlowMatches;
 }
 
-vector<MatchDataCombination*> DiffAlgorithms::DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType)
+vector<BasicBlockMatchCombination*> DiffAlgorithms::DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType)
 {
 	int processed_count = 0;
-	vector<MatchData> controlFlowMatches;
+	vector<BasicBlockMatch> controlFlowMatches;
 
 	for (AddressPair addressPair : addressPairs)
 	{
-		vector<MatchData> newControlFlowMatches = DiffAlgorithms::DoControlFlowMatch(addressPair.SourceAddress, addressPair.TargetAddress, matchType);
+		vector<BasicBlockMatch> newControlFlowMatches = DiffAlgorithms::DoControlFlowMatch(addressPair.SourceAddress, addressPair.TargetAddress, matchType);
 		controlFlowMatches.insert(controlFlowMatches.end(), newControlFlowMatches.begin(), newControlFlowMatches.end());
 	}
 
-	return GetMatchDataCombinations(controlFlowMatches);
+	return GetBasicBlockMatchCombinations(controlFlowMatches);
 }
 
 string DiffAlgorithms::GetMatchTypeStr(int Type)
 {
-	if (Type < sizeof(MatchDataTypeStr) / sizeof(MatchDataTypeStr[0]))
+	if (Type < sizeof(BasicBlockMatchTypeStr) / sizeof(BasicBlockMatchTypeStr[0]))
 	{
-		return MatchDataTypeStr[Type];
+		return BasicBlockMatchTypeStr[Type];
 	}
 	return "Unknown";
 }

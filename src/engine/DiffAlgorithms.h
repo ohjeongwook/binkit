@@ -21,56 +21,56 @@ public:
 	}
 };
 
-class MatchDataCombination
+class BasicBlockMatchCombination
 {
 private:
-	vector<MatchData> m_matchDataList;
+	vector<BasicBlockMatch> m_basicBlockMatchList;
 	float m_matchRateTotal = 0;
 
 public:
-	MatchDataCombination()
+	BasicBlockMatchCombination()
 	{
 		m_matchRateTotal = 0;
 	}
 
-	MatchDataCombination(MatchDataCombination* p_matchDataCombination)
+	BasicBlockMatchCombination(BasicBlockMatchCombination* p_basicBlockMatchCombination)
 	{
-		for (MatchData matchData : p_matchDataCombination->GetMatchDataList())
+		for (BasicBlockMatch basicBlockMatch : p_basicBlockMatchCombination->GetBasicBlockMatchList())
 		{
-			m_matchDataList.push_back(matchData);
-			m_matchRateTotal += matchData.MatchRate;
+			m_basicBlockMatchList.push_back(basicBlockMatch);
+			m_matchRateTotal += basicBlockMatch.MatchRate;
 		}
 	}
 
-	void Add(va_t source, MatchData& matchData)
+	void Add(va_t source, BasicBlockMatch& basicBlockMatch)
 	{
-		MatchData newMatchData;
-		memcpy(&newMatchData, &matchData, sizeof(MatchData));
+		BasicBlockMatch newBasicBlockMatch;
+		memcpy(&newBasicBlockMatch, &basicBlockMatch, sizeof(BasicBlockMatch));
 
-		LogMessage(0, __FUNCTION__, "%x - %x\n", source, newMatchData.Target);
-		m_matchDataList.push_back(newMatchData);
-		m_matchRateTotal += newMatchData.MatchRate;
+		LogMessage(0, __FUNCTION__, "%x - %x\n", source, newBasicBlockMatch.Target);
+		m_basicBlockMatchList.push_back(newBasicBlockMatch);
+		m_matchRateTotal += newBasicBlockMatch.MatchRate;
 	}
 
 	size_t Count()
 	{
-		return m_matchDataList.size();
+		return m_basicBlockMatchList.size();
 	}
 
-	MatchData Get(int index)
+	BasicBlockMatch Get(int index)
 	{
-		return m_matchDataList.at(index);
+		return m_basicBlockMatchList.at(index);
 	}
 
-	vector<MatchData> GetMatchDataList()
+	vector<BasicBlockMatch> GetBasicBlockMatchList()
 	{
-		return m_matchDataList;
+		return m_basicBlockMatchList;
 	}
 
 	vector<AddressPair> GetAddressPairs()
 	{
 		vector<AddressPair> addressPairs;
-		for (auto& val : m_matchDataList)
+		for (auto& val : m_basicBlockMatchList)
 		{
 			addressPairs.push_back(AddressPair(val.Source, val.Target));
 		}
@@ -81,9 +81,9 @@ public:
 	bool FindSource(va_t address)
 	{
 		LogMessage(0, __FUNCTION__, "%x\n", address);
-		for (MatchData matchData : m_matchDataList)
+		for (BasicBlockMatch basicBlockMatch : m_basicBlockMatchList)
 		{
-			if (matchData.Source == address)
+			if (basicBlockMatch.Source == address)
 			{
 				LogMessage(0, __FUNCTION__, "return true\n");
 				return true;
@@ -97,9 +97,9 @@ public:
 	bool FindTarget(va_t address)
 	{
 		LogMessage(0, __FUNCTION__, "%x\n", address);
-		for (MatchData matchData : m_matchDataList)
+		for (BasicBlockMatch basicBlockMatch : m_basicBlockMatchList)
 		{
-			if (matchData.Target == address)
+			if (basicBlockMatch.Target == address)
 			{
 				LogMessage(0, __FUNCTION__, "return true\n");
 				return true;
@@ -112,35 +112,35 @@ public:
 
 	void Print()
 	{
-		printf("* MatchDataCombination:\n");
-		for (MatchData matchData : m_matchDataList)
+		printf("* BasicBlockMatchCombination:\n");
+		for (BasicBlockMatch basicBlockMatch : m_basicBlockMatchList)
 		{
-			printf("%x - %x matchRate: %d \n", matchData.Source, matchData.Target, matchData.MatchRate);
+			printf("%x - %x matchRate: %d \n", basicBlockMatch.Source, basicBlockMatch.Target, basicBlockMatch.MatchRate);
 		}
 		printf("averageMatchRate : %f\n", GetMatchRate());
 	}
 
 	float GetMatchRate()
 	{
-		if (m_matchDataList.size() > 0)
+		if (m_basicBlockMatchList.size() > 0)
 		{
-			return m_matchRateTotal / m_matchDataList.size();
+			return m_matchRateTotal / m_basicBlockMatchList.size();
 		}
 
 		return 0;
 	}
 };
 
-class MatchDataCombinations
+class BasicBlockMatchCombinations
 {
 private:
 	unordered_map<va_t, unordered_set<va_t>> m_processedAddresses;
-	vector<MatchDataCombination *>* m_pcombinations;
+	vector<BasicBlockMatchCombination *>* m_pcombinations;
 
 public:
-	MatchDataCombinations()
+	BasicBlockMatchCombinations()
 	{
-		m_pcombinations = new vector<MatchDataCombination*>;
+		m_pcombinations = new vector<BasicBlockMatchCombination*>;
 	}
 
 	bool IsNew(va_t source, va_t target)
@@ -165,39 +165,39 @@ public:
 		return true;
 	}
 
-	MatchDataCombination* Add(va_t source, MatchData &matchData)
+	BasicBlockMatchCombination* Add(va_t source, BasicBlockMatch &basicBlockMatch)
 	{
-		LogMessage(0, __FUNCTION__, "%x %x\n", source, matchData.Target);
-		MatchDataCombination* p_addressPairCombination = new MatchDataCombination();
-		p_addressPairCombination->Add(source, matchData);
+		LogMessage(0, __FUNCTION__, "%x %x\n", source, basicBlockMatch.Target);
+		BasicBlockMatchCombination* p_addressPairCombination = new BasicBlockMatchCombination();
+		p_addressPairCombination->Add(source, basicBlockMatch);
 		m_pcombinations->push_back(p_addressPairCombination);
 
 		return p_addressPairCombination;
 	}
 
-	void AddCombinations(va_t source, vector<MatchData> &matchDataList)
+	void AddCombinations(va_t source, vector<BasicBlockMatch> &basicBlockMatchList)
 	{
-		LogMessage(0, __FUNCTION__, "matchDataList.size(): %d\n", matchDataList.size());
+		LogMessage(0, __FUNCTION__, "basicBlockMatchList.size(): %d\n", basicBlockMatchList.size());
 
 		if (m_pcombinations->size() == 0)
 		{
-			for (MatchData matchData : matchDataList)
+			for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 			{
-				LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, matchData.Target);
-				Add(source, matchData);
+				LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, basicBlockMatch.Target);
+				Add(source, basicBlockMatch);
 			}
 		}
 		else
 		{
-			vector<MatchDataCombination*>* p_newCombinations = new vector<MatchDataCombination*>;
-			for (MatchDataCombination* p_matchDataCombination : *m_pcombinations)
+			vector<BasicBlockMatchCombination*>* p_newCombinations = new vector<BasicBlockMatchCombination*>;
+			for (BasicBlockMatchCombination* p_basicBlockMatchCombination : *m_pcombinations)
 			{
-				for (MatchData matchData : matchDataList)
+				for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 				{
-					LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, matchData.Target);
-					MatchDataCombination* p_duplicatedMatchDataCombination = new MatchDataCombination(p_matchDataCombination);
-					p_duplicatedMatchDataCombination->Add(source, matchData);
-					p_newCombinations->push_back(p_duplicatedMatchDataCombination);
+					LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, basicBlockMatch.Target);
+					BasicBlockMatchCombination* p_duplicatedBasicBlockMatchCombination = new BasicBlockMatchCombination(p_basicBlockMatchCombination);
+					p_duplicatedBasicBlockMatchCombination->Add(source, basicBlockMatch);
+					p_newCombinations->push_back(p_duplicatedBasicBlockMatchCombination);
 				}
 			}
 			delete m_pcombinations;
@@ -209,18 +209,18 @@ public:
 
 	void Print()
 	{
-		for (MatchDataCombination* p_combination : *m_pcombinations)
+		for (BasicBlockMatchCombination* p_combination : *m_pcombinations)
 		{
 			p_combination->Print();
 		}
 	}
 
-	vector<MatchDataCombination*> GetTopMatches()
+	vector<BasicBlockMatchCombination*> GetTopMatches()
 	{
-		vector<MatchDataCombination*> matchDataCombinations;
+		vector<BasicBlockMatchCombination*> basicBlockMatchCombinations;
 		float maxMatchRate = 0;
-		MatchDataCombination* p_selectedMatchDataCombination = NULL;
-		for (MatchDataCombination* p_combination : *m_pcombinations)
+		BasicBlockMatchCombination* p_selectedBasicBlockMatchCombination = NULL;
+		for (BasicBlockMatchCombination* p_combination : *m_pcombinations)
 		{
 			float matchRate = p_combination->GetMatchRate();
 
@@ -230,19 +230,19 @@ public:
 			}
 		}
 
-		for (MatchDataCombination* p_matchDataCombination : *m_pcombinations)
+		for (BasicBlockMatchCombination* p_basicBlockMatchCombination : *m_pcombinations)
 		{
-			float matchRate = p_matchDataCombination->GetMatchRate();
+			float matchRate = p_basicBlockMatchCombination->GetMatchRate();
 
 			if (maxMatchRate == matchRate)
 			{
-				matchDataCombinations.push_back(p_matchDataCombination);
+				basicBlockMatchCombinations.push_back(p_basicBlockMatchCombination);
 			}
 		}
-		return matchDataCombinations;
+		return basicBlockMatchCombinations;
 	}
 
-	vector<MatchDataCombination*>* GetCombinations()
+	vector<BasicBlockMatchCombination*>* GetCombinations()
 	{
 		return m_pcombinations;
 	}
@@ -254,18 +254,18 @@ private:
 	int m_debugLevel;
 	BasicBlocks *m_psourceBasicBlocks;
 	BasicBlocks* m_ptargetBasicBlocks;
-	MatchDataCombinations* GenerateMatchDataCombinations(vector<MatchData> matchDataList);
+	BasicBlockMatchCombinations* GenerateBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
 
 public:
 	DiffAlgorithms();
 	DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
-	vector<MatchData> DoInstructionHashMatch();
-	vector<MatchData> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
-	vector<MatchData> DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction);
+	vector<BasicBlockMatch> DoInstructionHashMatch();
+	vector<BasicBlockMatch> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
+	vector<BasicBlockMatch> DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction);
 
-	vector<MatchDataCombination*> GetMatchDataCombinations(vector<MatchData> matchDataList);
-	vector<MatchData> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);
-	vector<MatchDataCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
+	vector<BasicBlockMatchCombination*> GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
+	vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);
+	vector<BasicBlockMatchCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
 	string GetMatchTypeStr(int Type);
 };
