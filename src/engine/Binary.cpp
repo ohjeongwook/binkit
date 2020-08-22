@@ -8,10 +8,18 @@
 using namespace std;
 using namespace stdext;
 
-Binary::Binary() :
+Binary::Binary(string databaseFileName, int fileID) :
     m_fileId(0),
     m_pbasicBlocks(NULL)
 {
+    if (!databaseFileName.empty())
+    {
+        Open(databaseFileName, fileID);
+    }
+    else
+    {
+        __debugbreak();
+    }
 }
 
 Binary::~Binary()
@@ -27,7 +35,6 @@ void Binary::Open(string databaseFileName, int fileID)
     m_pdisassemblyReader->SetFileID(m_fileId);
 
     m_pbasicBlocks = new BasicBlocks(m_pdisassemblyReader, true);
-
     Load();
     UpdateFunctionAddressesInStorage();
 }

@@ -9,11 +9,11 @@ DiffAlgorithms::DiffAlgorithms()
 	m_debugLevel = 0;
 }
 
-DiffAlgorithms::DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary)
+DiffAlgorithms::DiffAlgorithms(Binary* p_sourceBinary, Binary* p_targetBinary)
 {
 	m_debugLevel = 0;
-	m_psourceBasicBlocks = sourceBinary.GetBasicBlocks();
-	m_ptargetBasicBlocks = targetBinary.GetBasicBlocks();
+	m_psourceBasicBlocks = p_sourceBinary->GetBasicBlocks();
+	m_ptargetBasicBlocks = p_targetBinary->GetBasicBlocks();
 }
 
 int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2)

@@ -15,7 +15,7 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(pybinkit, m) {
     py::class_<Binary>(m, "Binary")
-        .def(py::init())
+        .def(py::init<std::string& , int& >(), py::arg("filename"), py::arg("file_id") = 0)
         .def("open", &Binary::Open, "A function to open binary", py::arg("filename"), py::arg("file_id") = 0)
         .def("get_md5", &Binary::GetMD5)
         .def("get_image_base", &Binary::GetImageBase)
@@ -61,7 +61,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_disasm_lines", &BasicBlocks::GetDisasmLines);
 
     py::class_<DiffAlgorithms>(m, "DiffAlgorithms")
-        .def(py::init<Binary&, Binary&>())
+        .def(py::init<Binary*, Binary*>())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
         .def("do_blocks_instruction_hash_match", &DiffAlgorithms::DoBlocksInstructionHashMatch)
         .def("do_function_instruction_hash_match", &DiffAlgorithms::DoFunctionInstructionHashMatch)
@@ -111,7 +111,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("basic_block_match_list", &FunctionMatch::BasicBlockMatchList);
 
     py::class_<FunctionMatches>(m, "FunctionMatches")
-        .def(py::init<Binary&, Binary&>())
+        .def(py::init<Binary*, Binary*>())
         .def("add_matches", &FunctionMatches::AddMatches)
         .def("get_matches", &FunctionMatches::GetMatches)
         .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)

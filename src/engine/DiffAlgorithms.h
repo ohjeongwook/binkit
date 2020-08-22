@@ -258,7 +258,7 @@ private:
 
 public:
 	DiffAlgorithms();
-	DiffAlgorithms(Binary& sourceBinary, Binary& targetBinary);
+	DiffAlgorithms(Binary* p_sourceBinary, Binary* p_targetBinary);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<BasicBlockMatch> DoInstructionHashMatch();
 	vector<BasicBlockMatch> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);

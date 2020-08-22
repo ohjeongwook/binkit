@@ -1,12 +1,12 @@
 #include "FunctionMatches.h"
 #include "DiffAlgorithms.h"
 
-FunctionMatches::FunctionMatches(Binary& sourceBinary, Binary& targetBinary)
+FunctionMatches::FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary)
 {
-	m_sourceBinary = sourceBinary;
-	m_targetBinary = targetBinary;
+	m_sourceBinary = p_sourceBinary;
+	m_targetBinary = p_targetBinary;
 	m_matchSequence = 1;
-	m_pdiffAlgorithms = new DiffAlgorithms(m_sourceBinary, m_targetBinary);
+	m_pdiffAlgorithms = new DiffAlgorithms(p_sourceBinary, p_targetBinary);
 }
 
 void FunctionMatches::AddBasicBlockMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
@@ -70,8 +70,8 @@ void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchL
 {
 	for (BasicBlockMatch basicBlockMatch : currentBasicBlockMatchList)
 	{
-		Function* p_src_function = m_sourceBinary.GetFunction(basicBlockMatch.Source);
-		Function* p_target_function = m_targetBinary.GetFunction(basicBlockMatch.Target);
+		Function* p_src_function = m_sourceBinary->GetFunction(basicBlockMatch.Source);
+		Function* p_target_function = m_targetBinary->GetFunction(basicBlockMatch.Target);
 
 		if (p_src_function && p_target_function)
 		{
@@ -85,12 +85,12 @@ int FunctionMatches::DoInstructionHashMatch()
 	for (auto& val : m_functionMatches)
 	{
 		va_t sourceFunctionAddress = val.first;
-		vector<va_t> sourceFunctionAddresses = m_sourceBinary.GetFunction(sourceFunctionAddress)->GetBasicBlocks();
+		vector<va_t> sourceFunctionAddresses = m_sourceBinary->GetFunction(sourceFunctionAddress)->GetBasicBlocks();
 		for (auto& val2 : val.second)
 		{
 			va_t targetFunctionAddress = val2.first;
 
-			vector<va_t> targetFunctionAddresses = m_targetBinary.GetFunction(targetFunctionAddress)->GetBasicBlocks();
+			vector<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
 			vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
 			AddBasicBlockMatchList(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
 		}

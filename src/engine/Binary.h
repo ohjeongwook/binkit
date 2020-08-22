@@ -28,7 +28,7 @@ private:
     bool UpdateFunctionAddressesInStorage();
 
 public:
-    Binary();
+    Binary(string databaseFileName = {}, int fileID = 0);
     ~Binary();
     void Open(string databaseFileName, int fileId = 0);
     int GetFileID();

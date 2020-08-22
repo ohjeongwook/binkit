@@ -19,15 +19,15 @@ class DiffAlgorithms;
 class FunctionMatches
 {
 private:
-	Binary m_sourceBinary;
-	Binary m_targetBinary;
+	Binary* m_sourceBinary;
+	Binary* m_targetBinary;
 	DiffAlgorithms* m_pdiffAlgorithms;
 	int m_matchSequence;
 	unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>> m_functionMatches;
 	void AddBasicBlockMatchList(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList);
 
 public:
-	FunctionMatches(Binary& sourceBinary, Binary& targetBinary);
+	FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary);
 
 	void AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList);
 	void AddBasicBlockMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch);
