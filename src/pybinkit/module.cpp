@@ -67,7 +67,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("do_function_instruction_hash_match", &DiffAlgorithms::DoFunctionInstructionHashMatch)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
-        .def("get_match_data_combinations", &DiffAlgorithms::GetBasicBlockMatchCombinations);        
+        .def("get_basic_block_match_combinations", &DiffAlgorithms::GetBasicBlockMatchCombinations);        
 
     py::class_<Function>(m, "Function")
         .def(py::init())
@@ -108,7 +108,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def(py::init())
         .def_readwrite("source", &FunctionMatch::SourceFunction)
         .def_readwrite("target", &FunctionMatch::TargetFunction)
-        .def_readwrite("match_data_list", &FunctionMatch::BasicBlockMatchList);
+        .def_readwrite("basic_block_match_list", &FunctionMatch::BasicBlockMatchList);
 
     py::class_<FunctionMatches>(m, "FunctionMatches")
         .def(py::init<Binary&, Binary&>())
@@ -124,5 +124,5 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("count", &BasicBlockMatchCombination::Count)
         .def("get", &BasicBlockMatchCombination::Get)
         .def("get_address_pairs", &BasicBlockMatchCombination::GetAddressPairs)        
-        .def("get_match_data_list", &BasicBlockMatchCombination::GetBasicBlockMatchList);        
+        .def("get_basic_block_match_list", &BasicBlockMatchCombination::GetBasicBlockMatchList);        
 }

@@ -105,7 +105,7 @@ class FunctionMatchTool:
         for function_match in self.function_matches.get_matches():
             if source_function_address !=0 and source_function_address != function_match.source:
                 continue
-            function_match_count += len(function_match.match_data_list)
+            function_match_count += len(function_match.basic_block_match_list)
             unidentified_blocks = self.get_unidentified_blocks(function_match, source_function_address)
             for name in ('sources', 'targets'):
                 if name in unidentified_blocks:
@@ -149,7 +149,7 @@ class FunctionMatchTool:
         src_basic_blocks = self.get_basic_blocks_set(0, function_match.source)
         target_basic_blocks = self.get_basic_blocks_set(1, function_match.target)
 
-        for match in function_match.match_data_list:
+        for match in function_match.basic_block_match_list:
             if match.source in src_basic_blocks:
                 del src_basic_blocks[match.source]
 
@@ -179,22 +179,22 @@ class FunctionMatchTool:
 
     def _get_data(self, source_function_address = 0, level = 1):
         prefix = '\t' * level
-        function_match_data_list = []
+        function_basic_block_match_list = []
         for function_match in self.function_matches.get_matches():
             if source_function_address !=0 and source_function_address != function_match.source:
                 continue
             if self.debug_level > 0:
                 print(prefix + 'FunctionMatch: %x vs %x' % (function_match.source, function_match.target))
-            function_match_data = {'source': function_match.source, 'target': function_match.target}
-            function_match_data['matches'] = self.get_match_list(function_match.match_data_list, level = level + 1)
+            function_basic_block_match = {'source': function_match.source, 'target': function_match.target}
+            function_basic_block_match['matches'] = self.get_match_list(function_match.basic_block_match_list, level = level + 1)
             unidentified_blocks = self.get_unidentified_blocks(function_match, source_function_address)
 
             if len(unidentified_blocks['sources']) > 0 or len(unidentified_blocks['targets']) > 0:
-                function_match_data['unidentified_blocks'] = unidentified_blocks
+                function_basic_block_match['unidentified_blocks'] = unidentified_blocks
 
-            function_match_data_list.append(function_match_data)
+            function_basic_block_match_list.append(function_basic_block_match)
 
-        return function_match_data_list
+        return function_basic_block_match_list
 
     def get_storage(self, source_function_address = 0):
         return FunctionMatchFile({'function_matches': self._get_data(source_function_address)}, self.binaries)

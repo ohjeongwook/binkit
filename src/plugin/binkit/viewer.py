@@ -62,8 +62,8 @@ class Viewer:
     def set_basic_blocks_color(self, color, color_for_unidentified):
         for function_match in self.match_results['function_matches']:
             if 'matches' in function_match:
-                for match_data in function_match['matches']:
-                    self.color(match_data[self.self_name], match_data[self.self_name+'_end'], color)
+                for basic_block_match in function_match['matches']:
+                    self.color(basic_block_match[self.self_name], basic_block_match[self.self_name+'_end'], color)
 
             if 'unidentified_blocks' in function_match:
                 for basic_block in function_match['unidentified_blocks'][self.self_name+'s']:
