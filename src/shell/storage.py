@@ -237,6 +237,6 @@ if __name__ == '__main__':
 
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
-            function_match_tool = FunctionMatchTool(filename)
-            function_match_tool.sort()
-            function_match_tool.write(filename)
+            function_match_file = FunctionMatchFileLoader.load_file(filename)
+            function_match_file.sort()
+            function_match_file.save(filename)
