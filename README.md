@@ -74,13 +74,13 @@ child_matches = diff_algorithms.do_control_flow_match(match.source, match.target
    - CREF_FROM
 
 ```
-match_data_combinations = diff_algorithms.do_control_flow_matches((address_pair,), control_flow_type)
+basic_block_match_combinations = diff_algorithms.do_control_flow_matches((address_pair,), control_flow_type)
 ```
 
-### get_match_data_combinations
+### get_basic_block_match_combinations
 
 ```
-match_data_combinations = diff_algorithms.get_match_data_combinations(function_match.match_data_list)
+basic_block_match_combinations = diff_algorithms.get_basic_block_match_combinations(function_match.basic_block_match_list)
 ```
 
 ## FunctionMatches
@@ -102,7 +102,7 @@ function_matches.do_instruction_hash_match()
 
 ```
 for function_match in function_matches.get_matches():
-   print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.match_data_list)))
+   print('%x - %x (size: %d)' % (function_match.source, function_match.target, len(function_match.basic_block_match_list)))
 ```
 
 ## binkit IDA Plugin
