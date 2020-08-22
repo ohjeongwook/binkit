@@ -121,7 +121,7 @@ class BinKitShell(cmd.Cmd):
         """
 
     def do_save(self, arg):
-        function_match_storage = FunctionMatchStorageLoader.load(self.function_matches, binaries = self.binaries)
+        function_match_storage = FunctionMatchFileLoader.load(self.function_matches, binaries = self.binaries)
         function_match_storage.sort()
         function_match_storage.save(arg)
 
@@ -134,7 +134,7 @@ class BinKitShell(cmd.Cmd):
                 return
 
             filename = os.path.join(self.results_directory, str(uuid.uuid4()) + '.json')
-            function_match_storage = FunctionMatchStorageLoader.load(self.function_matches, binaries = self.binaries)
+            function_match_storage = FunctionMatchFileLoader.load(self.function_matches, binaries = self.binaries)
             print("Saving diff snapshot to " + filename)
             function_match_storage.save(filename)            
 
