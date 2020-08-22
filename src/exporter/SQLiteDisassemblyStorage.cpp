@@ -90,7 +90,7 @@ void SQLiteDisassemblyStorage::AddControlFlow(ControlFlow &controlFlow, int file
 {
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_CONTROL_FLOWS_TABLE_STATEMENT,
         fileID,
-        controlFlow.Type - m_imageBase,
+        controlFlow.Type,
         controlFlow.Src - m_imageBase,
         controlFlow.Dst - m_imageBase
     );
