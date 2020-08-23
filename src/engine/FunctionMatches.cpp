@@ -98,17 +98,25 @@ int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, 
 
 int FunctionMatches::DoInstructionHashMatch()
 {
-	for (auto& val : m_functionMatches)
+	if (m_functionMatches.size() == 0)
 	{
-		va_t sourceFunctionAddress = val.first;
-		vector<va_t> sourceFunctionAddresses = m_sourceBinary->GetFunction(sourceFunctionAddress)->GetBasicBlocks();
-		for (auto& val2 : val.second)
+		vector<BasicBlockMatch> basicBlocksMatches = m_pdiffAlgorithms->DoInstructionHashMatch();
+		AddMatches(basicBlocksMatches);
+	}
+	else
+	{
+		for (auto& val : m_functionMatches)
 		{
-			va_t targetFunctionAddress = val2.first;
+			va_t sourceFunctionAddress = val.first;
+			vector<va_t> sourceFunctionAddresses = m_sourceBinary->GetFunction(sourceFunctionAddress)->GetBasicBlocks();
+			for (auto& val2 : val.second)
+			{
+				va_t targetFunctionAddress = val2.first;
 
-			vector<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
-			vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
-			AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
+				vector<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
+				vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
+				AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
+			}
 		}
 	}
 
