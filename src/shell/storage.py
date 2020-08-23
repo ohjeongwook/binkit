@@ -177,7 +177,7 @@ class FunctionMatchTool:
 
         return unidentified_blocks
 
-    def _get_data(self, source_function_address = 0, level = 1):
+    def get_function_match_file(self, source_function_address = 0, level = 1):
         prefix = '\t' * level
         function_basic_block_match_list = []
         for function_match in self.function_matches.get_matches():
@@ -193,11 +193,7 @@ class FunctionMatchTool:
                 function_basic_block_match['unidentified_blocks'] = unidentified_blocks
 
             function_basic_block_match_list.append(function_basic_block_match)
-
-        return function_basic_block_match_list
-
-    def get_storage(self, source_function_address = 0):
-        return FunctionMatchFile({'function_matches': self._get_data(source_function_address)}, self.binaries)
+        return FunctionMatchFile({'function_matches': function_basic_block_match_list}, self.binaries)
 
 class FunctionMatchFileLoader:
     @staticmethod
@@ -217,7 +213,7 @@ class FunctionMatchFileLoader:
     @staticmethod
     def load(function_matches, binaries = None, source_function_address = 0):
         function_match_tool = FunctionMatchTool(function_matches, binaries)
-        return function_match_tool.get_storage(source_function_address)
+        return function_match_tool.get_function_match_file(source_function_address)
 
 if __name__ == '__main__':
     import os
