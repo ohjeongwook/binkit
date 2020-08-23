@@ -58,7 +58,7 @@ void FunctionMatches::AddBasicBlockMatch(va_t sourceFunctionAddress, va_t target
 	}
 }
 
-void FunctionMatches::AddBasicBlockMatchList(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList)
+void FunctionMatches::AddBasicBlockMatches(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList)
 {
 	for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 	{
@@ -80,6 +80,22 @@ void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchL
 	}
 }
 
+int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress)
+{
+	Function *sourceFunction = m_sourceBinary->GetFunction(sourceFunctionAddress);
+	Function *targetFunction = m_targetBinary->GetFunction(targetFunctionAddress);
+
+	if (sourceFunction && targetFunction)
+	{
+		vector<va_t> sourceFunctionAddresses = sourceFunction->GetBasicBlocks();
+		vector<va_t> targetFunctionAddresses = targetFunction->GetBasicBlocks();
+		vector<BasicBlockMatch> basicBlockMatches = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
+		AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatches);
+		return basicBlockMatches.size();
+	}
+	return 0;
+}
+
 int FunctionMatches::DoInstructionHashMatch()
 {
 	for (auto& val : m_functionMatches)
@@ -92,7 +108,7 @@ int FunctionMatches::DoInstructionHashMatch()
 
 			vector<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
 			vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
-			AddBasicBlockMatchList(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
+			AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
 		}
 	}
 
@@ -118,7 +134,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 					vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
 					fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
 				}
-				AddBasicBlockMatchList(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
+				AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
 			}
 		}
 	}
@@ -137,7 +153,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 					vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
 					fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
 				}
-				AddBasicBlockMatchList(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
+				AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
 			}
 		}
 	}

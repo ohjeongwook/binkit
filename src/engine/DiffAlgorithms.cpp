@@ -101,19 +101,6 @@ vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t
 	return matcDataList;
 }
 
-vector<BasicBlockMatch> DiffAlgorithms::DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction)
-{
-	if (sourceFunction == NULL || targetFunction == NULL)
-	{
-		return {};
-	}
-
-	vector<va_t> sourceBasicBlocks = sourceFunction->GetBasicBlocks();
-	vector<va_t> targetBasicBlocks = targetFunction->GetBasicBlocks();
-
-	return DoBlocksInstructionHashMatch(sourceBasicBlocks, targetBasicBlocks);
-}
-
 BasicBlockMatchCombinations* DiffAlgorithms::GenerateBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList)
 {
 	unordered_map<va_t, vector<BasicBlockMatch>> matchMap;

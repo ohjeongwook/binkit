@@ -24,7 +24,7 @@ private:
 	DiffAlgorithms* m_pdiffAlgorithms;
 	int m_matchSequence;
 	unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>> m_functionMatches;
-	void AddBasicBlockMatchList(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList);
+	void AddBasicBlockMatches(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList);
 
 public:
 	FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary);
@@ -32,6 +32,7 @@ public:
 	void AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList);
 	void AddBasicBlockMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch);
 
+	int DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress);
 	int DoInstructionHashMatch();
 	int DoControlFlowMatch(va_t address = 0);
 	void RemoveMatches(int matchSequence);

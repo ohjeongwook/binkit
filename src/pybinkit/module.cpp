@@ -64,7 +64,6 @@ PYBIND11_MODULE(pybinkit, m) {
         .def(py::init<Binary*, Binary*>())
         .def("do_instruction_hash_match", &DiffAlgorithms::DoInstructionHashMatch)
         .def("do_blocks_instruction_hash_match", &DiffAlgorithms::DoBlocksInstructionHashMatch)
-        .def("do_function_instruction_hash_match", &DiffAlgorithms::DoFunctionInstructionHashMatch)
         .def("do_control_flow_match", &DiffAlgorithms::DoControlFlowMatch)
         .def("do_control_flow_matches", &DiffAlgorithms::DoControlFlowMatches)
         .def("get_basic_block_match_combinations", &DiffAlgorithms::GetBasicBlockMatchCombinations);        
@@ -112,6 +111,7 @@ PYBIND11_MODULE(pybinkit, m) {
 
     py::class_<FunctionMatches>(m, "FunctionMatches")
         .def(py::init<Binary*, Binary*>())
+        .def("do_function_instruction_hash_match", &FunctionMatches::DoFunctionInstructionHashMatch)
         .def("add_matches", &FunctionMatches::AddMatches)
         .def("get_matches", &FunctionMatches::GetMatches)
         .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)

@@ -262,7 +262,6 @@ public:
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<BasicBlockMatch> DoInstructionHashMatch();
 	vector<BasicBlockMatch> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
-	vector<BasicBlockMatch> DoFunctionInstructionHashMatch(Function* sourceFunction, Function* targetFunction);
 
 	vector<BasicBlockMatchCombination*> GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
 	vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);
