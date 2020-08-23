@@ -58,9 +58,9 @@ void FunctionMatches::AddBasicBlockMatch(va_t sourceFunctionAddress, va_t target
 	}
 }
 
-void FunctionMatches::AddBasicBlockMatches(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatchList)
+void FunctionMatches::AddBasicBlockMatches(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches)
 {
-	for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
+	for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
 	{
 		AddBasicBlockMatch(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch);
 	}
