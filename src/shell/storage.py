@@ -7,8 +7,15 @@ import traceback
 import pybinkit
 
 class FunctionMatchFile:
-    def __init__(self, match_results, binaries = None):
-        self.match_results = match_results
+    def __init__(self, filename = '', match_results = {}, binaries = None):
+        if filename and os.path.isfile(filename):
+            try:
+                with open(filename, 'r') as fd:
+                    self.match_results = json.load(fd)
+            except:
+                traceback.print_exc()
+        else:
+            self.match_results = match_results
         self.binaries = binaries
         self.add_binary_meta_data()
         self.add_basic_block_data()
@@ -193,27 +200,7 @@ class FunctionMatchTool:
                 function_basic_block_match['unidentified_blocks'] = unidentified_blocks
 
             function_basic_block_match_list.append(function_basic_block_match)
-        return FunctionMatchFile({'function_matches': function_basic_block_match_list}, self.binaries)
-
-class FunctionMatchFileLoader:
-    @staticmethod
-    def load_file(filename = '', binaries = None, source_function_address = 0):       
-        try:
-            with open(filename, 'r') as fd:
-                data = json.load(fd)
-
-            if type(data) is dict and 'function_matches' in data:
-                match_results = data
-            else:
-                match_results['function_matches'] = data
-        except:
-            traceback.print_exc()
-        return FunctionMatchFile(match_results, binaries)
-
-    @staticmethod
-    def load(function_matches, binaries = None, source_function_address = 0):
-        function_match_tool = FunctionMatchTool(function_matches, binaries)
-        return function_match_tool.get_function_match_file(source_function_address)
+        return FunctionMatchFile(match_results = {'function_matches': function_basic_block_match_list}, binaries = self.binaries)
 
 if __name__ == '__main__':
     import os
@@ -233,6 +220,6 @@ if __name__ == '__main__':
 
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
-            function_match_file = FunctionMatchFileLoader.load_file(filename)
+            function_match_file = FunctionMatchFile(filename)
             function_match_file.sort()
             function_match_file.save(filename)
