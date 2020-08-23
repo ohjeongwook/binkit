@@ -21,14 +21,7 @@ int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructio
 	int matchRate = 0;
 
 	size_t lengthDifference = (instructionHash1.size() - instructionHash2.size());
-	if (lengthDifference > instructionHash1.size() * 0.5 || lengthDifference > instructionHash2.size() * 0.5)
-	{
-		matchRate = 0;
-	}
-	else
-	{
-		matchRate = GetStringSimilarity(BytesToHexString(instructionHash1).c_str(), BytesToHexString(instructionHash2).c_str());
-	}
+	matchRate = GetStringSimilarity(BytesToHexString(instructionHash1).c_str(), BytesToHexString(instructionHash2).c_str());
 	return matchRate;
 }
 
