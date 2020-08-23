@@ -38,7 +38,6 @@ class BinkitPlugin(idaapi.plugin_t):
         form_name = "Function Matches-%d" % self.viewer_sequence
         self.viewer_sequence += 1
         viewer.show_functions_match_viewer(form_name)
-        viewer.set_basic_blocks_color(0xCCFFFF, 0xCC00CC)
         idaapi.set_dock_pos(form_name, "Functions window", idaapi.DP_TAB)
 
     def term(self):
