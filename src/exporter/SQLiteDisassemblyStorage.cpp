@@ -5,6 +5,10 @@
 #include <map>
 #include <iostream>
 
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
+
 using namespace std;
 using namespace stdext;
 

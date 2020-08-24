@@ -157,7 +157,7 @@ void SaveAnalysis(const char *output_file_path)
     }
 
     long end_tick = GetTickCount();
-    BOOST_LOG_TRIVIAL(debug) << boost::format("BinKit Analysis Finished %.3f sec" % (float)(end_tick - start_tick) / 1000);
+    BOOST_LOG_TRIVIAL(debug) << boost::format("BinKit Analysis Finished %.3f sec") % ((float)(end_tick - start_tick) / 1000);
 }
 
 bool idaapi run(size_t arg)
