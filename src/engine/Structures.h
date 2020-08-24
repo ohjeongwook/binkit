@@ -3,10 +3,13 @@
 #include <vector>
 #include "Utility.h"
 
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
+
 using namespace std;
 using namespace stdext;
 
-void LogMessage(int level, const char* function_name, const char* format, ...);
 
 #ifdef XXX
 class InstructionHashMap
@@ -80,8 +83,8 @@ typedef struct _DisassemblyHashMaps_ {
 
     void DumpDisassemblyHashMaps()
     {
-        LogMessage(10, __FUNCTION__, "OriginalFilePath = %s\n", binaryMetaData.OriginalFilePath);
-        LogMessage(10, __FUNCTION__, "instructionHashMap = %u\n", instructionHashMap.size());
+        BOOST_LOG_TRIVIAL(debug) << boost::format("OriginalFilePath = %s") % binaryMetaData.OriginalFilePath;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("instructionHashMap = %u") % instructionHashMap.size();
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
 

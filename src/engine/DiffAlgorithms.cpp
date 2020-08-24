@@ -3,6 +3,9 @@
 #include "DiffAlgorithms.h"
 #include "Diff.h"
 #include<algorithm>
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 DiffAlgorithms::DiffAlgorithms()
 {
@@ -54,7 +57,7 @@ vector<BasicBlockMatch> DiffAlgorithms::DoInstructionHashMatch()
 	return basicBlockMatchList;
 }
 
-vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses)
+vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(unordered_set<va_t>& sourceBlockAddresses, unordered_set<va_t>& targetBlockAddresses)
 {
 	vector<BasicBlockMatch> matcDataList;
 	unordered_set<va_t> targetBlockAddressSet;
@@ -99,7 +102,7 @@ BasicBlockMatchCombinations* DiffAlgorithms::GenerateBasicBlockMatchCombinations
 	unordered_map<va_t, vector<BasicBlockMatch>> matchMap;
 	for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 	{
-		LogMessage(0, __FUNCTION__, "%x-%x: %d%%\n", basicBlockMatch.Source, basicBlockMatch.Target, basicBlockMatch.MatchRate);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x-%x: %d%%") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
 		unordered_map<va_t, vector<BasicBlockMatch>>::iterator it = matchMap.find(basicBlockMatch.Source);
 		if (it == matchMap.end())
 		{

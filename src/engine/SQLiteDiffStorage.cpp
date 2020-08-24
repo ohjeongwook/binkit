@@ -9,7 +9,6 @@ using namespace stdext;
 #include "sqlite3.h"
 
 #include "SQLiteDiffStorage.h"
-#include "Log.h"
 
 SQLiteDiffStorage::SQLiteDiffStorage(const char* databaseName)
 {

@@ -1,5 +1,7 @@
-#include "Log.h"
 #include "SQLiteTool.h"
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 bool SQLiteTool::Open(string databaseName)
 {
@@ -7,16 +9,16 @@ bool SQLiteTool::Open(string databaseName)
     int rc = sqlite3_open(databaseName.c_str(), &m_database);
     if (rc)
     {
-        printf("Opening Database [%s] Failed\n", databaseName.c_str());
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Opening Database [%s] Failed") % databaseName.c_str();
         sqlite3_close(m_database);
         m_database = NULL;
-        return FALSE;
+        return false;
     }
 
     ExecuteStatement(NULL, NULL, "PRAGMA synchronous = OFF");
     ExecuteStatement(NULL, NULL, "PRAGMA journal_mode = MEMORY");
 
-    return TRUE;
+    return true;
 }
 
 void SQLiteTool::Close()
@@ -46,10 +48,7 @@ int SQLiteTool::ExecuteStatement(sqlite3_callback callback, void* context, const
         statement_buffer = sqlite3_vmprintf(format, args);
         va_end(args);
 
-        if (m_debugLevel > 1)
-        {
-            LogMessage(0, __FUNCTION__, "Executing [%s]\n", statement_buffer);
-        }
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Executing [%s]") % statement_buffer;
 
         if (statement_buffer)
         {
@@ -57,10 +56,7 @@ int SQLiteTool::ExecuteStatement(sqlite3_callback callback, void* context, const
 
             if (rc != SQLITE_OK)
             {
-                if (m_debugLevel > 0)
-                {
-                    LogMessage(1, __FUNCTION__, "SQL error: [%s] [%s]\n", statement_buffer, zErrMsg);
-                }
+                BOOST_LOG_TRIVIAL(error) << boost::format("SQL error: [%s] [%s]") % statement_buffer % zErrMsg;
             }
             sqlite3_free(statement_buffer);
         }

@@ -14,7 +14,10 @@
 #include "StorageDataStructures.h"
 #include "IDAAnalyzer.h"
 #include "SQLiteDisassemblyStorage.h"
-#include "Log.h"
+
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 using namespace std;
 
@@ -143,7 +146,7 @@ bool FileWriterWrapper(PVOID Context, BYTE Type, PBYTE Data, DWORD Length)
 void SaveAnalysis(const char *output_file_path)
 {
     long start_tick = GetTickCount();
-    LogMessage(1, __FUNCTION__, "output_file_path = [%s]\n", output_file_path);
+    BOOST_LOG_TRIVIAL(debug) << boost::format("output_file_path = [%s]") % output_file_path;
 
     if (output_file_path)
     {
@@ -154,12 +157,12 @@ void SaveAnalysis(const char *output_file_path)
     }
 
     long end_tick = GetTickCount();
-    LogMessage(1, __FUNCTION__, "BinKit Analysis Finished %.3f sec\n", (float)(end_tick - start_tick) / 1000);
+    BOOST_LOG_TRIVIAL(debug) << boost::format("BinKit Analysis Finished %.3f sec" % (float)(end_tick - start_tick) / 1000);
 }
 
 bool idaapi run(size_t arg)
 {
-    LogMessage(1, __FUNCTION__, "BinKit plugin started...\n");
+    BOOST_LOG_TRIVIAL(debug) << boost::format("BinKit plugin started...");
 
     if (arg == 1)
     {
@@ -174,7 +177,7 @@ bool idaapi run(size_t arg)
     char* output_file_path = ask_file(true, "*.db", "Select DB File to Output");
     if (output_file_path == NULL)
     {
-        LogMessage(1, __FUNCTION__, "output_file_path == NULL\n");
+        BOOST_LOG_TRIVIAL(debug) << boost::format("output_file_path == NULL");
         return false;
     }
 

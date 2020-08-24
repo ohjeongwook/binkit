@@ -2,7 +2,6 @@
 #include<iostream>
 #include <unordered_set>
 #include "StorageDataStructures.h"
-#include "Log.h"
 
 using namespace std;
 using namespace stdext;

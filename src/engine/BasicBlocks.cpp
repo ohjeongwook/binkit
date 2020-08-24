@@ -1,5 +1,8 @@
 #include "Utility.h"
 #include "BasicBlocks.h"
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 const char* ControlFlowTypesStr[] = { "Call", "Cref From", "Cref To", "Dref From", "Dref To" };
 
@@ -153,12 +156,13 @@ void BasicBlocks::MergeBlocks()
                 }
                 else
                 {
-                    LogMessage(10, __FUNCTION__, "%s:Number Of Children for %X  = %u\n",
-                        __FUNCTION__,
-                        lastIt->first,
-                        NumberOfChildren);
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Number Of Children for %X  = %u")
+                        % lastIt->first
+                        % NumberOfChildren;
+
                     if (NumberOfChildren == 1)
                         bHasOnlyOneChild = TRUE;
+
                     multimap <va_t, PControlFlow>::iterator nextIt = it;
                     nextIt++;
                     if (nextIt == m_disassemblyHashMaps.addressToControlFlowMap.end())
@@ -178,15 +182,13 @@ void BasicBlocks::MergeBlocks()
                 {
                     if (childIt->second->Type == CREF_TO && childIt->second->Dst != lastIt->first)
                     {
-                        LogMessage(10, __FUNCTION__, "%s:Found %X -> %X\n",
-                            __FUNCTION__,
-                            childIt->second->Dst, childIt->first);
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("Found %X -> %X") % childIt->second->Dst % childIt->first;
                         numberOfParents++;
                     }
                 }
                 if (numberOfParents == 0)
                 {
-                    LogMessage(10, __FUNCTION__, "%s: Found Mergable Nodes %X -> %X\n", __FUNCTION__, lastIt->first, lastIt->second->Dst);
+                    BOOST_LOG_TRIVIAL(debug) << boost::format(" Found Mergable Nodes %X -> %X") % lastIt->first % lastIt->second->Dst;
                 }
             }
             lastIt = it;
@@ -275,20 +277,18 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
 
     for (int i = 0; i < sizeof(types) / sizeof(int); i++)
     {
-        LogMessage(10, __FUNCTION__, "%s: %s: ", __FUNCTION__, type_descriptions[i]);
-
+        BOOST_LOG_TRIVIAL(info) << boost::format(" %s: ") % type_descriptions[i];
         vector<va_t> addresses = GetCodeReferences(blockAddress, types[i]);
         for (va_t address : addresses)
         {
-            LogMessage(10, __FUNCTION__, "%s: %X ", __FUNCTION__, address);
+            BOOST_LOG_TRIVIAL(debug) << boost::format(" %X ") % address;
         }
-        LogMessage(10, __FUNCTION__, "\n");
     }
     vector<unsigned char> instructionHash = GetInstructionHash(blockAddress);
 
     if (!instructionHash.empty())
     {
-        LogMessage(10, __FUNCTION__, "%s: instruction_hash: %s\n", __FUNCTION__, BytesToHexString(instructionHash).c_str());
+        BOOST_LOG_TRIVIAL(debug) << boost::format(" instruction_hash: %s") % BytesToHexString(instructionHash).c_str();
     }
 }
 

@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <map>
 #include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 using namespace std;
 using namespace stdext;
@@ -12,7 +14,6 @@ using namespace stdext;
 
 #include "StorageDataStructures.h"
 #include "SQLiteDisassemblyReader.h"
-#include "Log.h"
 
 SQLiteDisassemblyReader::SQLiteDisassemblyReader()
 {
@@ -262,7 +263,7 @@ bool SQLiteDisassemblyReader::UpdateBasicBlockFunctions(multimap <va_t, va_t> bl
 
     for (auto& val : blockToFunction)
     {
-        LogMessage(0, __FUNCTION__, "Updating BasicBlockTable Address = %X Function = %X\n", val.second, val.first);
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Updating BasicBlockTable Address = %X Function = %X") % val.second % val.first;
         m_sqliteTool.ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCKS_TABLE_FUNCTION_ADDRESS_STATEMENT,
             val.second, val.second == val.first ? FUNCTION_BLOCK : UNKNOWN_BLOCK, m_fileId, val.first);
         isFixed = TRUE;

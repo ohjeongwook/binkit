@@ -25,6 +25,6 @@ public:
 
     va_t GetAddress();
     void AddBasicBlock(va_t address);
-    vector<va_t> GetBasicBlocks();
+    unordered_set<va_t> GetBasicBlocks();
     string GetSymbol();
 };

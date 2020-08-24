@@ -1,6 +1,7 @@
 import os
 import sys
 
+import time
 import pprint
 import json
 import tempfile
@@ -80,10 +81,11 @@ class BinKitShell(cmd.Cmd):
         
     def do_load(self, arg):
         for filename in arg.split():
-            binary = pybinkit.Binary()
-            binary.open(filename)
-            self.binaries.append(binary)
-            
+            start = time.time()
+            self.binaries.append(pybinkit.Binary(filename))
+            end = time.time()
+            print(end - start)
+
     def do_list(self, arg):
         for binary in self.binaries:
             print(binary.get_md5())

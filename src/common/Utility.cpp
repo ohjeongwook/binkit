@@ -5,6 +5,16 @@
 #include <iomanip>
 #include "Utility.h"
 
+#include <iostream>
+#include <fstream>
+#include <boost/log/utility/setup/from_stream.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/from_stream.hpp>
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/expressions.hpp>
+
 unsigned char HexToByte(char * hexString)
 {
     unsigned char returnValue = 0;
@@ -61,4 +71,10 @@ string BytesToHexString(unsigned char *bytes, int length)
     }
 
     return stringStream.str();
+}
+
+void SetLoggingSettings(string filename)
+{
+    //std::ifstream file(filename);
+    //boost::log::init_from_stream(file);
 }

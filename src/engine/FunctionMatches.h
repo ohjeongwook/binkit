@@ -3,7 +3,6 @@
 
 #include "Binary.h"
 #include "BasicBlocks.h"
-#include "Log.h"
 
 using namespace std;
 

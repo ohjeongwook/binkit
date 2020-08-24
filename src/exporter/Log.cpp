@@ -4,7 +4,6 @@
 #include <TCHAR.H>
 #include <ida.hpp>
 #include <kernwin.hpp>
-#include "Log.h"
 
 int gLogLevel = 2;
 void SetLogLevel(int logLevel)

@@ -3,8 +3,11 @@
 
 #include "Binary.h"
 #include "BasicBlocks.h"
-#include "Log.h"
 #include "FunctionMatches.h"
+
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 using namespace std;
 
@@ -47,7 +50,7 @@ public:
 		BasicBlockMatch newBasicBlockMatch;
 		memcpy(&newBasicBlockMatch, &basicBlockMatch, sizeof(BasicBlockMatch));
 
-		LogMessage(0, __FUNCTION__, "%x - %x\n", source, newBasicBlockMatch.Target);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x - %x") % source % newBasicBlockMatch.Target;
 		m_basicBlockMatchList.push_back(newBasicBlockMatch);
 		m_matchRateTotal += newBasicBlockMatch.MatchRate;
 	}
@@ -80,33 +83,33 @@ public:
 
 	bool FindSource(va_t address)
 	{
-		LogMessage(0, __FUNCTION__, "%x\n", address);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x") % address;
 		for (BasicBlockMatch basicBlockMatch : m_basicBlockMatchList)
 		{
 			if (basicBlockMatch.Source == address)
 			{
-				LogMessage(0, __FUNCTION__, "return true\n");
+				BOOST_LOG_TRIVIAL(debug) << boost::format("return true");
 				return true;
 			}
 		}
 
-		LogMessage(0, __FUNCTION__, "return false\n");
+		BOOST_LOG_TRIVIAL(debug) << boost::format("return false");
 		return false;
 	}
 
 	bool FindTarget(va_t address)
 	{
-		LogMessage(0, __FUNCTION__, "%x\n", address);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x") % address;
 		for (BasicBlockMatch basicBlockMatch : m_basicBlockMatchList)
 		{
 			if (basicBlockMatch.Target == address)
 			{
-				LogMessage(0, __FUNCTION__, "return true\n");
+				BOOST_LOG_TRIVIAL(debug) << boost::format("return true");
 				return true;
 			}
 		}
 
-		LogMessage(0, __FUNCTION__, "return false\n");
+		BOOST_LOG_TRIVIAL(debug) << boost::format("return false");
 		return false;
 	}
 
@@ -145,7 +148,7 @@ public:
 
 	bool IsNew(va_t source, va_t target)
 	{
-		LogMessage(0, __FUNCTION__, "%x %x\n", source, target);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x %x") % source % target;
 		unordered_map<va_t, unordered_set<va_t>>::iterator it = m_processedAddresses.find(source);
 		if (it == m_processedAddresses.end())
 		{
@@ -167,7 +170,7 @@ public:
 
 	BasicBlockMatchCombination* Add(va_t source, BasicBlockMatch &basicBlockMatch)
 	{
-		LogMessage(0, __FUNCTION__, "%x %x\n", source, basicBlockMatch.Target);
+		BOOST_LOG_TRIVIAL(debug) << boost::format("%x %x") % source % basicBlockMatch.Target;
 		BasicBlockMatchCombination* p_addressPairCombination = new BasicBlockMatchCombination();
 		p_addressPairCombination->Add(source, basicBlockMatch);
 		m_pcombinations->push_back(p_addressPairCombination);
@@ -177,13 +180,13 @@ public:
 
 	void AddCombinations(va_t source, vector<BasicBlockMatch> &basicBlockMatchList)
 	{
-		LogMessage(0, __FUNCTION__, "basicBlockMatchList.size(): %d\n", basicBlockMatchList.size());
+		BOOST_LOG_TRIVIAL(debug) << boost::format("basicBlockMatchList.size(): %d") %basicBlockMatchList.size();
 
 		if (m_pcombinations->size() == 0)
 		{
 			for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 			{
-				LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, basicBlockMatch.Target);
+				BOOST_LOG_TRIVIAL(debug) << boost::format("+ %x - %x") % source % basicBlockMatch.Target;
 				Add(source, basicBlockMatch);
 			}
 		}
@@ -194,7 +197,7 @@ public:
 			{
 				for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
 				{
-					LogMessage(0, __FUNCTION__, "+ %x - %x\n", source, basicBlockMatch.Target);
+					BOOST_LOG_TRIVIAL(debug) << boost::format("+ %x - %x") % source % basicBlockMatch.Target;
 					BasicBlockMatchCombination* p_duplicatedBasicBlockMatchCombination = new BasicBlockMatchCombination(p_basicBlockMatchCombination);
 					p_duplicatedBasicBlockMatchCombination->Add(source, basicBlockMatch);
 					p_newCombinations->push_back(p_duplicatedBasicBlockMatchCombination);
@@ -204,7 +207,7 @@ public:
 			m_pcombinations = p_newCombinations;		
 		}
 
-		LogMessage(0, __FUNCTION__, "size(): %d\n", m_pcombinations->size());
+		BOOST_LOG_TRIVIAL(debug) << boost::format("size(): %d") % m_pcombinations->size();
 	}
 
 	void Print()
@@ -261,7 +264,7 @@ public:
 	DiffAlgorithms(Binary* p_sourceBinary, Binary* p_targetBinary);
 	int GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2);
 	vector<BasicBlockMatch> DoInstructionHashMatch();
-	vector<BasicBlockMatch> DoBlocksInstructionHashMatch(vector<va_t>& sourceBlockAddresses, vector<va_t>& targetBlockAddresses);
+	vector<BasicBlockMatch> DoBlocksInstructionHashMatch(unordered_set<va_t>& sourceBlockAddresses, unordered_set<va_t>& targetBlockAddresses);
 
 	vector<BasicBlockMatchCombination*> GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
 	vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);

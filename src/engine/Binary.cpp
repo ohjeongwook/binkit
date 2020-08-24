@@ -4,6 +4,9 @@
 #include "DisassemblyReader.h"
 #include "SQLiteDisassemblyReader.h"
 #include "Utility.h"
+#include <iostream>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 using namespace std;
 using namespace stdext;
@@ -12,14 +15,7 @@ Binary::Binary(string databaseFileName, int fileID) :
     m_fileId(0),
     m_pbasicBlocks(NULL)
 {
-    if (!databaseFileName.empty())
-    {
-        Open(databaseFileName, fileID);
-    }
-    else
-    {
-        __debugbreak();
-    }
+    Open(databaseFileName, fileID);
 }
 
 Binary::~Binary()
@@ -61,8 +57,6 @@ BasicBlocks* Binary::GetBasicBlocks()
 
 void Binary::Load()
 {
-    LogMessage(0, __FUNCTION__, "%s:\n", __FUNCTION__);
-
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
     unordered_set <va_t> functionAddresses;
@@ -73,7 +67,7 @@ void Binary::Load()
     {
         if (functionAddresses.find(callTarget) == functionAddresses.end())
         {
-            LogMessage(0, __FUNCTION__, "%s: Function %X (by Call Recognition)\n", __FUNCTION__, callTarget);
+            BOOST_LOG_TRIVIAL(debug) << boost::format(" Function %X (by Call Recognition)") % callTarget;
             functionAddresses.insert(callTarget);
         }
     }
@@ -86,7 +80,7 @@ void Binary::Load()
         m_addressToFunctions.insert(pair<va_t, Function*>(functionAddress, p_function));
     }
 
-    LogMessage(0, __FUNCTION__, "%s: Function %u entries\n", __FUNCTION__, functionAddresses.size());
+    BOOST_LOG_TRIVIAL(info) << boost::format("Function %u entries") % functionAddresses.size();
 
     unordered_map<va_t, va_t> basicBlockAddresses;
     unordered_map<va_t, va_t> basicBlockFunctionHashes;
@@ -128,7 +122,7 @@ void Binary::Load()
         for (va_t parentAddress : m_pbasicBlocks->GetParents(val.first))
         {
             unordered_map<va_t, va_t>::iterator it = basicBlockFunctionHashes.find(val.first);
-            LogMessage(0, __FUNCTION__, "Found parent for %X -> %X\n", val.first, parentAddress);
+            BOOST_LOG_TRIVIAL(debug) << boost::format("Found parent for %X -> %X") % val.first % parentAddress;
 
             unordered_map<va_t, va_t>::iterator parent_membership_it = basicBlockFunctionHashes.find(parentAddress);
             if (it != basicBlockFunctionHashes.end() && parent_membership_it != basicBlockFunctionHashes.end())
@@ -141,7 +135,7 @@ void Binary::Load()
             }
         }
 
-        LogMessage(0, __FUNCTION__, "Multiple function membership: %X (%d) %s\n", val.first, val.second, isFunctionStart ? "Possible Head" : "Member");
+        BOOST_LOG_TRIVIAL(info) << boost::format("Multiple function membership: %X (%d) %s") % val.first % val.second % isFunctionStart ? "Possible Head" : "Member";
 
         if (isFunctionStart)
         {
@@ -163,7 +157,7 @@ void Binary::Load()
                         a2f_it++
                         )
                     {
-                        LogMessage(0, __FUNCTION__, "\tRemoving Block: %X Function: %X\n", a2f_it->first, a2f_it->second);
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("\tRemoving Block: %X Function: %X") % a2f_it->first % a2f_it->second;
                         a2f_it = m_basicBlockToFunctionAddresses.erase(a2f_it);
                         if (a2f_it == m_basicBlockToFunctionAddresses.end())
                         {
@@ -171,12 +165,13 @@ void Binary::Load()
                         }
                     }
                     m_basicBlockToFunctionAddresses.insert(pair <va_t, va_t>(address, functionStartAddress));
-                    LogMessage(0, __FUNCTION__, "\tAdding Block: %X Function: %X\n", address, functionStartAddress);
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("\tAdding Block: %X Function: %X") % address % functionStartAddress;
                 }
             }
         }
     }
 
+    BOOST_LOG_TRIVIAL(info) << boost::format("m_basicBlockToFunctionAddresses -> m_addressToFunctions");
 
     for (auto& val : m_basicBlockToFunctionAddresses)
     {
@@ -187,12 +182,11 @@ void Binary::Load()
             it->second->AddBasicBlock(val.first);
         }
     }
-    LogMessage(0, __FUNCTION__, "%s: m_basicBlockToFunctionAddresses %u entries\n", __FUNCTION__, m_basicBlockToFunctionAddresses.size());
+    BOOST_LOG_TRIVIAL(info) << boost::format("m_basicBlockToFunctionAddresses %u entries") % m_basicBlockToFunctionAddresses.size();
 }
 
 bool Binary::UpdateFunctionAddressesInStorage()
 {
-    LogMessage(0, __FUNCTION__, "%s", __FUNCTION__);
     Load();
 
     if (!m_pdisassemblyReader)

@@ -42,11 +42,9 @@ va_t Function::GetAddress()
     return m_address;
 }
 
-vector<va_t> Function::GetBasicBlocks()
+unordered_set<va_t> Function::GetBasicBlocks()
 {
-    vector<va_t> basicBlockAddresses;
-    basicBlockAddresses.insert(basicBlockAddresses.end(), m_basicBlockAddresses.begin(), m_basicBlockAddresses.end());
-    return basicBlockAddresses;
+    return m_basicBlockAddresses;
 }
 
 string Function::GetSymbol()

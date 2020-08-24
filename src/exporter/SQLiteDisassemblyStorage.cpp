@@ -13,8 +13,6 @@ using namespace stdext;
 #include "StorageDataStructures.h"
 #include "SQLiteDisassemblyStorage.h"
 
-#include "Log.h"
-
 SQLiteDisassemblyStorage::SQLiteDisassemblyStorage(const char *DatabaseName)
 {
     m_database = NULL;
@@ -58,9 +56,10 @@ int SQLiteDisassemblyStorage::EndTransaction()
 
 void SQLiteDisassemblyStorage::SetBinaryMetaData(BinaryMetaData *pBinaryMetaData, int fileID)
 {
-    LogMessage(2, __FUNCTION__, "OriginalFilePath: %s\n", pBinaryMetaData->OriginalFilePath);
-    LogMessage(2, __FUNCTION__, "MD5: %s\n", pBinaryMetaData->MD5.c_str());
-    LogMessage(2, __FUNCTION__, "SHA256: %s\n", pBinaryMetaData->SHA256.c_str());
+    BOOST_LOG_TRIVIAL(debug) << boost::format("OriginalFilePath: %s") % pBinaryMetaData->OriginalFilePath;
+    BOOST_LOG_TRIVIAL(debug) << boost::format("MD5: %s") % pBinaryMetaData->MD5.c_str();
+    BOOST_LOG_TRIVIAL(debug) << boost::format("SHA256: %s") % pBinaryMetaData->SHA256.c_str();
+
     m_sqliteTool.ExecuteStatement(NULL, NULL, INSERT_BINARIES_TABLE_STATEMENT,
         fileID,
         pBinaryMetaData->OriginalFilePath,
