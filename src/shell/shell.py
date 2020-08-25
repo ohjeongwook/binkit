@@ -29,12 +29,13 @@ class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
     prompt = '(binkit) '
 
-    def __init__(self, results_directory = 'results'):
+    def __init__(self, results_directory = 'results', log_setting_filename = 'settings.ini'):
         cmd.Cmd.__init__(self)
         self.binaries = []
         self.function_matches = None
         self.profiles = client.Profiles()
         self.results_directory = results_directory
+        pybinkit.load_log_settings(log_setting_filename)
 
         if not os.path.isdir(self.results_directory):
             try:

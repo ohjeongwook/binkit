@@ -14,7 +14,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(pybinkit, m) {
-    m.def("set_logging_settings", &SetLoggingSettings, "Set logging settings");
+    m.def("load_log_settings", &LoadLogSettings, "Log log settings");
 
     py::class_<Binary>(m, "Binary")
         .def(py::init<std::string& , int& >(), py::arg("filename"), py::arg("file_id") = 0)

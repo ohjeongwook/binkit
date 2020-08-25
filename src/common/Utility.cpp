@@ -5,15 +5,17 @@
 #include <iomanip>
 #include "Utility.h"
 
+#include <exception>
 #include <iostream>
 #include <fstream>
+
+#include <boost/log/trivial.hpp>
+#include <boost/log/common.hpp>
+#include <boost/log/attributes.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/setup/from_stream.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/expressions.hpp>
+
+namespace logging = boost::log;
+namespace attrs = boost::log::attributes;
 
 unsigned char HexToByte(char * hexString)
 {
@@ -73,8 +75,24 @@ string BytesToHexString(unsigned char *bytes, int length)
     return stringStream.str();
 }
 
-void SetLoggingSettings(string filename)
+bool LoadLogSettings(string filename)
 {
-    //std::ifstream file(filename);
-    //boost::log::init_from_stream(file);
+    try
+    {
+        std::ifstream settings(filename);
+        if (!settings.is_open())
+        {
+            std::cout << "Could not open " << filename << " file" << std::endl;
+            return false;
+        }
+        logging::init_from_stream(settings);
+        logging::core::get()->add_global_attribute("TimeStamp", attrs::local_clock());
+        return true;
+    }
+    catch (std::exception& e)
+    {
+        std::cout << "FAILURE: " << e.what() << std::endl;
+        return false;
+    }
 }
+ 

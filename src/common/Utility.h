@@ -8,4 +8,4 @@ unsigned char HexToByte(char *hexString);
 vector<unsigned char> HexToBytes(char* hexString);
 string BytesToHexString(vector<unsigned char> bytes);
 string BytesToHexString(unsigned char* bytes, int length);
-void SetLoggingSettings(string filename);
+bool LoadLogSettings(string filename);

@@ -135,7 +135,7 @@ void Binary::Load()
             }
         }
 
-        BOOST_LOG_TRIVIAL(info) << boost::format("Multiple function membership: %X (%d) %s") % val.first % val.second % isFunctionStart ? "Possible Head" : "Member";
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Multiple function membership: %X (%d) %s") % val.first % val.second % isFunctionStart ? "Possible Head" : "Member";
 
         if (isFunctionStart)
         {
