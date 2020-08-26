@@ -83,15 +83,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DARUNGRIMPLUGIN_EXPORTS;DIFFENGINEPYD_EXPORTS;_CRT_SECURE_NO_WARNINGS;__NT__;__IDP__;__EA64__;__X64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)\binkit_exporter64.dll</OutputFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;libboost_regex-vc142-mt-sgd-x64-1_72.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
       <AdditionalOptions>/EXPORT:PLUGIN %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -101,15 +101,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DARUNGRIMPLUGIN_EXPORTS;DIFFENGINEPYD_EXPORTS;_CRT_SECURE_NO_WARNINGS;__NT__;__IDP__;__X64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)\binkit_exporter.dll</OutputFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;libboost_regex-vc142-mt-sgd-x64-1_72.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_32</AdditionalLibraryDirectories>
       <AdditionalOptions>/EXPORT:PLUGIN %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -119,15 +119,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;DARUNGRIMPLUGIN_EXPORTS;DIFFENGINEPYD_EXPORTS;_CRT_SECURE_NO_WARNINGS;__NT__;__IDP__;__EA64__;__X64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OutputFile>$(OutDir)\binkit_exporter64.dll</OutputFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;libboost_regex-vc142-mt-sgd-x64-1_72.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
       <AdditionalOptions>/EXPORT:PLUGIN %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -137,15 +137,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;DARUNGRIMPLUGIN_EXPORTS;DIFFENGINEPYD_EXPORTS;_CRT_SECURE_NO_WARNINGS;__NT__;__IDP__;__X64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\include;$(SolutionDir)\..\Common</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OutputFile>$(OutDir)\binkit_exporter.dll</OutputFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;advapi32.lib;Version.lib;ida.lib;legacy_stdio_definitions.lib;libboost_regex-vc142-mt-sgd-x64-1_72.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost_regex-vc142.1.72.0.0\lib\native;$(SolutionDir)\libs\idasdk71\lib\x64_win_vc_64</AdditionalLibraryDirectories>
       <AdditionalOptions>/EXPORT:PLUGIN %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -185,6 +185,7 @@
     <Import Project="packages\boost_chrono-vc142.1.72.0.0\build\boost_chrono-vc142.targets" Condition="Exists('packages\boost_chrono-vc142.1.72.0.0\build\boost_chrono-vc142.targets')" />
     <Import Project="packages\boost_log_setup-vc142.1.72.0.0\build\boost_log_setup-vc142.targets" Condition="Exists('packages\boost_log_setup-vc142.1.72.0.0\build\boost_log_setup-vc142.targets')" />
     <Import Project="packages\boost_atomic-vc142.1.72.0.0\build\boost_atomic-vc142.targets" Condition="Exists('packages\boost_atomic-vc142.1.72.0.0\build\boost_atomic-vc142.targets')" />
+    <Import Project="packages\boost_regex-vc140.1.72.0.0\build\boost_regex-vc140.targets" Condition="Exists('packages\boost_regex-vc140.1.72.0.0\build\boost_regex-vc140.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -199,5 +200,6 @@
     <Error Condition="!Exists('packages\boost_chrono-vc142.1.72.0.0\build\boost_chrono-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_chrono-vc142.1.72.0.0\build\boost_chrono-vc142.targets'))" />
     <Error Condition="!Exists('packages\boost_log_setup-vc142.1.72.0.0\build\boost_log_setup-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_log_setup-vc142.1.72.0.0\build\boost_log_setup-vc142.targets'))" />
     <Error Condition="!Exists('packages\boost_atomic-vc142.1.72.0.0\build\boost_atomic-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_atomic-vc142.1.72.0.0\build\boost_atomic-vc142.targets'))" />
+    <Error Condition="!Exists('packages\boost_regex-vc140.1.72.0.0\build\boost_regex-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_regex-vc140.1.72.0.0\build\boost_regex-vc140.targets'))" />
   </Target>
 </Project>

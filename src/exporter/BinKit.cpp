@@ -10,10 +10,12 @@
 #include <graph.hpp>
 #include <expr.hpp>
 #include <loader.hpp>
+#include <diskio.hpp>
 
 #include "StorageDataStructures.h"
 #include "IDAAnalyzer.h"
 #include "SQLiteDisassemblyStorage.h"
+#include "Utility.h"
 
 #include <iostream>
 #include <boost/format.hpp> 
@@ -162,6 +164,8 @@ void SaveAnalysis(const char *output_file_path)
 
 bool idaapi run(size_t arg)
 {
+    string ida_dir = get_user_idadir();
+    LoadLogSettings(ida_dir + "\\binkit_logging.ini");
     BOOST_LOG_TRIVIAL(debug) << boost::format("BinKit plugin started...");
 
     if (arg == 1)
