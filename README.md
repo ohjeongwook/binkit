@@ -32,6 +32,17 @@ Open binkit.sln solution file to compile Loader and pybinkit project
 import pybinkit
 ```
 
+---
+## rpyc
+
+* binkit depends on rpyc for RPC. Please install it using following commands.
+
+```
+pip install rpyc
+```
+
+---
+
 ## Binary
 
 * Loading binary with 
