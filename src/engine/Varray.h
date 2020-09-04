@@ -2,9 +2,9 @@
 #include <windows.h>
 
 struct varray{
-	unsigned char *ptr;
-	int element_size;
-	int length;
+    unsigned char *ptr;
+    int element_size;
+    int length;
 };
 
 void varray_init(struct varray *p_pos,int element_size,int value);

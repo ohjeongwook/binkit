@@ -1110,7 +1110,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
                     current_itype == NN_jnl ||                 // Jump if Not Less (SF=OF)
                     current_itype == NN_jnle ||                // Jump if Not Less or Equal (ZF=0 & SF=OF)
                     current_itype == NN_jnb ||                 // Jump if Not Below (CF=0)
-                    current_itype == NN_jnbe                 // Jump if Not Below or Equal (CF=0 & ZF=0)						
+                    current_itype == NN_jnbe                 // Jump if Not Below or Equal (CF=0 & ZF=0)                        
                     )
                 {
                     is_positive_jmp = TRUE;

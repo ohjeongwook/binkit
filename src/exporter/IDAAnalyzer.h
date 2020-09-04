@@ -266,12 +266,12 @@ private:
     void AnalyzeRegion(ea_t startEA, ea_t endEA, bool gatherCmdArray);
     void AnalyzeRegion(AddressRegion& region, bool gatherCmdArray = false);
 
-	bool IsValidFunctionStart(ea_t address);
-	ea_t GetBlockEnd(ea_t address);
-	int ConnectFunctionChunks(ea_t address);
-	void FixFunctionChunks();
-	void MakeCode(ea_t startAddress, ea_t endAddress);
-	void FixExceptionHandlers();
+    bool IsValidFunctionStart(ea_t address);
+    ea_t GetBlockEnd(ea_t address);
+    int ConnectFunctionChunks(ea_t address);
+    void FixFunctionChunks();
+    void MakeCode(ea_t startAddress, ea_t endAddress);
+    void FixExceptionHandlers();
 public:
     IDAAnalyzer(DisassemblyStorage* p_disassemblyStorage);
     void Analyze(ea_t startEA, ea_t endEA, bool gatherCmdArray = false);
