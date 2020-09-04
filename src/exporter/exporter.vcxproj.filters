@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="IDAAnalyzer.cpp" />
+    <ClCompile Include="binkit.cpp" />
+    <ClCompile Include="SQLiteDisassemblyStorage.cpp">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\SQLiteTool.cpp">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\sqlite3.c">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Utility.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IDAAnalyzer.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\common\SQLiteDisassemblyCommon.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteDisassemblyStorage.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\SQLiteTool.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\sqlite3.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Utility.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\StorageDataStructures.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Storage.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="DisassemblyStorage.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SQLite">
+      <UniqueIdentifier>{87ebcbb5-943d-4640-a1b1-cdfb99e92362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{f2ece3b1-8f70-4d7f-97fc-700ad48aa951}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
