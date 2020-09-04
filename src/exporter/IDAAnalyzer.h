@@ -16,6 +16,10 @@
 #include <name.hpp>
 #include <allins.hpp>
 
+
+using namespace std;
+using namespace stdext;
+
 #include "SQLiteDisassemblyStorage.h"
 
 using namespace std;
@@ -251,6 +255,11 @@ class IDAAnalyzer
 private:
     DisassemblyStorage *m_pdisassemblyWriter;
     unordered_map <ea_t, ea_t> m_newBlocks;
+    unordered_set<uint16> m_callInstructions;
+    unordered_set<uint16> m_returnInstructions;
+    unordered_set<uint16> m_jumpInstructions;
+    unordered_set<uint16> m_unconditionalJumpInstructions;
+    unordered_set<uint16> m_positiveConditionJumpInstructions;
 
     void UpdateInstructionMap(
         unordered_map < op_t, OperandPosition, OpTypeHasher, OpTypeEqualFn >& OperandsHash,
@@ -267,6 +276,7 @@ private:
     void AnalyzeRegion(AddressRegion& region, bool gatherCmdArray = false);
 
     bool IsValidFunctionStart(ea_t address);
+    bool IsHotPatchCode(insn_t* p_insn);
     ea_t GetBlockEnd(ea_t address);
     int ConnectFunctionChunks(ea_t address);
     void FixFunctionChunks();
