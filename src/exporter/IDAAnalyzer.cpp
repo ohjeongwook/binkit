@@ -18,8 +18,6 @@
 using namespace std;
 using namespace stdext;
 
-int Debug = 1;
-
 string GetFeatureStr(DWORD features)
 {
     string FeatureStr = " ";
@@ -523,14 +521,17 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t>* p_cmdAr
     basic_block.EndAddress = 0;
 
     qstring name;
-    get_short_name(&name, srcBlockAddress);
+    if (!has_dummy_name(get_flags(srcBlockAddress)))
+    {
+        get_short_name(&name, srcBlockAddress);
+    }
 
     if (name[0] != NULL)
     {
         basic_block.Name = name.c_str();
     }
 
-    if (is_code(flags))
+    if (is_code(get_flags(srcBlockAddress)))
     {
         func_t* p_func = get_func(srcBlockAddress);
         if (p_func)
@@ -564,85 +565,84 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t>* p_cmdAr
             basic_block.EndAddress = (*cmdArrayIt).ea + (*cmdArrayIt).size;
         }
 
-        if (is_code(flags) &&
-            !(
+        if (is_code(get_flags((*cmdArrayIt).ea)))
+        {
+            if (!(
                 //detect hot patching
                 basic_block.StartAddress == basic_block.FunctionAddress &&
                 cmdArrayIt == p_cmdArray->begin() &&
                 (ph.id == PLFM_386 || ph.id == PLFM_IA64) && (*cmdArrayIt).itype == NN_mov && (*cmdArrayIt).ops[0].reg == (*cmdArrayIt).ops[1].reg
                 ) &&
-            !(
-                ((ph.id == PLFM_386 || ph.id == PLFM_IA64) &&
+                !(
+                    ((ph.id == PLFM_386 || ph.id == PLFM_IA64) &&
+                        (
+                            (*cmdArrayIt).itype == NN_ja ||                  // Jump if Above (CF=0 & ZF=0)
+                            (*cmdArrayIt).itype == NN_jae ||                 // Jump if Above or Equal (CF=0)
+                            (*cmdArrayIt).itype == NN_jc ||                  // Jump if Carry (CF=1)
+                            (*cmdArrayIt).itype == NN_jcxz ||                // Jump if CX is 0
+                            (*cmdArrayIt).itype == NN_jecxz ||               // Jump if ECX is 0
+                            (*cmdArrayIt).itype == NN_jrcxz ||               // Jump if RCX is 0
+                            (*cmdArrayIt).itype == NN_je ||                  // Jump if Equal (ZF=1)
+                            (*cmdArrayIt).itype == NN_jg ||                  // Jump if Greater (ZF=0 & SF=OF)
+                            (*cmdArrayIt).itype == NN_jge ||                 // Jump if Greater or Equal (SF=OF)
+                            (*cmdArrayIt).itype == NN_jo ||                  // Jump if Overflow (OF=1)
+                            (*cmdArrayIt).itype == NN_jp ||                  // Jump if Parity (PF=1)
+                            (*cmdArrayIt).itype == NN_jpe ||                 // Jump if Parity Even (PF=1)
+                            (*cmdArrayIt).itype == NN_js ||                  // Jump if Sign (SF=1)
+                            (*cmdArrayIt).itype == NN_jz ||                  // Jump if Zero (ZF=1)
+                            (*cmdArrayIt).itype == NN_jmp ||                 // Jump
+                            (*cmdArrayIt).itype == NN_jmpfi ||               // Indirect Far Jump
+                            (*cmdArrayIt).itype == NN_jmpni ||               // Indirect Near Jump
+                            (*cmdArrayIt).itype == NN_jmpshort ||            // Jump Short
+                            (*cmdArrayIt).itype == NN_jpo ||                 // Jump if Parity Odd  (PF=0)
+                            (*cmdArrayIt).itype == NN_jl ||                  // Jump if Less (SF!=OF)
+                            (*cmdArrayIt).itype == NN_jle ||                 // Jump if Less or Equal (ZF=1 | SF!=OF)
+                            (*cmdArrayIt).itype == NN_jb ||                  // Jump if Below (CF=1)
+                            (*cmdArrayIt).itype == NN_jbe ||                 // Jump if Below or Equal (CF=1 | ZF=1)
+                            (*cmdArrayIt).itype == NN_jna ||                 // Jump if Not Above (CF=1 | ZF=1)
+                            (*cmdArrayIt).itype == NN_jnae ||                // Jump if Not Above or Equal (CF=1)
+                            (*cmdArrayIt).itype == NN_jnb ||                 // Jump if Not Below (CF=0)
+                            (*cmdArrayIt).itype == NN_jnbe ||                // Jump if Not Below or Equal (CF=0 & ZF=0)
+                            (*cmdArrayIt).itype == NN_jnc ||                 // Jump if Not Carry (CF=0)
+                            (*cmdArrayIt).itype == NN_jne ||                 // Jump if Not Equal (ZF=0)
+                            (*cmdArrayIt).itype == NN_jng ||                 // Jump if Not Greater (ZF=1 | SF!=OF)
+                            (*cmdArrayIt).itype == NN_jnge ||                // Jump if Not Greater or Equal (ZF=1)
+                            (*cmdArrayIt).itype == NN_jnl ||                 // Jump if Not Less (SF=OF)
+                            (*cmdArrayIt).itype == NN_jnle ||                // Jump if Not Less or Equal (ZF=0 & SF=OF)
+                            (*cmdArrayIt).itype == NN_jno ||                 // Jump if Not Overflow (OF=0)
+                            (*cmdArrayIt).itype == NN_jnp ||                 // Jump if Not Parity (PF=0)
+                            (*cmdArrayIt).itype == NN_jns ||                 // Jump if Not Sign (SF=0)
+                            (*cmdArrayIt).itype == NN_jnz                 // Jump if Not Zero (ZF=0)
+                            )
+                        ) ||
                     (
-                        (*cmdArrayIt).itype == NN_ja ||                  // Jump if Above (CF=0 & ZF=0)
-                        (*cmdArrayIt).itype == NN_jae ||                 // Jump if Above or Equal (CF=0)
-                        (*cmdArrayIt).itype == NN_jc ||                  // Jump if Carry (CF=1)
-                        (*cmdArrayIt).itype == NN_jcxz ||                // Jump if CX is 0
-                        (*cmdArrayIt).itype == NN_jecxz ||               // Jump if ECX is 0
-                        (*cmdArrayIt).itype == NN_jrcxz ||               // Jump if RCX is 0
-                        (*cmdArrayIt).itype == NN_je ||                  // Jump if Equal (ZF=1)
-                        (*cmdArrayIt).itype == NN_jg ||                  // Jump if Greater (ZF=0 & SF=OF)
-                        (*cmdArrayIt).itype == NN_jge ||                 // Jump if Greater or Equal (SF=OF)
-                        (*cmdArrayIt).itype == NN_jo ||                  // Jump if Overflow (OF=1)
-                        (*cmdArrayIt).itype == NN_jp ||                  // Jump if Parity (PF=1)
-                        (*cmdArrayIt).itype == NN_jpe ||                 // Jump if Parity Even (PF=1)
-                        (*cmdArrayIt).itype == NN_js ||                  // Jump if Sign (SF=1)
-                        (*cmdArrayIt).itype == NN_jz ||                  // Jump if Zero (ZF=1)
-                        (*cmdArrayIt).itype == NN_jmp ||                 // Jump
-                        (*cmdArrayIt).itype == NN_jmpfi ||               // Indirect Far Jump
-                        (*cmdArrayIt).itype == NN_jmpni ||               // Indirect Near Jump
-                        (*cmdArrayIt).itype == NN_jmpshort ||            // Jump Short
-                        (*cmdArrayIt).itype == NN_jpo ||                 // Jump if Parity Odd  (PF=0)
-                        (*cmdArrayIt).itype == NN_jl ||                  // Jump if Less (SF!=OF)
-                        (*cmdArrayIt).itype == NN_jle ||                 // Jump if Less or Equal (ZF=1 | SF!=OF)
-                        (*cmdArrayIt).itype == NN_jb ||                  // Jump if Below (CF=1)
-                        (*cmdArrayIt).itype == NN_jbe ||                 // Jump if Below or Equal (CF=1 | ZF=1)
-                        (*cmdArrayIt).itype == NN_jna ||                 // Jump if Not Above (CF=1 | ZF=1)
-                        (*cmdArrayIt).itype == NN_jnae ||                // Jump if Not Above or Equal (CF=1)
-                        (*cmdArrayIt).itype == NN_jnb ||                 // Jump if Not Below (CF=0)
-                        (*cmdArrayIt).itype == NN_jnbe ||                // Jump if Not Below or Equal (CF=0 & ZF=0)
-                        (*cmdArrayIt).itype == NN_jnc ||                 // Jump if Not Carry (CF=0)
-                        (*cmdArrayIt).itype == NN_jne ||                 // Jump if Not Equal (ZF=0)
-                        (*cmdArrayIt).itype == NN_jng ||                 // Jump if Not Greater (ZF=1 | SF!=OF)
-                        (*cmdArrayIt).itype == NN_jnge ||                // Jump if Not Greater or Equal (ZF=1)
-                        (*cmdArrayIt).itype == NN_jnl ||                 // Jump if Not Less (SF=OF)
-                        (*cmdArrayIt).itype == NN_jnle ||                // Jump if Not Less or Equal (ZF=0 & SF=OF)
-                        (*cmdArrayIt).itype == NN_jno ||                 // Jump if Not Overflow (OF=0)
-                        (*cmdArrayIt).itype == NN_jnp ||                 // Jump if Not Parity (PF=0)
-                        (*cmdArrayIt).itype == NN_jns ||                 // Jump if Not Sign (SF=0)
-                        (*cmdArrayIt).itype == NN_jnz                 // Jump if Not Zero (ZF=0)
-                        )
-                    ) ||
-                (
-                    ph.id == PLFM_ARM &&
-                    (
-                        (*cmdArrayIt).itype == ARM_b
+                        ph.id == PLFM_ARM &&
+                        (
+                            (*cmdArrayIt).itype == ARM_b
+                            )
                         )
                     )
                 )
-            )
-        {
-            instructionHash.push_back((unsigned char)(*cmdArrayIt).itype);
-            for (int i = 0; i < UA_MAXOP; i++)
             {
-                if ((*cmdArrayIt).ops[i].type != 0)
+                instructionHash.push_back((unsigned char)(*cmdArrayIt).itype);
+                for (int i = 0; i < UA_MAXOP; i++)
                 {
-                    instructionHash.push_back((*cmdArrayIt).ops[i].type);
-                    instructionHash.push_back((*cmdArrayIt).ops[i].dtype);
-                    /*
-                    if((*cmdArrayIt).ops[i].type == o_imm)
+                    if ((*cmdArrayIt).ops[i].type != 0)
                     {
-                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>24)&0xff);
-                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>16)&0xff);
-                        InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>8)&0xff);
-                        InstructionHash.push_back((*cmdArrayIt).ops[i].value&0xff);
-                    }*/
+                        instructionHash.push_back((*cmdArrayIt).ops[i].type);
+                        instructionHash.push_back((*cmdArrayIt).ops[i].dtype);
+                        /*
+                        if((*cmdArrayIt).ops[i].type == o_imm)
+                        {
+                            InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>24)&0xff);
+                            InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>16)&0xff);
+                            InstructionHash.push_back(((*cmdArrayIt).ops[i].value>>8)&0xff);
+                            InstructionHash.push_back((*cmdArrayIt).ops[i].value&0xff);
+                        }*/
+                    }
                 }
             }
-        }
 
-        if (is_code(flags))
-        {
             qstring buf;
 
             generate_disasm_line(&buf, (*cmdArrayIt).ea);
@@ -1367,7 +1367,11 @@ int IDAAnalyzer::ConnectFunctionChunks(ea_t address)
     int connected_links_count = 0;
     func_t* func = get_func(address);
     qstring function_name;
-    get_short_name(&function_name, address);
+
+    if (!has_dummy_name(get_flags(address)))
+    {
+        get_short_name(&function_name, address);
+    }
 
     bool is_function = false;
     bool AddFunctionAsMemberOfFunction = false;
@@ -1449,7 +1453,11 @@ void IDAAnalyzer::FixFunctionChunks()
             if (!IsValidFunctionStart(f->start_ea))
             {
                 qstring function_name;
-                get_short_name(&function_name, f->start_ea);
+
+                if (!has_dummy_name(get_flags(f->start_ea)))
+                {
+                    get_short_name(&function_name, f->start_ea);
+                }
 
                 BOOST_LOG_TRIVIAL(debug) << boost::format("Found invalid function: %s") % function_name.c_str();
                 connected_links_count += ConnectFunctionChunks(f->start_ea);
