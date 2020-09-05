@@ -106,6 +106,7 @@ class BinKitShell(cmd.Cmd):
 
         parser = argparse.ArgumentParser(description='Process some integers.')
         parser.add_argument('-a', '--algorithm', dest='algorithm', default = 'init', help="Algorithm")
+        parser.add_argument('-n', '--count', dest='count', default = 1, help="Count")
 
         try:
             args = parser.parse_args(shlex.split(arg))
@@ -125,11 +126,20 @@ class BinKitShell(cmd.Cmd):
             self.function_matches.add_matches(self.basic_block_matches)
             time_log.message("Initial diffing finished")
 
-        if args.algorithm == 'ins':
-            self.function_matches.do_instruction_hash_match()
+        count = 0
+        while count < arg.count:
+            matched_count = 0
+            if args.algorithm == ('inshash', 'hash'):
+                matched_count = self.function_matches.do_instruction_hash_match()
 
-        elif args.algorithm == 'cf':
-            self.function_matches.do_control_flow_match()
+            elif args.algorithm in ('cf', 'controlflow'):
+                matched_count = self.function_matches.do_control_flow_match()
+
+            if matched_count == 0:
+                print('match looped: %d' % count)
+                break
+
+            count += 1
 
         time_log.message("Diffing using %s is finished" % arg)
         self.print_function_matches()
@@ -146,8 +156,8 @@ class BinKitShell(cmd.Cmd):
         """
 
     def do_save(self, arg):
-        function_match_storage = pybinkit.FunctionMatchFileLoader.load(self.function_matches, binaries = self.binaries)
-        function_match_storage.sort()
+        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
+        function_match_storage = function_match_tool.get_function_match_file()
         function_match_storage.save(arg)
 
     def do_show(self, arg):
@@ -159,7 +169,9 @@ class BinKitShell(cmd.Cmd):
                 return
 
             filename = os.path.join(self.results_directory, str(uuid.uuid4()) + '.json')
-            function_match_storage = pybinkit.FunctionMatchFileLoader.load(self.function_matches, binaries = self.binaries)
+
+            function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
+            function_match_storage = function_match_tool.get_function_match_file()
             print("Saving diff snapshot to " + filename)
             function_match_storage.save(filename)            
 
