@@ -95,4 +95,3 @@ bool LoadLogSettings(string filename)
         return false;
     }
 }
- 
