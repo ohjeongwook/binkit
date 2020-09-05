@@ -158,8 +158,14 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 
                 for (BasicBlockMatch *p_basicBlockMatch : val2.second)
                 {
+                    if (p_basicBlockMatch->Flags & CONTROL_FLOW_MATCH)
+                    {
+                        continue;
+                    }
+
                     vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
                     fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
+                    p_basicBlockMatch->Flags |= CONTROL_FLOW_MATCH;
                 }
                 AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
             }

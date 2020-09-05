@@ -107,6 +107,8 @@ static const char* BasicBlockMatchTypeStr[] = {
     "Function"
 };
 
+#define CONTROL_FLOW_MATCH 1
+
 typedef struct _BasicBlockMatch_ {
     short Type;
     short SubType;
@@ -118,4 +120,5 @@ typedef struct _BasicBlockMatch_ {
     va_t SourceParent;
     va_t TargetParent;
     int MatchSequence;
+    int Flags;
 } BasicBlockMatch;
