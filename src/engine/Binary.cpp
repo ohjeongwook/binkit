@@ -31,8 +31,7 @@ void Binary::Open(string databaseFileName, int fileID)
     m_pdisassemblyReader->SetFileID(m_fileId);
 
     m_pbasicBlocks = new BasicBlocks(m_pdisassemblyReader, true);
-    Load();
-    UpdateFunctionAddressesInStorage();
+    LoadFunctionAddressMap();
 }
 
 int Binary::GetFileID()
@@ -55,7 +54,7 @@ BasicBlocks* Binary::GetBasicBlocks()
     return m_pbasicBlocks;
 }
 
-void Binary::Load()
+void Binary::LoadFunctionAddressMap()
 {
     int DoCrefFromCheck = FALSE;
     int DoCallCheck = TRUE;
@@ -72,16 +71,19 @@ void Binary::Load()
         }
     }
 
-    // Build up m_functions, m_addressToFunctions
+    // Build up m_functions, m_functionAddressMap
     for (va_t functionAddress : functionAddresses)
     {
         Function* p_function = new Function(m_pbasicBlocks, functionAddress);
         m_functions.push_back(p_function);
-        m_addressToFunctions.insert(pair<va_t, Function*>(functionAddress, p_function));
+        m_functionAddressMap.insert(pair<va_t, Function*>(functionAddress, p_function));
     }
 
     BOOST_LOG_TRIVIAL(info) << boost::format("Function %u entries") % functionAddresses.size();
+}
 
+void Binary::LoadBasicBlockToFunctionMap()
+{
     unordered_map<va_t, va_t> basicBlockAddresses;
     unordered_map<va_t, va_t> basicBlockFunctionHashes;
 
@@ -141,9 +143,9 @@ void Binary::Load()
         {
             va_t functionStartAddress = val.first;
             unordered_map<va_t, va_t>::iterator isFunctionStart_membership_it = basicBlockFunctionHashes.find(functionStartAddress);
-            multimap <va_t, Function*>::iterator it = m_addressToFunctions.find(functionStartAddress);
+            multimap <va_t, Function*>::iterator it = m_functionAddressMap.find(functionStartAddress);
 
-            if (it != m_addressToFunctions.end())
+            if (it != m_functionAddressMap.end())
             {
                 for (va_t address : it->second->GetBasicBlocks())
                 {
@@ -171,13 +173,13 @@ void Binary::Load()
         }
     }
 
-    BOOST_LOG_TRIVIAL(info) << boost::format("m_basicBlockToFunctionAddresses -> m_addressToFunctions");
+    BOOST_LOG_TRIVIAL(info) << boost::format("m_basicBlockToFunctionAddresses -> m_functionAddressMap");
 
     for (auto& val : m_basicBlockToFunctionAddresses)
     {
-        multimap <va_t, Function*>::iterator it = m_addressToFunctions.find(val.second);
+        multimap <va_t, Function*>::iterator it = m_functionAddressMap.find(val.second);
 
-        if (it != m_addressToFunctions.end())
+        if (it != m_functionAddressMap.end())
         {
             it->second->AddBasicBlock(val.first);
         }
@@ -187,8 +189,6 @@ void Binary::Load()
 
 bool Binary::UpdateFunctionAddressesInStorage()
 {
-    Load();
-
     if (!m_pdisassemblyReader)
         return FALSE;
 
@@ -202,19 +202,24 @@ vector<Function*>* Binary::GetFunctions()
 
 Function* Binary::GetFunction(va_t address)
 {
-    multimap <va_t, Function*>::iterator it = m_addressToFunctions.find(address);
+    multimap <va_t, Function*>::iterator it = m_functionAddressMap.find(address);
 
-    if (it != m_addressToFunctions.end())
+    if (it != m_functionAddressMap.end())
     {
         return it->second;
+    }
+
+    if (m_basicBlockToFunctionAddresses.size() == 0)
+    {
+        LoadBasicBlockToFunctionMap();
     }
 
     multimap <va_t, va_t>::iterator it2 = m_basicBlockToFunctionAddresses.find(address);
 
     if (it2 != m_basicBlockToFunctionAddresses.end())
     {
-        multimap <va_t, Function*>::iterator it3 = m_addressToFunctions.find(it2->second);
-        if (it3 != m_addressToFunctions.end())
+        multimap <va_t, Function*>::iterator it3 = m_functionAddressMap.find(it2->second);
+        if (it3 != m_functionAddressMap.end())
         {
             return it3->second;
         }

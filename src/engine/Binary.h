@@ -22,9 +22,10 @@ private:
     DisassemblyReader* m_pdisassemblyReader;
     multimap<va_t, va_t> m_basicBlockToFunctionAddresses;
     vector<Function*> m_functions;
-    multimap<va_t, Function*> m_addressToFunctions;
+    multimap<va_t, Function*> m_functionAddressMap;
 
-    void Load();
+    void LoadFunctionAddressMap();
+    void LoadBasicBlockToFunctionMap();
     bool UpdateFunctionAddressesInStorage();
 
 public:
