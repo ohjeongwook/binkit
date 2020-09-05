@@ -85,8 +85,6 @@ class FunctionMatchFile:
             function_match['source_name'] = source_basic_blocks.get_symbol(function_match['source'])
             function_match['target_name'] = target_basic_blocks.get_symbol(function_match['target'])
 
-            print('add_names: %s - %s' % (function_match['source_name'], function_match['target_name']))
-
     def add_basic_block_data(self):
         if not self.binaries:
             return
@@ -96,21 +94,20 @@ class FunctionMatchFile:
 
         for function_match in self.match_results['function_matches']:
             for basic_block_match in function_match['matches']:
-                source_basic_block = source_basic_blocks.get_basic_block(basic_block_match['source'])
-                basic_block_match['source_end'] = source_basic_block.end_address
-                target_basic_block = target_basic_blocks.get_basic_block(basic_block_match['target'])
-                basic_block_match['target_end'] = target_basic_block.end_address
+                basic_block_match['source_end'] = source_basic_blocks.get_basic_block_end(basic_block_match['source'])
+                basic_block_match['target_end'] = target_basic_blocks.get_basic_block_end(basic_block_match['target'])
 
             if 'unidentified_blocks' in function_match:
                 for source in function_match['unidentified_blocks']['sources']:
-                    source_block = source_basic_blocks.get_basic_block(source['start'])
-                    source['end'] = source_block.end_address
+                    source['end'] = source_basic_blocks.get_basic_block_end(source['start'])
 
                 for target in function_match['unidentified_blocks']['targets']:
-                    target_block = target_basic_blocks.get_basic_block(target['start'])
-                    target['end'] = target_block.end_address
+                    target['end'] = target_basic_blocks.get_basic_block_end(target['start'])
+
+        print('add_basic_block_data finished')
 
     def save(self, filename):
+        print('save ' + filename)
         with open(filename, 'w') as fd:
             json.dump(self.match_results, fd, indent = 4)
 
