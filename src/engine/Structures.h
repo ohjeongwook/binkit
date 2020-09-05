@@ -80,6 +80,7 @@ typedef struct _DisassemblyHashMaps_ {
     multimap <va_t, string> addressToSymbolMap;
     multimap <va_t, PControlFlow> addressToControlFlowMap;
     multimap <va_t, va_t> dstToSrcAddressMap;
+    multimap <va_t, va_t> addressRangeMap;
 
     void DumpDisassemblyHashMaps()
     {

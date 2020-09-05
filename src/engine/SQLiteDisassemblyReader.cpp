@@ -40,13 +40,17 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     if (argv[1] && argv[1][0] != NULL)
     {
         va_t address = strtoul10(argv[0]);
-        vector<unsigned char> bytes(HexToBytes(argv[1]));
+        va_t endAddress = strtoul10(argv[1]);
+
+        m_disassemblyHashMaps->addressRangeMap.insert(pair<va_t, va_t>(address, endAddress));
+
+        vector<unsigned char> bytes(HexToBytes(argv[2]));
         m_disassemblyHashMaps->instructionHashMap.insert(pair <vector<unsigned char>, va_t>(bytes, address));
         m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, bytes));
 
-        if (strtoul10(argv[3]) == 1 && strlen(argv[2]) > 0)
+        if (strtoul10(argv[4]) == 1 && strlen(argv[3]) > 0)
         {
-            char *name = argv[2];
+            char *name = argv[3];
             m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(name, address));
             m_disassemblyHashMaps->addressToSymbolMap.insert(pair<va_t, string>(address, name));
         }
@@ -58,7 +62,7 @@ void SQLiteDisassemblyReader::ReadBasicBlockHashes(char *conditionStr, Disassemb
 {
     m_sqliteTool.ExecuteStatement(ReadBasicBlockHashCallback,
         (void*)DisassemblyHashMaps,
-        "SELECT StartAddress, InstructionHash, Name, BlockType FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u %s",
+        "SELECT StartAddress, EndAddress, InstructionHash, Name, BlockType FROM " BASIC_BLOCKS_TABLE " WHERE FileID = %u %s",
         m_fileId,
         conditionStr);
 }
