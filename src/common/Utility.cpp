@@ -13,6 +13,8 @@
 #include <boost/log/common.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
+#include <boost/format.hpp> 
+#include <boost/log/trivial.hpp>
 
 namespace logging = boost::log;
 namespace attrs = boost::log::attributes;
@@ -77,12 +79,15 @@ string BytesToHexString(unsigned char *bytes, int length)
 
 bool LoadLogSettings(string filename)
 {
+    BOOST_LOG_TRIVIAL(debug) << boost::format("log setting filename: %s") % filename.c_str();
+
     try
     {
         std::ifstream settings(filename);
         if (!settings.is_open())
         {
             std::cout << "Could not open " << filename << " file" << std::endl;
+            logging::core::get()->set_logging_enabled(false);
             return false;
         }
         logging::init_from_stream(settings);
@@ -91,7 +96,8 @@ bool LoadLogSettings(string filename)
     }
     catch (std::exception& e)
     {
-        std::cout << "FAILURE: " << e.what() << std::endl;
+        logging::core::get()->set_logging_enabled(false);
+        std::cout << "Failure: " << e.what() << std::endl;
         return false;
     }
 }
