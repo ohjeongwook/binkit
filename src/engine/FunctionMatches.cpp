@@ -98,6 +98,7 @@ int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, 
 
 int FunctionMatches::DoInstructionHashMatch()
 {
+    int matchCount = 0;
     if (m_functionMatches.size() == 0)
     {
         vector<BasicBlockMatch> basicBlocksMatches = m_pdiffAlgorithms->DoInstructionHashMatch();
@@ -115,6 +116,7 @@ int FunctionMatches::DoInstructionHashMatch()
 
                 unordered_set<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
                 vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
+                matchCount += basicBlockMatchList.size();
                 AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
             }
         }
@@ -122,11 +124,12 @@ int FunctionMatches::DoInstructionHashMatch()
 
     m_matchSequence++;
 
-    return m_matchSequence - 1;
+    return matchCount;
 }
 
 int FunctionMatches::DoControlFlowMatch(va_t address)
 {
+    int matchCount = 0;
     if (address != 0)
     {
         unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>>::iterator it = m_functionMatches.find(address);
@@ -164,6 +167,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
                     }
 
                     vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
+                    matchCount += basicBlockMatchList.size();
                     fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
                     p_basicBlockMatch->Flags |= CONTROL_FLOW_MATCH;
                 }
@@ -174,7 +178,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 
     m_matchSequence++;
 
-    return m_matchSequence - 1;
+    return matchCount;
 }
 
 void FunctionMatches::RemoveMatches(int matchSequence)
