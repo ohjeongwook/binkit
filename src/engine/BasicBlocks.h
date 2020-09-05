@@ -27,6 +27,7 @@ public:
     vector<va_t> GetAddresses();
     va_t GetBasicBlockStart(va_t address);
     PBasicBlock GetBasicBlock(va_t address);
+    va_t GetBasicBlockEnd(va_t address);    
     string GetSymbol(va_t address);
     string GetDisasmLines(unsigned long startAddress);
     vector<va_t> GetCodeReferences(va_t address, int type);

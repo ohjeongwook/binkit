@@ -70,6 +70,17 @@ PBasicBlock BasicBlocks::GetBasicBlock(va_t address)
     return m_pdisassemblyReader->ReadBasicBlock(address);
 }
 
+va_t BasicBlocks::GetBasicBlockEnd(va_t address)
+{
+    multimap<va_t, va_t>::iterator it = m_disassemblyHashMaps.addressRangeMap.find(address);
+
+    if (it != m_disassemblyHashMaps.addressRangeMap.end())
+    {
+        return it->second;
+    }
+    return 0;
+}
+
 string BasicBlocks::GetSymbol(va_t address)
 {
     for (multimap <va_t, string>::iterator it = m_disassemblyHashMaps.addressToSymbolMap.find(address);
