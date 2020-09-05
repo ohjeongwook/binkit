@@ -18,6 +18,7 @@ class FunctionMatchFile:
             self.match_results = match_results
         self.binaries = binaries
         self.add_binary_meta_data()
+        self.add_names()
         self.add_basic_block_data()
 
     def sort_matches(self, matches):
@@ -72,6 +73,19 @@ class FunctionMatchFile:
                     'md5': self.binaries[1].get_md5()
                 },
         }
+
+    def add_names(self):
+        if not self.binaries:
+            return
+
+        source_basic_blocks = self.binaries[0].get_basic_blocks()
+        target_basic_blocks = self.binaries[1].get_basic_blocks()
+
+        for function_match in self.match_results['function_matches']:
+            function_match['source_name'] = source_basic_blocks.get_symbol(function_match['source'])
+            function_match['target_name'] = target_basic_blocks.get_symbol(function_match['target'])
+
+            print('add_names: %s - %s' % (function_match['source_name'], function_match['target_name']))
 
     def add_basic_block_data(self):
         if not self.binaries:
