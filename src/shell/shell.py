@@ -6,6 +6,8 @@ import pprint
 import json
 import tempfile
 import uuid
+import shlex
+import argparse
 import cmd
 
 try:
@@ -24,6 +26,14 @@ for binkit_path in binkit_paths:
 import client
 import pybinkit
 from storage import *
+
+class TimeLog:
+    def __init__(self):
+        self.start = time.time()
+
+    def message(self, message):
+        end = time.time()
+        print(message + ' (elapsed time = %f)' % (end - self.start))
 
 class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
@@ -82,10 +92,9 @@ class BinKitShell(cmd.Cmd):
         
     def do_load(self, arg):
         for filename in arg.split():
-            start = time.time()
+            time_log = TimeLog()
             self.binaries.append(pybinkit.Binary(filename))
-            end = time.time()
-            print(end - start)
+            time_log.message('Loaded ' + filename)
 
     def do_list(self, arg):
         for binary in self.binaries:
@@ -95,7 +104,18 @@ class BinKitShell(cmd.Cmd):
         if len(self.binaries) < 2:
             return
 
-        if arg == '':
+        parser = argparse.ArgumentParser(description='Process some integers.')
+        parser.add_argument('-a', '--algorithm', dest='algorithm', default = 'init', help="Algorithm")
+
+        try:
+            args = parser.parse_args(shlex.split(arg))
+        except SystemExit:
+            return
+
+        print('algorithm: ' + args.algorithm)
+        time_log = TimeLog()
+
+        if self.function_matches == None or args.algorithm == 'init':
             diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
             self.basic_block_matches = diff_algorithms.do_instruction_hash_match()
             #for match in self.basic_block_matches:
@@ -103,13 +123,15 @@ class BinKitShell(cmd.Cmd):
 
             self.function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
             self.function_matches.add_matches(self.basic_block_matches)
+            time_log.message("Initial diffing finished")
 
-        elif arg == 'ins':
+        if args.algorithm == 'ins':
             self.function_matches.do_instruction_hash_match()
 
-        elif arg == 'cf':
+        elif args.algorithm == 'cf':
             self.function_matches.do_control_flow_match()
 
+        time_log.message("Diffing using %s is finished" % arg)
         self.print_function_matches()
 
     def print_function_matches(self):
