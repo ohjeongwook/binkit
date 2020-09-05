@@ -87,19 +87,23 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         item.peer_md5 = self.peer_md5
         item.queue = self.queue
 
-        item.setText(0, '%.8x' % function_match[self.self_name])
-        item.setText(1, '%.8x' % function_match[self.peer_name])
-
         counts = self.count_blocks(function_match)
-        item.setText(2, '%.8d' % counts['matched_block_counts'])
-        item.setText(3, '%.8d' % counts['self_unidentified_block_counts'])
-        item.setText(4, '%.8d' % counts['peer_unidentified_block_counts'])
+
+        imagebase = idaapi.get_imagebase()
+        self_address = imagebase + function_match[self.self_name]
+        item.setText(0, idaapi.get_short_name(self_address))
+        item.setText(1, '%.8x' % self_address)
+        item.setText(2, function_match[self.peer_name+'_name'])
+        item.setText(3, '%.8x' % function_match[self.peer_name])
+        item.setText(4, '%.8d' % counts['matched_block_counts'])
+        item.setText(5, '%.8d' % counts['self_unidentified_block_counts'])
+        item.setText(6, '%.8d' % counts['peer_unidentified_block_counts'])
 
     def OnCreate(self, form):
         self.parent = idaapi.PluginForm.FormToPyQtWidget(form)
 
         self.tree = QtWidgets.QTreeWidget()
-        self.tree.setHeaderLabels(("Source", "Target", "Matched", "Removed", "Added"))
+        self.tree.setHeaderLabels(("Source", "Address", "Target", "Address", "Matched", "Removed", "Added"))
         self.tree.setColumnWidth(0, 100)
         self.tree.setSortingEnabled(True)
         self.tree.itemDoubleClicked.connect(self.tree_double_clicked_handler)
