@@ -27,6 +27,15 @@ import client
 import pybinkit
 from storage import *
 
+matchTypeMap = {
+    "CALL":  0,
+    "CREF_FROM":  1,
+    "CREF_TO":  2,
+    "DREF_FROM":  3,
+    "DREF_TO":  4,
+    "CALLED":  5
+}
+
 class TimeLog:
     def __init__(self):
         self.start = time.time()
@@ -106,14 +115,20 @@ class BinKitShell(cmd.Cmd):
 
         parser = argparse.ArgumentParser(description='Process some integers.')
         parser.add_argument('-a', '--algorithm', dest='algorithm', default = 'init', help="Algorithm")
-        parser.add_argument('-n', '--count', dest='count', default = 1, help="Count")
+        parser.add_argument('-m', '--match_type', dest='match_type', default = 'CREF_FROM', help="Match Type")
+        parser.add_argument('-n', '--count', dest='count', default = 1, type = int, help="Count")
 
         try:
             args = parser.parse_args(shlex.split(arg))
         except SystemExit:
             return
 
-        print('algorithm: ' + args.algorithm)
+        match_type = matchTypeMap.get(args.match_type.upper(), 1)
+
+        print('algorithm: %s' % args.algorithm)
+        print('match_type: %s (%d)' % (args.match_type, match_type))
+        print('count: %d' % args.count)
+
         time_log = TimeLog()
 
         if self.function_matches == None or args.algorithm == 'init':
@@ -127,19 +142,22 @@ class BinKitShell(cmd.Cmd):
             time_log.message("Initial diffing finished")
 
         count = 0
-        while count < arg.count:
+        while count < args.count:
             matched_count = 0
             if args.algorithm == ('inshash', 'hash'):
+                print('> do_instruction_hash_match:')
                 matched_count = self.function_matches.do_instruction_hash_match()
 
             elif args.algorithm in ('cf', 'controlflow'):
-                matched_count = self.function_matches.do_control_flow_match()
+                print('> do_control_flow_match:')
+                matched_count = self.function_matches.do_control_flow_match(0, match_type)
 
+            count += 1
+
+            print('\tmatched_count: %d' % matched_count)
             if matched_count == 0:
                 print('match looped: %d' % count)
                 break
-
-            count += 1
 
         time_log.message("Diffing using %s is finished" % arg)
         self.print_function_matches()
