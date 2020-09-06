@@ -95,9 +95,9 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         item.setText(1, '%.8x' % self_address)
         item.setText(2, function_match[self.peer_name+'_name'])
         item.setText(3, '%.8x' % function_match[self.peer_name])
-        item.setText(4, '%.8d' % counts['matched_block_counts'])
-        item.setText(5, '%.8d' % counts['self_unidentified_block_counts'])
-        item.setText(6, '%.8d' % counts['peer_unidentified_block_counts'])
+        item.setText(4, '%d' % counts['matched_block_counts'])
+        item.setText(5, '%d' % counts['self_unidentified_block_counts'])
+        item.setText(6, '%d' % counts['peer_unidentified_block_counts'])
 
     def OnCreate(self, form):
         self.parent = idaapi.PluginForm.FormToPyQtWidget(form)
