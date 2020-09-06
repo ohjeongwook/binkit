@@ -11,19 +11,18 @@ from threading import Thread
 def sync_worker(queue):
     syncers = {}
     while True:
-        data = queue.get()
+        commands = queue.get()
         queue.task_done()
+        if not commands['md5'] in syncers or syncers[commands['md5']] == None:
+            syncers[commands['md5']] = IDASessions.connect(commands['md5'])
 
-        if not data['md5'] in syncers or syncers[data['md5']] == None:
-            syncers[data['md5']] = IDASessions.connect(data['md5'])
-
-        connection = syncers[data['md5']]
-        if connection and data['command'] == 'jumpto':
-            try:
-                connection.root.jumpto(data['address'])
-            except:
-                traceback.print_exc()
-                del syncers[data['md5']]
+        connection = syncers[commands['md5']]
+        try:
+            if connection:
+                connection.root.run_commands(commands['list'])
+        except:
+            traceback.print_exc()
+            del syncers[commands['md5']]
 
 class FunctionsMatchViewer(idaapi.PluginForm):
     def color_block(self, start, end, color):
@@ -32,27 +31,28 @@ class FunctionsMatchViewer(idaapi.PluginForm):
             idaapi.set_item_color(address, color)
             address += ida_bytes.get_item_size(address)
 
-    def color_function_match(self, function_match):
-        if 'matches' in function_match:
-            for match_data in function_match['matches']:
-                self.color_block(match_data[self.self_name], match_data[self.self_name+'_end'], self.color)
-
-        if 'unidentified_blocks' in function_match:
-            for basic_block in function_match['unidentified_blocks'][self.self_name+'s']:
-                self.color_block(basic_block['start'], basic_block['end'], self.color_for_unidentified)
-
     def set_basic_blocks_color(self):
         for function_match in self.match_results['function_matches']:
-            self.color_function_match(function_match)
+            self.matched_block_color_function_match(function_match)
     
     def tree_double_clicked_handler(self, item, column_no):
         idaapi.jumpto(idaapi.get_imagebase() + item.function_match[item.self_name])
-        item.queue.put({'command': 'jumpto', 'md5': item.peer_md5, 'address': item.function_match[item.peer_name]})
-        self.color_function_match(item.function_match)
-    
+        commands = {'md5': item.peer_md5, 'list': []}
+        commands['list'].append(({'name': 'jumpto', 'address': item.function_match[item.peer_name]}))
+        if 'matches' in item.function_match:
+            for match_data in item.function_match['matches']:
+                self.color_block(match_data[self.self_name], match_data[self.self_name+'_end'], self.matched_block_color)
+                commands['list'].append({'name': 'color_block', 'start': match_data[self.peer_name], 'end': match_data[self.peer_name+'_end'], 'color': self.matched_block_color})
+
+        if 'unidentified_blocks' in item.function_match:
+            for basic_block in item.function_match['unidentified_blocks'][self.self_name+'s']:
+                self.color_block(basic_block['start'], basic_block['end'], self.unidentified_block_color)
+                commands['list'].append({'name': 'color_block', 'start': match_data[self.peer_name], 'end': match_data[self.peer_name+'_end'], 'color': self.unidentified_block_color})
+        item.queue.put(commands)
+
     def add_items(self, match_results, self_name, peer_name, peer_md5, color, color_for_unidentified):
-        self.color = color
-        self.color_for_unidentified = color_for_unidentified
+        self.matched_block_color = color
+        self.unidentified_block_color = color_for_unidentified
         self.match_results = match_results
         self.self_name = self_name
         self.peer_name = peer_name

@@ -39,9 +39,11 @@ class ExecuteSyncDefs:
     def execute_read(function):
         return execute_sync(function, idaapi.MFF_READ)
 
+    @staticmethod
     def execute_write(function):
         return execute_sync(function, idaapi.MFF_WRITE)
 
+    @staticmethod
     def execute_ui(function):
         return execute_sync(function, idaapi.MFF_FAST)
 
@@ -71,12 +73,27 @@ class IDA:
         return idaapi.get_imagebase()
 
     @ExecuteSyncDefs.execute_read
+    def get_item_size(self, address):
+        return ida_bytes.get_item_size(address)
+
+    @ExecuteSyncDefs.execute_read
     def get_root_filename(self):
         return idaapi.get_root_filename()
 
-    @ExecuteSyncDefs.execute_read
+    @ExecuteSyncDefs.execute_ui
     def jumpto(self, address):
         return idaapi.jumpto(idaapi.get_imagebase() + address)
+
+    @ExecuteSyncDefs.execute_ui
+    def set_item_color(self, address, color):
+        return idaapi.set_item_color(address, color)
+
+    @ExecuteSyncDefs.execute_ui
+    def color_block(self, start, end, color):
+        address = idaapi.get_imagebase() + start
+        while address < idaapi.get_imagebase() + end:
+            idaapi.set_item_color(address, color)
+            address += ida_bytes.get_item_size(address)
 
     @ExecuteSyncDefs.execute_read
     def navigate_to_function(self, function_address, address):
@@ -127,6 +144,9 @@ class BinKitService(rpyc.Service):
 
     def jumpto(self, address):
         self.ida.jumpto(address)
+        
+    def set_item_color(self, address, color):
+        self.ida.set_item_color(address, color)
 
     def get_md5(self):
         return self.ida.get_md5()
@@ -139,6 +159,14 @@ class BinKitService(rpyc.Service):
 
     def show_diff(self, filename):
         thread.start_new_thread(show_diff_thread, (filename,))
+
+    def run_commands(self, command_list):
+        for command in command_list:
+            if command['name'] == 'jumpto':
+                self.jumpto(command['address'])
+
+            elif command['name'] == 'color_block':
+                self.ida.color_block(command['start'], command['end'], command['color'])
 
 def start_binkit_server(connection_filename):
     port = 18861
