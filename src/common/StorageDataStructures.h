@@ -17,12 +17,12 @@ enum { SEND_ANALYSIS_DATA, UNINDENTIFIED_ADDR, MATCHED_ADDR, SHOW_DATA, SHOW_MAT
 enum { UNKNOWN_BLOCK, FUNCTION_BLOCK };
 
 enum {
-    CALL,
-    CREF_FROM,
-    CREF_TO,
-    DREF_FROM,
-    DREF_TO,
-    CALLED
+    CALL,       // 0: 
+    CREF_FROM,  // 1:
+    CREF_TO,    // 2: no
+    DREF_FROM,  // 3: 
+    DREF_TO,    // 4:
+    CALLED      // 5: no
 };
 
 static const char* SubTypeStr[] = {
