@@ -135,13 +135,32 @@ va_t SQLiteDisassemblyReader::ReadBlockStartAddress(va_t address)
 
 int SQLiteDisassemblyReader::ReadControlFlowCallback(void *arg, int argc, char **argv, char **names)
 {
-    multimap <va_t, PControlFlow> *p_controlFlow = (multimap <va_t, PControlFlow>*)arg;
+    multimap <va_t, PControlFlow> *p_address_to_control_flow = (multimap <va_t, PControlFlow>*)arg;
 
     PControlFlow p_control_flow = new ControlFlow;
-    p_control_flow->Type = atoi(argv[0]);
+    int controlFlowType = atoi(argv[0]);
+    p_control_flow->Type = controlFlowType;
     p_control_flow->Src = strtoul10(argv[1]);
     p_control_flow->Dst = strtoul10(argv[2]);
-    p_controlFlow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
+
+    p_address_to_control_flow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
+    if (controlFlowType == CREF_FROM)
+    {
+        PControlFlow p_control_flow = new ControlFlow;
+        p_control_flow->Type = CREF_TO;;
+        p_control_flow->Src = strtoul10(argv[2]);
+        p_control_flow->Dst = strtoul10(argv[1]);
+        p_address_to_control_flow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
+
+    }
+    else if (controlFlowType == CALL)
+    {
+        PControlFlow p_control_flow = new ControlFlow;
+        p_control_flow->Type = CALLED;;
+        p_control_flow->Src = strtoul10(argv[2]);
+        p_control_flow->Dst = strtoul10(argv[1]);
+        p_address_to_control_flow->insert(AddressPControlFlowPair(p_control_flow->Src, p_control_flow));
+    }    
     return 0;
 }
 
