@@ -26,7 +26,7 @@ class IDASessions:
             try:
                 print("Connecting to %d" % profile['port'])
                 connection = rpyc.connect("127.0.0.1", profile['port'])
-                connection._config['sync_request_timeout'] = 1
+                connection._config['sync_request_timeout'] = 1000
             except:
                 connection = None
                 continue
