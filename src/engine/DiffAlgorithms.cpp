@@ -149,20 +149,20 @@ vector<BasicBlockMatchCombination*> DiffAlgorithms::GetBasicBlockMatchCombinatio
     return p_basicBlockMatchCombinations->GetTopMatches();
 }
 
-vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type)
+vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType)
 {
     bool debug = false;
     vector<BasicBlockMatch> controlFlowMatches;
 
-    vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, type);
-    vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, type);
+    vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, matchType);
+    vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, matchType);
 
     if (sourceAddresses.size() == 0 || targetAddresses.size() == 0)
     {
         return controlFlowMatches;
     }
 
-    if (sourceAddresses.size() > 2 && sourceAddresses.size() == targetAddresses.size() && type == CREF_FROM)
+    if (sourceAddresses.size() > 2 && sourceAddresses.size() == targetAddresses.size() && matchType == CREF_FROM)
     {
         //Special case for switch case
         for (int i = 0; i < sourceAddresses.size(); i++)

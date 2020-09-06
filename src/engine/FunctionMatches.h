@@ -33,7 +33,7 @@ public:
 
     int DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress);
     int DoInstructionHashMatch();
-    int DoControlFlowMatch(va_t address = 0);
+    int DoControlFlowMatch(va_t address = 0, int matchType = CREF_FROM);
     void RemoveMatches(int matchSequence);
 
     vector<FunctionMatch> GetMatches();

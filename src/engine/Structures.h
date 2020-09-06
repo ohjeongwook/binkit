@@ -108,7 +108,12 @@ static const char* BasicBlockMatchTypeStr[] = {
     "Function"
 };
 
-#define CONTROL_FLOW_MATCH 1
+#define CREF_FROM_MATCH 1
+#define CREF_TO_MATCH 2
+#define DREF_FROM_MATCH 4
+#define DREF_TO_MATCH 8
+#define CALL_MATCH 0x10
+#define CALLED_MATCH 0x20
 
 typedef struct _BasicBlockMatch_ {
     short Type;

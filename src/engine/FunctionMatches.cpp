@@ -127,7 +127,7 @@ int FunctionMatches::DoInstructionHashMatch()
     return matchCount;
 }
 
-int FunctionMatches::DoControlFlowMatch(va_t address)
+int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
 {
     int matchCount = 0;
     if (address != 0)
@@ -142,7 +142,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
                 va_t targetFunctionAddress = val2.first;
                 for (BasicBlockMatch *p_basicBlockMatch : val2.second)
                 {
-                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
+                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
                     fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
                 }
                 AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
@@ -151,6 +151,29 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
     }
     else
     {
+        int matchMask = 0;
+        switch(matchType)
+        {
+            case CALL:
+                matchMask = CALL_MATCH;
+                break;            
+            case CREF_FROM:
+                matchMask = CREF_FROM_MATCH;
+                break;            
+            case CREF_TO:
+                matchMask = CREF_TO_MATCH;
+                break;            
+            case DREF_FROM:
+                matchMask = DREF_FROM_MATCH;
+                break;            
+            case DREF_TO:
+                matchMask = DREF_FROM_MATCH;
+                break;            
+            case CALLED:
+                matchMask = CALLED_MATCH;
+                break;            
+        }
+
         for (auto& val : m_functionMatches)
         {
             va_t sourceFunctionAddress = val.first;
@@ -161,15 +184,15 @@ int FunctionMatches::DoControlFlowMatch(va_t address)
 
                 for (BasicBlockMatch *p_basicBlockMatch : val2.second)
                 {
-                    if (p_basicBlockMatch->Flags & CONTROL_FLOW_MATCH)
+                    if (p_basicBlockMatch->Flags & matchMask)
                     {
                         continue;
                     }
 
-                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, CREF_FROM);
+                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
                     matchCount += basicBlockMatchList.size();
                     fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
-                    p_basicBlockMatch->Flags |= CONTROL_FLOW_MATCH;
+                    p_basicBlockMatch->Flags |= matchMask;
                 }
                 AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
             }

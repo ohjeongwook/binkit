@@ -118,7 +118,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("add_matches", &FunctionMatches::AddMatches)
         .def("get_matches", &FunctionMatches::GetMatches)
         .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)
-        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0)
+        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0, py::arg("matchType") = 1)
         .def("remove_matches", &FunctionMatches::RemoveMatches);
 
     py::class_<BasicBlockMatchCombination>(m, "BasicBlockMatchCombination")

@@ -267,7 +267,7 @@ public:
     vector<BasicBlockMatch> DoBlocksInstructionHashMatch(unordered_set<va_t>& sourceBlockAddresses, unordered_set<va_t>& targetBlockAddresses);
 
     vector<BasicBlockMatchCombination*> GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
-    vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int type);
+    vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType);
     vector<BasicBlockMatchCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);
     string GetMatchTypeStr(int Type);
 };
