@@ -24,7 +24,7 @@ class Viewer:
         idaapi.msg("show_functions_match_viewer\n")
         form = FunctionsMatchViewer()
         form.Show(form_name)
-        form.add_items(self.match_results, self.self_name, self.peer_name, self.match_results['binaries'][self.peer_name]['md5'], 0xCCFFFF, 0xCC00CC)
+        form.add_items(self.match_results, self.self_name, self.peer_name, self.match_results['binaries'][self.peer_name]['md5'], 0x00ff00, 0x0000ff)
 
 def get_filename():
     options = QtWidgets.QFileDialog.Options()

@@ -89,11 +89,31 @@ class IDA:
         return idaapi.set_item_color(address, color)
 
     @ExecuteSyncDefs.execute_ui
-    def color_block(self, start, end, color):
+    def color_lines(self, start, end, color):
         address = idaapi.get_imagebase() + start
         while address < idaapi.get_imagebase() + end:
             idaapi.set_item_color(address, color)
             address += ida_bytes.get_item_size(address)
+
+    @ExecuteSyncDefs.execute_ui
+    def color_node(self, addresses, bg_color, frame_color):
+        if len(addresses) <= 0:
+            return
+
+        func = idaapi.get_func(idaapi.get_imagebase() + addresses[0])
+        flowchart_ = idaapi.FlowChart(func)
+
+        address_map = {}
+        for address in addresses:
+            address_map[idaapi.get_imagebase() + address] = 1
+
+        for code_block in flowchart_:
+            if not code_block.start_ea in address_map:
+                continue
+            node_info = idaapi.node_info_t()
+            node_info.bg_color = bg_color
+            node_info.frame_color = frame_color
+            idaapi.set_node_info(func.start_ea, code_block.id, node_info, idaapi.NIF_BG_COLOR | idaapi.NIF_FRAME_COLOR)
 
     @ExecuteSyncDefs.execute_read
     def navigate_to_function(self, function_address, address):
@@ -165,8 +185,15 @@ class BinKitService(rpyc.Service):
             if command['name'] == 'jumpto':
                 self.jumpto(command['address'])
 
-            elif command['name'] == 'color_block':
-                self.ida.color_block(command['start'], command['end'], command['color'])
+            elif command['name'] == 'color_lines':
+                self.ida.color_lines(command['start'], command['end'], command['color'])
+
+            elif command['name'] == 'color_node':
+                if 'frame_color' in command:
+                    frame_color = command['frame_color']
+                else:
+                    frame_color = 0x000000
+                self.ida.color_node(command['addresses'], command['bg_color'], frame_color)
 
 def start_binkit_server(connection_filename):
     port = 18861
