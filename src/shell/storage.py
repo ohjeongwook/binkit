@@ -108,8 +108,12 @@ class FunctionMatchFile:
 
     def save(self, filename):
         print('save ' + filename)
-        with open(filename, 'w') as fd:
-            json.dump(self.match_results, fd, indent = 4)
+
+        try:
+            with open(filename, 'w') as fd:
+                json.dump(self.match_results, fd, indent = 4)
+        except:
+            traceback.print_exc()
 
 class FunctionMatchTool:
     def __init__(self, function_matches, binaries = None):
@@ -196,6 +200,10 @@ class FunctionMatchTool:
         return unidentified_blocks
 
     def get_function_match_file(self, source_function_address = 0, level = 1):
+        if self.function_matches == None:
+            print("No function matches found")
+            return
+
         prefix = '\t' * level
         function_basic_block_match_list = []
         for function_match in self.function_matches.get_matches():
