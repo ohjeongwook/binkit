@@ -54,8 +54,38 @@ class FunctionsMatchViewer(idaapi.PluginForm):
     def set_basic_blocks_color(self):
         for function_match in self.match_results['function_matches']:
             self.matched_block_color_function_match(function_match)
+
+    def add_items(self, match_results, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
+        self.matched_block_color = matched_block_color
+        self.unidentified_block_color = unidentified_block_color
+        self.match_results = match_results
+        self.self_name = self_name
+        self.peer_name = peer_name
+        self.peer_md5 = peer_md5
+
+        for function_match in self.match_results['function_matches']:
+            self.add_item(function_match)
+
+    def count_blocks(self, function_match):
+        matched_block_counts = 0
+        self_unidentified_block_counts = 0
+        peer_unidentified_block_counts = 0
+
+        if 'matches' in function_match:
+            matched_block_counts = len(function_match['matches']) * 2
+
+        if 'unidentified_blocks' in function_match:
+            self_unidentified_block_counts += len(function_match['unidentified_blocks'][self.self_name+'s'])
+            peer_unidentified_block_counts += len(function_match['unidentified_blocks'][self.peer_name+'s'])
+
+        counts = {}
+        counts['matched_block_counts'] = matched_block_counts
+        counts['self_unidentified_block_counts'] = self_unidentified_block_counts
+        counts['peer_unidentified_block_counts'] = peer_unidentified_block_counts
+        return counts
     
-    def tree_double_clicked_handler(self, item, column_no):
+    def tree_double_clicked_handler(self, ix):
+        item = self.items[ix.row()]
         idaapi.jumpto(idaapi.get_imagebase() + item.function_match[item.self_name])
         commands = {'md5': item.peer_md5, 'list': []}
         commands['list'].append(({'name': 'jumpto', 'address': item.function_match[item.peer_name]}))
@@ -87,66 +117,56 @@ class FunctionsMatchViewer(idaapi.PluginForm):
 
         item.queue.put(commands)
 
-    def add_items(self, match_results, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
-        self.matched_block_color = matched_block_color
-        self.unidentified_block_color = unidentified_block_color
-        self.match_results = match_results
-        self.self_name = self_name
-        self.peer_name = peer_name
-        self.peer_md5 = peer_md5
-
-        for function_match in self.match_results['function_matches']:
-            self.add_item(function_match)
-
-    def count_blocks(self, function_match):
-        matched_block_counts = 0
-        self_unidentified_block_counts = 0
-        peer_unidentified_block_counts = 0
-
-        if 'matches' in function_match:
-            matched_block_counts = len(function_match['matches']) * 2
-
-        if 'unidentified_blocks' in function_match:
-            self_unidentified_block_counts += len(function_match['unidentified_blocks'][self.self_name+'s'])
-            peer_unidentified_block_counts += len(function_match['unidentified_blocks'][self.peer_name+'s'])
-
-        counts = {}
-        counts['matched_block_counts'] = matched_block_counts
-        counts['self_unidentified_block_counts'] = self_unidentified_block_counts
-        counts['peer_unidentified_block_counts'] = peer_unidentified_block_counts
-        return counts
-
     def add_item(self, function_match):
-        item = QtWidgets.QTreeWidgetItem(self.tree)
-        item.function_match = function_match
-        item.self_name = self.self_name
-        item.peer_name = self.peer_name
-        item.peer_md5 = self.peer_md5
-        item.queue = self.queue
-
+        imagebase = idaapi.get_imagebase()
+        self_address = imagebase + function_match[self.self_name]        
         counts = self.count_blocks(function_match)
 
-        imagebase = idaapi.get_imagebase()
-        self_address = imagebase + function_match[self.self_name]
-        item.setText(0, idaapi.get_short_name(self_address))
-        item.setText(1, '%.8x' % self_address)
-        item.setText(2, function_match[self.peer_name+'_name'])
-        item.setText(3, '%.8x' % function_match[self.peer_name])
-        item.setText(4, '%d' % counts['matched_block_counts'])
-        item.setText(5, '%d' % counts['self_unidentified_block_counts'])
-        item.setText(6, '%d' % counts['peer_unidentified_block_counts'])
+        root = self.model.invisibleRootItem()
+        root.appendRow([
+            QtGui.QStandardItem(idaapi.get_short_name(self_address)),
+            QtGui.QStandardItem('%.8x' % self_address),
+            QtGui.QStandardItem(function_match[self.peer_name+'_name']),
+            QtGui.QStandardItem('%.8x' % function_match[self.peer_name]),
+            QtGui.QStandardItem('%d' % counts['matched_block_counts']),
+            QtGui.QStandardItem('%d' % counts['self_unidentified_block_counts']),
+            QtGui.QStandardItem('%d' % counts['peer_unidentified_block_counts'])
+        ])
+
+        class Item:
+            def __init__(self, **kwargs):
+                self.__dict__.update(kwargs)
+
+        self.items.append(Item(
+                function_match = function_match,
+                self_name = self.self_name,
+                peer_name = self.peer_name,
+                peer_md5 = self.peer_md5,
+                queue = self.queue
+        ))
+
+    def search_input_changed(self, text):
+        print(text)
 
     def OnCreate(self, form):
         self.parent = idaapi.PluginForm.FormToPyQtWidget(form)
 
-        self.tree = QtWidgets.QTreeWidget()
-        self.tree.setHeaderLabels(("Source", "Address", "Target", "Address", "Matched", "Removed", "Added"))
-        self.tree.setColumnWidth(0, 100)
+        self.tree = QtWidgets.QTreeView()
         self.tree.setSortingEnabled(True)
-        self.tree.itemDoubleClicked.connect(self.tree_double_clicked_handler)
+        self.tree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tree.doubleClicked.connect(self.tree_double_clicked_handler)
+
+        self.items = []
+        self.model = QtGui.QStandardItemModel(self.tree)
+        self.model.setHorizontalHeaderLabels(("Source", "Address", "Target", "Address", "Matched", "Removed", "Added"))
+        self.tree.setModel(self.model)
+
+        self.search_input = QtWidgets.QLineEdit()
+        self.search_input.textChanged.connect(self.search_input_changed)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tree)
+        layout.addWidget(self.search_input)
         self.parent.setLayout(layout)
         
         self.queue = Queue(maxsize=0)
