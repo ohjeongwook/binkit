@@ -4,8 +4,6 @@ import json
 import pprint
 import traceback
 
-import pybinkit
-
 class FunctionMatchFile:
     def __init__(self, filename = '', match_results = {}, binaries = None):
         if filename and os.path.isfile(filename):
