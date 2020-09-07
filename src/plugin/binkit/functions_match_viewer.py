@@ -24,6 +24,19 @@ def sync_worker(queue):
             traceback.print_exc()
             del syncers[commands['md5']]
 
+class NumberSortModel(QtCore.QSortFilterProxyModel):
+    def lessThan(self, left, right):
+        if left.column() in (4, 5, 6):
+            lvalue = int(left.data())
+            rvalue = int(right.data())
+            return lvalue < rvalue
+        elif left.column() in (1, 3):
+            lvalue = int(left.data(), 16)
+            rvalue = int(right.data(), 16)
+            return lvalue < rvalue
+        else:
+            return left < right
+   
 class FunctionsMatchViewer(idaapi.PluginForm):
     def color_lines(self, start, end, color):
         address = idaapi.get_imagebase() + start
@@ -171,7 +184,7 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         self.model = QtGui.QStandardItemModel(self.tree_view)
         self.model.setHorizontalHeaderLabels(self.columns)
 
-        self.proxy_model = QtCore.QSortFilterProxyModel(self.tree_view)
+        self.proxy_model = NumberSortModel(self.tree_view)
         self.proxy_model.setSourceModel(self.model)        
 
         self.tree_view.setModel(self.proxy_model)
