@@ -66,6 +66,15 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         for function_match in self.match_results['function_matches']:
             self.add_item(function_match)
 
+        self.tree_view.setRootIsDecorated(False)
+        self.tree_view.setColumnWidth(0, 100)
+        self.tree_view.setColumnWidth(1, 50)
+        self.tree_view.setColumnWidth(2, 100)
+        self.tree_view.setColumnWidth(3, 50)
+        self.tree_view.setColumnWidth(4, 30)
+        self.tree_view.setColumnWidth(5, 30)
+        self.tree_view.setColumnWidth(6, 30)
+
     def count_blocks(self, function_match):
         matched_block_counts = 0
         self_unidentified_block_counts = 0
@@ -84,7 +93,7 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         counts['peer_unidentified_block_counts'] = peer_unidentified_block_counts
         return counts
     
-    def tree_double_clicked_handler(self, ix):
+    def tree_view_double_clicked_handler(self, ix):
         item = self.items[ix.row()]
         idaapi.jumpto(idaapi.get_imagebase() + item.function_match[item.self_name])
         commands = {'md5': item.peer_md5, 'list': []}
@@ -146,30 +155,32 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         ))
 
     def search_input_changed(self, text):
-        self.proxy_model.setFilterRegExp(text)
+        self.proxy_model.setFilterWildcard(text)
 
     def OnCreate(self, form):
         self.parent = idaapi.PluginForm.FormToPyQtWidget(form)
 
-        self.tree = QtWidgets.QTreeView()
-        self.tree.setSortingEnabled(True)
-        self.tree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.tree.doubleClicked.connect(self.tree_double_clicked_handler)
+        self.columns = ("Source", "Address", "Target", "Address", "Matched", "Removed", "Added")
+
+        self.tree_view = QtWidgets.QTreeView()
+        self.tree_view.setSortingEnabled(True)
+        self.tree_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tree_view.doubleClicked.connect(self.tree_view_double_clicked_handler)
 
         self.items = []
-        self.model = QtGui.QStandardItemModel(self.tree)
-        self.model.setHorizontalHeaderLabels(("Source", "Address", "Target", "Address", "Matched", "Removed", "Added"))
+        self.model = QtGui.QStandardItemModel(self.tree_view)
+        self.model.setHorizontalHeaderLabels(self.columns)
 
-        self.proxy_model = QtCore.QSortFilterProxyModel(self.tree)
+        self.proxy_model = QtCore.QSortFilterProxyModel(self.tree_view)
         self.proxy_model.setSourceModel(self.model)        
 
-        self.tree.setModel(self.proxy_model)
+        self.tree_view.setModel(self.proxy_model)
 
         self.search_input = QtWidgets.QLineEdit()
         self.search_input.textChanged.connect(self.search_input_changed)
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.tree)
+        layout.addWidget(self.tree_view)
         layout.addWidget(self.search_input)
         self.parent.setLayout(layout)
         
