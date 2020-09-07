@@ -46,7 +46,7 @@ class TimeLog:
 
 class BinKitShell(cmd.Cmd):
     intro = 'Welcome to the binkit shell.\n - Type help or ? to list commands.\n'
-    prompt = '(binkit) '
+    prompt = 'binkit> '
 
     def __init__(self, results_directory = 'results', log_setting_filename = 'settings.ini'):
         cmd.Cmd.__init__(self)
@@ -62,10 +62,6 @@ class BinKitShell(cmd.Cmd):
             except:
                 pass
 
-    def do_s(self, arg):
-        'List current IDA sessions'
-        self.do_sessions(arg)
-
     def do_sessions(self, arg):
         'List current IDA sessions'
         self.profile_list = self.profiles.list()
@@ -76,6 +72,7 @@ class BinKitShell(cmd.Cmd):
             for k,v in profile.items():
                 print('    %s: %s' % (k, str(v)))
             index += 1
+    do_s = do_sessions
 
     def do_export(self, arg):
         'Export IDA analysis data to a database'
@@ -104,6 +101,15 @@ class BinKitShell(cmd.Cmd):
             time_log = TimeLog()
             self.binaries.append(pybinkit.Binary(filename))
             time_log.message('Loaded ' + filename)
+
+    def complete_load(self, text, line, begidx, endidx):
+        print('complete_load')
+        print(text)
+        if not text:
+            completions = [f for f in os.listdir(os.getcwd())]
+        else:
+            completions = [f for f in os.listdir(tex)]
+        return completions
 
     def do_list(self, arg):
         for binary in self.binaries:
