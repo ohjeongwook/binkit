@@ -98,12 +98,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python38|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);%USERPROFILE%\AppData\Local\Programs\Python\Python38\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);%PYTHON3_PATH%\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python27|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);c:\python27\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);%PYTHON2_PATH%\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python38|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -117,7 +117,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Python38|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);%USERPROFILE%\AppData\Local\Programs\Python\Python38\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);%PYTHON3_PATH%\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python38|x64'">
     <ClCompile>
@@ -125,13 +125,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>;%USERPROFILE%\AppData\Local\Programs\Python\Python38\include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>;%PYTHON3_PATH%\include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%USERPROFILE%\AppData\Local\Programs\Python\Python38\libs;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;python38.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON3_PATH%\libs;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON3_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python27|x64'">
@@ -140,13 +140,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Python27\include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      \include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;C:\Python27\libs;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;python27.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON2_PATH%\libs;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON2_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python38|Win32'">
@@ -197,15 +198,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%USERPROFILE%\AppData\Local\Programs\Python\Python38\include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%PYTHON3_PATH%\include;..\Common;..\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%USERPROFILE%\AppData\Local\Programs\Python\Python38\libs;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;python38.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON3_PATH%\libs;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON3_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
