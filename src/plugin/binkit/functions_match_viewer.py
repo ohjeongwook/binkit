@@ -68,46 +68,8 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         for function_match in self.match_results['function_matches']:
             self.matched_block_color_function_match(function_match)
 
-    def add_items(self, match_results, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
-        self.matched_block_color = matched_block_color
-        self.unidentified_block_color = unidentified_block_color
-        self.match_results = match_results
-        self.self_name = self_name
-        self.peer_name = peer_name
-        self.peer_md5 = peer_md5
-
-        for function_match in self.match_results['function_matches']:
-            self.add_item(function_match)
-
-        self.tree_view.setRootIsDecorated(False)
-        self.tree_view.setColumnWidth(0, 100)
-        self.tree_view.setColumnWidth(1, 50)
-        self.tree_view.setColumnWidth(2, 100)
-        self.tree_view.setColumnWidth(3, 50)
-        self.tree_view.setColumnWidth(4, 30)
-        self.tree_view.setColumnWidth(5, 30)
-        self.tree_view.setColumnWidth(6, 30)
-
-    def count_blocks(self, function_match):
-        matched_block_counts = 0
-        self_unidentified_block_counts = 0
-        peer_unidentified_block_counts = 0
-
-        if 'matches' in function_match:
-            matched_block_counts = len(function_match['matches']) * 2
-
-        if 'unidentified_blocks' in function_match:
-            self_unidentified_block_counts += len(function_match['unidentified_blocks'][self.self_name+'s'])
-            peer_unidentified_block_counts += len(function_match['unidentified_blocks'][self.peer_name+'s'])
-
-        counts = {}
-        counts['matched_block_counts'] = matched_block_counts
-        counts['self_unidentified_block_counts'] = self_unidentified_block_counts
-        counts['peer_unidentified_block_counts'] = peer_unidentified_block_counts
-        return counts
-    
     def tree_view_double_clicked_handler(self, ix):
-        item = self.items[ix.row()]
+        item = ix.data(QtCore.Qt.UserRole)
         idaapi.jumpto(idaapi.get_imagebase() + item.function_match[item.self_name])
         commands = {'md5': item.peer_md5, 'list': []}
         commands['list'].append(({'name': 'jumpto', 'address': item.function_match[item.peer_name]}))
@@ -139,13 +101,31 @@ class FunctionsMatchViewer(idaapi.PluginForm):
 
         item.queue.put(commands)
 
+    def count_blocks(self, function_match):
+        matched_block_counts = 0
+        self_unidentified_block_counts = 0
+        peer_unidentified_block_counts = 0
+
+        if 'matches' in function_match:
+            matched_block_counts = len(function_match['matches']) * 2
+
+        if 'unidentified_blocks' in function_match:
+            self_unidentified_block_counts += len(function_match['unidentified_blocks'][self.self_name+'s'])
+            peer_unidentified_block_counts += len(function_match['unidentified_blocks'][self.peer_name+'s'])
+
+        counts = {}
+        counts['matched_block_counts'] = matched_block_counts
+        counts['self_unidentified_block_counts'] = self_unidentified_block_counts
+        counts['peer_unidentified_block_counts'] = peer_unidentified_block_counts
+        return counts
+    
     def add_item(self, function_match):
         imagebase = idaapi.get_imagebase()
         self_address = imagebase + function_match[self.self_name]        
         counts = self.count_blocks(function_match)
 
         root = self.model.invisibleRootItem()
-        root.appendRow([
+        columns = [
             QtGui.QStandardItem(idaapi.get_short_name(self_address)),
             QtGui.QStandardItem('%.8x' % self_address),
             QtGui.QStandardItem(function_match[self.peer_name+'_name']),
@@ -153,19 +133,43 @@ class FunctionsMatchViewer(idaapi.PluginForm):
             QtGui.QStandardItem('%d' % counts['matched_block_counts']),
             QtGui.QStandardItem('%d' % counts['self_unidentified_block_counts']),
             QtGui.QStandardItem('%d' % counts['peer_unidentified_block_counts'])
-        ])
+        ]
+        root.appendRow(columns)
 
         class Item:
             def __init__(self, **kwargs):
                 self.__dict__.update(kwargs)
 
-        self.items.append(Item(
+        item_data = Item(
                 function_match = function_match,
                 self_name = self.self_name,
                 peer_name = self.peer_name,
                 peer_md5 = self.peer_md5,
                 queue = self.queue
-        ))
+        )
+
+        for column_item in columns:
+            column_item.setData(item_data, QtCore.Qt.UserRole)
+
+    def add_items(self, match_results, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
+        self.matched_block_color = matched_block_color
+        self.unidentified_block_color = unidentified_block_color
+        self.match_results = match_results
+        self.self_name = self_name
+        self.peer_name = peer_name
+        self.peer_md5 = peer_md5
+
+        for function_match in self.match_results['function_matches']:
+            self.add_item(function_match)
+
+        self.tree_view.setRootIsDecorated(False)
+        self.tree_view.setColumnWidth(0, 100)
+        self.tree_view.setColumnWidth(1, 50)
+        self.tree_view.setColumnWidth(2, 100)
+        self.tree_view.setColumnWidth(3, 50)
+        self.tree_view.setColumnWidth(4, 30)
+        self.tree_view.setColumnWidth(5, 30)
+        self.tree_view.setColumnWidth(6, 30)
 
     def search_input_changed(self, text):
         self.proxy_model.setFilterWildcard(text)
@@ -180,7 +184,7 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         self.tree_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tree_view.doubleClicked.connect(self.tree_view_double_clicked_handler)
 
-        self.items = []
+        self.item_map = {}
         self.model = QtGui.QStandardItemModel(self.tree_view)
         self.model.setHorizontalHeaderLabels(self.columns)
 
