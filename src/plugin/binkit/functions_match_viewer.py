@@ -146,7 +146,7 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         ))
 
     def search_input_changed(self, text):
-        print(text)
+        self.proxy_model.setFilterRegExp(text)
 
     def OnCreate(self, form):
         self.parent = idaapi.PluginForm.FormToPyQtWidget(form)
@@ -159,7 +159,11 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         self.items = []
         self.model = QtGui.QStandardItemModel(self.tree)
         self.model.setHorizontalHeaderLabels(("Source", "Address", "Target", "Address", "Matched", "Removed", "Added"))
-        self.tree.setModel(self.model)
+
+        self.proxy_model = QtCore.QSortFilterProxyModel(self.tree)
+        self.proxy_model.setSourceModel(self.model)        
+
+        self.tree.setModel(self.proxy_model)
 
         self.search_input = QtWidgets.QLineEdit()
         self.search_input.textChanged.connect(self.search_input_changed)
