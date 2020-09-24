@@ -34,11 +34,13 @@ class BinkitPlugin(idaapi.plugin_t):
         self.connection_filename = os.path.join(binkit_profile, "%s-%d.port" % (md5, os.getpid()))
 
     def run(self, arg):
-        viewer = Viewer(get_filename())
-        form_name = "Function Matches-%d" % self.viewer_sequence
-        self.viewer_sequence += 1
-        viewer.show_functions_match_viewer(form_name)
-        idaapi.set_dock_pos(form_name, "Functions window", idaapi.DP_TAB)
+        filename = get_filename()
+        if filename and os.path.isfile(filename):
+            viewer = Viewer()
+            form_name = "Function Matches-%d" % self.viewer_sequence
+            self.viewer_sequence += 1
+            viewer.show_functions_match_viewer(form_name)
+            idaapi.set_dock_pos(form_name, "Functions window", idaapi.DP_TAB)
 
     def term(self):
         if os.path.isfile(self.connection_filename):

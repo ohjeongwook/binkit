@@ -1,3 +1,4 @@
+import os
 import idaapi
 import ida_bytes
 import json
@@ -6,8 +7,10 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 class Viewer:
     def __init__(self, filename):
-        with open(filename, 'r') as fd:
-            self.match_results = json.load(fd)
+        self.match_results = []
+        if os.path.isfile(filename):
+            with open(filename, 'r') as fd:
+                self.match_results = json.load(fd)
 
         md5 = idc.GetInputMD5().lower()
         if md5 == self.match_results['binaries']['source']['md5']:
