@@ -637,9 +637,6 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t>* p_cmdAr
             basic_block.FunctionAddress = p_func->start_ea;
         }
 
-        //BOOST_LOG_TRIVIAL(debug) << boost::format("Function: %X Block : %X (%s)") % basic_block.StartAddress % basic_block.FunctionAddress % name);
-        //BOOST_LOG_TRIVIAL(debug) << boost::format("Function: %X Block : %X (%s)") % basic_block.FunctionAddress % basic_block.StartAddress % name);
-
         ea_t cref = get_first_cref_to(srcBlockAddress);
 
         if (cref == BADADDR || basic_block.StartAddress == basic_block.FunctionAddress)
@@ -689,42 +686,27 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t>* p_cmdAr
 
             generate_disasm_line(&buf, (*cmdArrayIt).ea);
             tag_remove(&buf);
-
-            //BOOST_LOG_TRIVIAL(debug) << boost::format("%X(%X): [%s]") % (*cmdArrayIt).ea % basic_block.StartAddress % buf;
-
             buf += "\n";
             disasm_buffer += buf.c_str();
         }
     }
 
-    /*
-    if (gatherCmdArray)
-    {
-        basic_block.CmdArrayLen = p_cmdArray->size() * sizeof(insn_t);
-    }
-    else
-    {
-        basic_block.CmdArrayLen = 0;
-    }
-
-    if (gatherCmdArray)
-    {
-        int CmdArrayIndex = 0;
-        for (list <insn_t>::iterator iter = p_cmdArray->begin(); iter != p_cmdArray->end(); iter++, CmdArrayIndex++)
-        {
-            memcpy(&CmdsPtr[CmdArrayIndex], &(*iter), sizeof(insn_t));
-        }
-    }
-    */
-
     basic_block.DisasmLines = disasm_buffer;
     basic_block.InstructionHash = BytesToHexString(instructionHash);
 
-    int instructionSize = basic_block.EndAddress - srcBlockAddress;
+    if (basic_block.EndAddress != 0 && basic_block.EndAddress != BADADDR && basic_block.EndAddress > srcBlockAddress && instructionHash.size() > 0)
+    {
+        int instructionSize = basic_block.EndAddress - srcBlockAddress;
 
-    unsigned char* instructionBytes = new unsigned char[instructionSize];
-    get_bytes((void*)instructionBytes, instructionSize, srcBlockAddress);
-    basic_block.InstructionBytes = BytesToHexString(instructionBytes, instructionSize);
+        unsigned char* instructionBytes = new unsigned char[instructionSize];
+        get_bytes((void*)instructionBytes, instructionSize, srcBlockAddress);
+
+        if ( instructionSize > 1000)
+        {
+            BOOST_LOG_TRIVIAL(debug) << boost::format("srcBlockAddress: %x - basic_block.EndAddress: %x") % srcBlockAddress % basic_block.EndAddress;
+        }
+        basic_block.InstructionBytes = BytesToHexString(instructionBytes, instructionSize);
+    }
     m_pdisassemblyWriter->AddBasicBlock(basic_block);
 }
 
@@ -1007,24 +989,21 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
             }
         }
 
-        //dref_to
         ea_t dref = get_first_dref_to(currentAddress);
         while (dref != BADADDR)
         {
-            //PUSH THIS: dref
             controlFlow.Type = DREF_TO;
+            controlFlow.Src = currentAddress;
             controlFlow.Dst = dref;
             m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_to(currentAddress, dref);
         }
 
-        //dref_from
         dref = get_first_dref_from(currentAddress);
         while (dref != BADADDR)
         {
-            //PUSH THIS: next_drefs dref
-
             controlFlow.Type = DREF_FROM;
+            controlFlow.Src = currentAddress;
             controlFlow.Dst = dref;
             m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_from(currentAddress, dref);
