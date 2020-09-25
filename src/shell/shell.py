@@ -32,13 +32,13 @@ class BinKitShell(cmd.Cmd):
             except:
                 pass
 
-        self.binkit_loader = binkit.Loader(log_setting_filename)
+        self.binkit_differ = binkit.Differ(log_setting_filename)
 
     def do_sessions(self, arg):
         'List current IDA sessions'
         index = 0
         
-        for profile in self.binkit_loader.get_profiles():
+        for profile in self.binkit_differ.get_profiles():
             print('# Index: %d' % index)
             for k,v in profile.items():
                 print('    %s: %s' % (k, str(v)))
@@ -56,12 +56,12 @@ class BinKitShell(cmd.Cmd):
             if len(args) > 1:
                 filename = args[1]            
 
-        self.binkit_loader.export(filename)
+        self.binkit_differ.export(filename)
        
     def do_load(self, arg):
         for filename in arg.split():
             time_log = TimeLog()
-            self.binkit_loader.load(filename)
+            self.binkit_differ.load(filename)
             time_log.message('Loaded ' + filename)
 
     def complete_load(self, text, line, begidx, endidx):
@@ -74,7 +74,7 @@ class BinKitShell(cmd.Cmd):
         return completions
 
     def do_list(self, arg):
-        for binary in self.binkit_loader.get_binaries():
+        for binary in self.binkit_differ.get_binaries():
             print(binary.get_md5())
 
     def do_diff(self, arg):
@@ -93,11 +93,11 @@ class BinKitShell(cmd.Cmd):
         print('count: %d' % args.count)
 
         time_log = TimeLog()
-        self.binkit_loader.diff(args.algorithm, args.match_type, args.count)
+        self.binkit_differ.diff(args.algorithm, args.match_type, args.count)
         time_log.message("Diffing using %s is finished" % arg)
 
     def do_save(self, arg):
-        self.binkit_loader.save(arg)
+        self.binkit_differ.save(arg)
 
     def do_show(self, arg):
         filename = ''
@@ -105,8 +105,8 @@ class BinKitShell(cmd.Cmd):
             filename = os.path.abspath(arg)
         else:
             filename = os.path.join(self.results_directory, str(uuid.uuid4()) + '.json')
-            self.binkit_loader.save(filename)
-        self.binkit_loader.show_on_ida(filename)
+            self.binkit_differ.save(filename)
+        self.binkit_differ.show_on_ida(filename)
 
     def do_quit(self, arg):
         'Quit shell.'
