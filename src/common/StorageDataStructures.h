@@ -8,7 +8,7 @@
 using namespace std;
 using namespace stdext;
 
-typedef int va_t;
+typedef unsigned long long va_t;
 #define strtoul10(X) strtoul(X, NULL, 10)
 
 enum { SEND_ANALYSIS_DATA, UNINDENTIFIED_ADDR, MATCHED_ADDR, SHOW_DATA, SHOW_MATCH_ADDR, JUMP_TO_ADDR, GET_DISASM_LINES, COLOR_ADDRESS, GET_INPUT_NAME, MODIFIED_ADDR };
