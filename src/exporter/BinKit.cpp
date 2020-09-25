@@ -92,59 +92,6 @@ bool IsNumber(char *data)
     return is_number;
 }
 
-bool FileWriterWrapper(PVOID Context, BYTE Type, PBYTE Data, DWORD Length)
-{
-    BOOL Status = FALSE;
-    HANDLE hFile = (HANDLE)Context;
-    if (hFile != INVALID_HANDLE_VALUE)
-    {
-        DWORD NumberOfBytesWritten;
-        Status = WriteFile(
-            hFile,
-            (LPCVOID)&Type,
-            sizeof(Type),
-            &NumberOfBytesWritten,
-            NULL
-        );
-        if (Status && sizeof(Type) == NumberOfBytesWritten)
-        {
-            Status = WriteFile(
-                hFile,
-                (LPCVOID)&Length,
-                sizeof(Length),
-                &NumberOfBytesWritten,
-                NULL
-            );
-        }
-        else
-        {
-            Status = FALSE;
-        }
-        if (Status && sizeof(Length) == NumberOfBytesWritten)
-        {
-            Status = WriteFile(
-                hFile,
-                (LPCVOID)Data,
-                Length,
-                &NumberOfBytesWritten,
-                NULL
-            );
-        }
-        else
-        {
-            Status = FALSE;
-        }
-        if (Status && Length == NumberOfBytesWritten)
-        {
-        }
-        else
-        {
-            Status = FALSE;
-        }
-    }
-    return Status;
-}
-
 void SaveAnalysis(const char *output_file_path)
 {
     long start_tick = GetTickCount();
