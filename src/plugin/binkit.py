@@ -36,7 +36,7 @@ class BinkitPlugin(idaapi.plugin_t):
     def run(self, arg):
         filename = get_filename()
         if filename and os.path.isfile(filename):
-            viewer = Viewer()
+            viewer = Viewer(filename)
             form_name = "Function Matches-%d" % self.viewer_sequence
             self.viewer_sequence += 1
             viewer.show_functions_match_viewer(form_name)
