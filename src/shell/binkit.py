@@ -27,7 +27,7 @@ matchTypeMap = {
     "CALLED":  5
 }
 
-class Differ:
+class BinaryMatcher:
     def __init__(self, log_setting_filename = ''):
         self.function_matches = None
         self.binaries = []        
@@ -128,22 +128,22 @@ class Differ:
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='BinKit Differ')
+    parser = argparse.ArgumentParser(description='BinKit BinaryMatcher')
     parser.add_argument('-c', '--command', metavar='command', type=str, default = '', help='File script command')
     parser.add_argument('-o', '--output_filename', metavar='output_filename', type=str, default = 'diff.yml', help='Output filename')
     parser.add_argument('filenames', metavar='filenames', nargs='+', type=str, help='IDAPython script filename')
     args = parser.parse_args()
 
-    differ = Differ()
+    binary_matcher = BinaryMatcher()
     for filename in args.filenames:
-        differ.load(filename)
+        binary_matcher.load(filename)
 
-    match_count = differ.diff(algorithm = 'init')
+    match_count = binary_matcher.diff(algorithm = 'init')
     while match_count > 0:
-        match_count = differ.diff(algorithm = 'hash')
-        differ.print_function_matches()
+        match_count = binary_matcher.diff(algorithm = 'hash')
+        binary_matcher.print_function_matches()
 
         for matchType in matchTypeMap:
-            match_count += differ.diff(algorithm = 'controlflow', match_type = matchType, iteration = 100)
-        differ.print_function_matches()
-    differ.save(args.output_filename)
+            match_count += binary_matcher.diff(algorithm = 'controlflow', match_type = matchType, iteration = 100)
+        binary_matcher.print_function_matches()
+    binary_matcher.save(args.output_filename)
