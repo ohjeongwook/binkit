@@ -77,10 +77,10 @@ class Differ:
         while i < iteration:
             current_match_count = 0
             if algorithm == ('inshash', 'hash'):
-                print('> do_instruction_hash_match:')
+                print('* do_instruction_hash_match:')
                 current_match_count = self.function_matches.do_instruction_hash_match()
             elif algorithm in ('cf', 'controlflow'):
-                print('> do_control_flow_match:')
+                print('* do_control_flow_match:')
                 current_match_count = self.function_matches.do_control_flow_match(0, match_type)
             print('current_match_count: %d' % current_match_count)
             total_match_count += current_match_count            
@@ -142,6 +142,8 @@ if __name__ == '__main__':
     while match_count > 0:
         match_count = differ.diff(algorithm = 'hash')
         differ.print_function_matches()
-        match_count += differ.diff(algorithm = 'controlflow', iteration = 100)
+
+        for matchType in matchTypeMap:
+            match_count += differ.diff(algorithm = 'controlflow', match_type = matchType, iteration = 100)
         differ.print_function_matches()
     differ.save(args.output_filename)
