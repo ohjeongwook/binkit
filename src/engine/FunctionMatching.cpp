@@ -1,7 +1,7 @@
-#include "FunctionMatches.h"
+#include "FunctionMatching.h"
 #include "DiffAlgorithms.h"
 
-FunctionMatches::FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary)
+FunctionMatching::FunctionMatching(Binary* p_sourceBinary, Binary* p_targetBinary)
 {
     m_sourceBinary = p_sourceBinary;
     m_targetBinary = p_targetBinary;
@@ -9,7 +9,7 @@ FunctionMatches::FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary)
     m_pdiffAlgorithms = new DiffAlgorithms(p_sourceBinary, p_targetBinary);
 }
 
-void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList)
+void FunctionMatching::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList)
 {
     for (BasicBlockMatch basicBlockMatch : currentBasicBlockMatchList)
     {
@@ -23,7 +23,17 @@ void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchL
     }
 }
 
-int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress)
+vector<FunctionMatch> FunctionMatching::GetMatches()
+{
+    return m_functionMatchList.GetMatches();
+}
+
+void FunctionMatching::RemoveMatches(int matchSequence)
+{
+    m_functionMatchList.RemoveMatches(matchSequence);
+}
+
+int FunctionMatching::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress)
 {
     Function *sourceFunction = m_sourceBinary->GetFunction(sourceFunctionAddress);
     Function *targetFunction = m_targetBinary->GetFunction(targetFunctionAddress);
@@ -39,7 +49,7 @@ int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, 
     return 0;
 }
 
-int FunctionMatches::DoInstructionHashMatch()
+int FunctionMatching::DoInstructionHashMatch()
 {
     int matchCount = 0;
     if (m_functionMatchList.GetSize() == 0)
@@ -66,12 +76,12 @@ int FunctionMatches::DoInstructionHashMatch()
     return matchCount;
 }
 
-int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
+int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
 {
     int matchCount = 0;
     if (address != 0)
     {
-        for(FunctionMatch & functionMatch : m_functionMatchList.GetFunctionMatches(address))
+        for(FunctionMatch & functionMatch : m_functionMatchList.GetMatchesByAddress(address))
         {
             vector<BasicBlockMatch> fullBasicBlockMatchList;                
             for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
@@ -109,7 +119,7 @@ int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
 
         BOOST_LOG_TRIVIAL(debug) << boost::format("matchType: %x matchMask: %x") % matchType % matchMask;
 
-        for(FunctionMatch & functionMatch : m_functionMatchList.GetFunctionMatches(address))
+        for(FunctionMatch & functionMatch : m_functionMatchList.GetMatchesByAddress(address))
         {
             vector<BasicBlockMatch> fullBasicBlockMatchList;
             for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)

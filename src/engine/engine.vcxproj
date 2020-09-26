@@ -166,7 +166,7 @@
     <ClInclude Include="DisassemblyReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Function.h" />
-    <ClInclude Include="FunctionMatches.h" />
+    <ClInclude Include="FunctionMatching.h" />
     <ClInclude Include="Binaries.h" />
     <ClInclude Include="SQLiteDiffStorage.h" />
     <ClInclude Include="SQLiteDisassemblyReader.h" />
@@ -182,7 +182,7 @@
     <ClCompile Include="Diff.cpp" />
     <ClCompile Include="DiffAlgorithms.cpp" />
     <ClCompile Include="Function.cpp" />
-    <ClCompile Include="FunctionMatches.cpp" />
+    <ClCompile Include="FunctionMatching.cpp" />
     <ClCompile Include="Binaries.cpp" />
     <ClCompile Include="SQLiteDiffStorage.cpp" />
     <ClCompile Include="SQLiteDisassemblyReader.cpp" />

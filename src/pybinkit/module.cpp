@@ -112,14 +112,14 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("target", &FunctionMatch::TargetFunction)
         .def_readwrite("basic_block_match_list", &FunctionMatch::BasicBlockMatchList);
 
-    py::class_<FunctionMatches>(m, "FunctionMatches")
+    py::class_<FunctionMatching>(m, "FunctionMatching")
         .def(py::init<Binary*, Binary*>())
-        .def("do_function_instruction_hash_match", &FunctionMatches::DoFunctionInstructionHashMatch)
-        .def("add_matches", &FunctionMatches::AddMatches)
-        .def("get_matches", &FunctionMatches::GetMatches)
-        .def("do_instruction_hash_match", &FunctionMatches::DoInstructionHashMatch)
-        .def("do_control_flow_match", &FunctionMatches::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0, py::arg("matchType") = 1)
-        .def("remove_matches", &FunctionMatches::RemoveMatches);
+        .def("do_function_instruction_hash_match", &FunctionMatching::DoFunctionInstructionHashMatch)
+        .def("add_matches", &FunctionMatching::AddMatches)
+        .def("do_instruction_hash_match", &FunctionMatching::DoInstructionHashMatch)
+        .def("do_control_flow_match", &FunctionMatching::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0, py::arg("matchType") = 1)
+        .def("get_matches", &FunctionMatching::GetMatches)
+        .def("remove_matches", &FunctionMatching::RemoveMatches);
 
     py::class_<BasicBlockMatchCombination>(m, "BasicBlockMatchCombination")
         .def(py::init())

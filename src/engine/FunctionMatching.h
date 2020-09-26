@@ -61,7 +61,7 @@ public:
     }
 };
 
-class FunctionMatchList
+class FunctionMatches
 {
 private:
     unordered_map<va_t, unordered_map<va_t, BasicBlockList>> m_matches;
@@ -100,7 +100,7 @@ public:
         return functionsAddresses;
     }
 
-    vector<FunctionMatch> GetFunctionMatches()
+    vector<FunctionMatch> GetMatches()
     {
         vector<FunctionMatch> functionMatchList;
 
@@ -118,7 +118,7 @@ public:
         return functionMatchList;
     }
 
-    vector<FunctionMatch> GetFunctionMatches(va_t address)
+    vector<FunctionMatch> GetMatchesByAddress(va_t address)
     {
         vector<FunctionMatch> functionMatchList;
 
@@ -192,18 +192,20 @@ public:
     }
 };
 
-class FunctionMatches
+class FunctionMatching
 {
 private:
     Binary* m_sourceBinary;
     Binary* m_targetBinary;
     DiffAlgorithms* m_pdiffAlgorithms;
     int m_matchSequence;
-    FunctionMatchList m_functionMatchList;
+    FunctionMatches m_functionMatchList;
 
 public:
-    FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary);
+    FunctionMatching(Binary* p_sourceBinary, Binary* p_targetBinary);
     void AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList);
+    vector<FunctionMatch> GetMatches();
+    void RemoveMatches(int matchSequence);
     int DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress);
     int DoInstructionHashMatch();
     int DoControlFlowMatch(va_t address = 0, int matchType = CREF_FROM);

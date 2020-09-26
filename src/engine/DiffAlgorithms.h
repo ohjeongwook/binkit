@@ -3,7 +3,7 @@
 
 #include "Binary.h"
 #include "BasicBlocks.h"
-#include "FunctionMatches.h"
+#include "FunctionMatching.h"
 
 #include <iostream>
 #include <boost/format.hpp> 

@@ -70,7 +70,7 @@ class BinaryMatcher:
             diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
             self.basic_block_matches = diff_algorithms.do_instruction_hash_match()
             total_match_count += len(self.basic_block_matches)
-            self.function_matches = pybinkit.FunctionMatches(self.binaries[0], self.binaries[1])
+            self.function_matches = pybinkit.FunctionMatching(self.binaries[0], self.binaries[1])
             self.function_matches.add_matches(self.basic_block_matches)
 
         i = 0

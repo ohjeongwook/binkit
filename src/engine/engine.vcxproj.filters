@@ -45,7 +45,7 @@
     <ClInclude Include="Varray.h">
       <Filter>Algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="FunctionMatches.h">
+    <ClInclude Include="FunctionMatching.h">
       <Filter>Algorithms</Filter>
     </ClInclude>
     <ClInclude Include="Binaries.h">
@@ -101,7 +101,7 @@
     <ClCompile Include="Varray.cpp">
       <Filter>Algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="FunctionMatches.cpp">
+    <ClCompile Include="FunctionMatching.cpp">
       <Filter>Algorithms</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\sqlite3.c">

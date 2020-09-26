@@ -61,7 +61,7 @@ basic_block_match_combinations = diff_algorithms.do_control_flow_matches((addres
 basic_block_match_combinations = diff_algorithms.get_basic_block_match_combinations(function_match.basic_block_match_list)
 ```
 
-## FunctionMatches
+## FunctionMatching
 
 ### add_matches
 
