@@ -9,63 +9,6 @@ FunctionMatches::FunctionMatches(Binary* p_sourceBinary, Binary* p_targetBinary)
     m_pdiffAlgorithms = new DiffAlgorithms(p_sourceBinary, p_targetBinary);
 }
 
-void FunctionMatches::AddBasicBlockMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
-{
-    basicBlockMatch.MatchSequence = m_matchSequence;
-    unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>>::iterator it = m_functionMatches.find(sourceFunctionAddress);
-    if (it == m_functionMatches.end())
-    {
-        std::pair<unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>>::iterator, bool > result = m_functionMatches.insert(pair<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>>(sourceFunctionAddress, {}));
-        it = result.first;
-    }
-
-    unordered_map<va_t, vector<BasicBlockMatch*>>::iterator targetToBasicBlockMatchListMapit = it->second.find(targetFunctionAddress);
-    if (targetToBasicBlockMatchListMapit == it->second.end())
-    {
-        std::pair<unordered_map<va_t, vector<BasicBlockMatch*>>::iterator, bool > result = it->second.insert(pair<va_t, vector<BasicBlockMatch *>>(targetFunctionAddress, {}));
-        targetToBasicBlockMatchListMapit = result.first;
-    }
-
-    bool addBasicBlockMatch = true;
-    for (auto it = targetToBasicBlockMatchListMapit->second.begin(); it != targetToBasicBlockMatchListMapit->second.end(); it++)
-    {
-        BasicBlockMatch* p_currentBasicBlockMatch = (*it);
-        if (basicBlockMatch.Source == p_currentBasicBlockMatch->Source && basicBlockMatch.Target == p_currentBasicBlockMatch->Target)
-        {
-            addBasicBlockMatch = false;
-            break;
-        }
-
-        if (basicBlockMatch.Source == p_currentBasicBlockMatch->Source || basicBlockMatch.Target == p_currentBasicBlockMatch->Target)
-        {
-            if (basicBlockMatch.MatchRate > p_currentBasicBlockMatch->MatchRate)
-            {
-                it = targetToBasicBlockMatchListMapit->second.erase(it);
-                break;
-            }
-            else
-            {
-                addBasicBlockMatch = false;
-            }
-        }
-    }
-
-    if (addBasicBlockMatch)
-    {
-        BasicBlockMatch* p_basicBlockMatch = new BasicBlockMatch();
-        memcpy(p_basicBlockMatch, &basicBlockMatch, sizeof(basicBlockMatch));
-        targetToBasicBlockMatchListMapit->second.push_back(p_basicBlockMatch);
-    }
-}
-
-void FunctionMatches::AddBasicBlockMatches(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches)
-{
-    for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
-    {
-        AddBasicBlockMatch(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch);
-    }
-}
-
 void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList)
 {
     for (BasicBlockMatch basicBlockMatch : currentBasicBlockMatchList)
@@ -75,7 +18,7 @@ void FunctionMatches::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchL
 
         if (p_src_function && p_target_function)
         {
-            AddBasicBlockMatch(p_src_function->GetAddress(), p_target_function->GetAddress(), basicBlockMatch);
+            m_functionMatchList.Add(p_src_function->GetAddress(), p_target_function->GetAddress(), basicBlockMatch);
         }
     }
 }
@@ -90,7 +33,7 @@ int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, 
         unordered_set<va_t> sourceFunctionAddresses = sourceFunction->GetBasicBlocks();
         unordered_set<va_t> targetFunctionAddresses = targetFunction->GetBasicBlocks();
         vector<BasicBlockMatch> basicBlockMatches = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
-        AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatches);
+        m_functionMatchList.Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatches);
         return basicBlockMatches.size();
     }
     return 0;
@@ -99,26 +42,22 @@ int FunctionMatches::DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, 
 int FunctionMatches::DoInstructionHashMatch()
 {
     int matchCount = 0;
-    if (m_functionMatches.size() == 0)
+    if (m_functionMatchList.GetSize() == 0)
     {
         vector<BasicBlockMatch> basicBlocksMatches = m_pdiffAlgorithms->DoInstructionHashMatch();
         AddMatches(basicBlocksMatches);
     }
     else
     {
-        for (auto& val : m_functionMatches)
+        for(auto & val : m_functionMatchList.GetFunctionAddresses())
         {
             va_t sourceFunctionAddress = val.first;
+            va_t targetFunctionAddress = val.second;
             unordered_set<va_t> sourceFunctionAddresses = m_sourceBinary->GetFunction(sourceFunctionAddress)->GetBasicBlocks();
-            for (auto& val2 : val.second)
-            {
-                va_t targetFunctionAddress = val2.first;
-
-                unordered_set<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
-                vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
-                matchCount += basicBlockMatchList.size();
-                AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
-            }
+            unordered_set<va_t> targetFunctionAddresses = m_targetBinary->GetFunction(targetFunctionAddress)->GetBasicBlocks();
+            vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(sourceFunctionAddresses, targetFunctionAddresses);
+            matchCount += basicBlockMatchList.size();
+            m_functionMatchList.Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatchList);
         }
     }
 
@@ -132,21 +71,15 @@ int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
     int matchCount = 0;
     if (address != 0)
     {
-        unordered_map<va_t, unordered_map<va_t, vector<BasicBlockMatch*>>>::iterator it = m_functionMatches.find(address);
-        if (it != m_functionMatches.end())
+        for(FunctionMatch & functionMatch : m_functionMatchList.GetFunctionMatches(address))
         {
-            va_t sourceFunctionAddress = it->first;
-            for (auto& val2 : it->second)
+            vector<BasicBlockMatch> fullBasicBlockMatchList;                
+            for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
             {
-                vector<BasicBlockMatch> fullBasicBlockMatchList;
-                va_t targetFunctionAddress = val2.first;
-                for (BasicBlockMatch *p_basicBlockMatch : val2.second)
-                {
-                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
-                    fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
-                }
-                AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
+                vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
+                fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
             }
+            m_functionMatchList.Add(functionMatch.SourceFunction, functionMatch.TargetFunction, fullBasicBlockMatchList);
         }
     }
     else
@@ -167,34 +100,35 @@ int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
                 matchMask = DREF_FROM_MATCH;
                 break;            
             case DREF_TO:
-                matchMask = DREF_FROM_MATCH;
+                matchMask = DREF_TO_MATCH;
                 break;            
             case CALLED:
                 matchMask = CALLED_MATCH;
                 break;            
         }
 
-        for (auto& val : m_functionMatches)
+        BOOST_LOG_TRIVIAL(debug) << boost::format("matchType: %x matchMask: %x") % matchType % matchMask;
+
+        for(FunctionMatch & functionMatch : m_functionMatchList.GetFunctionMatches(address))
         {
-            va_t sourceFunctionAddress = val.first;
-            for (auto& val2 : val.second)
+            vector<BasicBlockMatch> fullBasicBlockMatchList;
+            for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
             {
-                vector<BasicBlockMatch> fullBasicBlockMatchList;
-                va_t targetFunctionAddress = val2.first;
-
-                for (BasicBlockMatch *p_basicBlockMatch : val2.second)
+                if (p_basicBlockMatch->Flags & matchMask)
                 {
-                    if (p_basicBlockMatch->Flags & matchMask)
-                    {
-                        continue;
-                    }
-
-                    vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
-                    matchCount += basicBlockMatchList.size();
-                    fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
-                    p_basicBlockMatch->Flags |= matchMask;
+                    continue;
                 }
-                AddBasicBlockMatches(sourceFunctionAddress, targetFunctionAddress, fullBasicBlockMatchList);
+                // BOOST_LOG_TRIVIAL(debug) << boost::format("Source: %x Target: %x") % p_basicBlockMatch->Source % p_basicBlockMatch->Target;
+                vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
+                matchCount += basicBlockMatchList.size();
+                // BOOST_LOG_TRIVIAL(debug) << boost::format("\tmatchCount: %x") % matchCount;
+                fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
+                p_basicBlockMatch->Flags |= matchMask;
+            }
+            if (fullBasicBlockMatchList.size() > 0)
+            {
+                BOOST_LOG_TRIVIAL(debug) << boost::format("\tAddBasicBlockMatches: fullBasicBlockMatchList.size(): %x") % fullBasicBlockMatchList.size();
+                m_functionMatchList.Add(functionMatch.SourceFunction, functionMatch.TargetFunction, fullBasicBlockMatchList);
             }
         }
     }
@@ -202,44 +136,4 @@ int FunctionMatches::DoControlFlowMatch(va_t address, int matchType)
     m_matchSequence++;
 
     return matchCount;
-}
-
-void FunctionMatches::RemoveMatches(int matchSequence)
-{
-    for (auto& val : m_functionMatches)
-    {
-        for (auto& val2 : val.second)
-        {
-            for (auto it = val2.second.begin(); it != val2.second.end(); )
-            {
-                if ((*it)->MatchSequence == matchSequence)
-                {
-                    it = val2.second.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-        }
-    }
-}
-
-vector<FunctionMatch> FunctionMatches::GetMatches()
-{
-    vector<FunctionMatch> functionBasicBlockMatchList;
-
-    for (auto& val : m_functionMatches)
-    {
-        va_t sourceFunctionAddress = val.first;
-        for (auto& val2 : val.second)
-        {
-            FunctionMatch functionMatch;
-            functionMatch.SourceFunction = sourceFunctionAddress;
-            functionMatch.TargetFunction = val2.first;
-            functionMatch.BasicBlockMatchList = val2.second;
-            functionBasicBlockMatchList.push_back(functionMatch);
-        }
-    }
-
-    return functionBasicBlockMatchList;
 }
