@@ -154,11 +154,9 @@ class FunctionMatchTool:
 
     def get_basic_blocks_set(self, index, address):
         basic_blocks = {}
-        function = self.binaries[index].get_function(address)
-        if not function:
-            return
-        for basic_block_address in function.get_basic_blocks():
-            basic_blocks[basic_block_address] = 1
+        for function in self.binaries[index].get_function(address):
+            for basic_block_address in function.get_basic_blocks():
+                basic_blocks[basic_block_address] = 1
         return basic_blocks
 
     def get_unidentified_blocks(self, function_match, source_function_address = 0, level = 0):
