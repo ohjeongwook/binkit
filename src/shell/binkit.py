@@ -63,8 +63,6 @@ class BinaryMatcher:
         if len(self.binaries) < 2:
             return total_match_count
 
-        print('  %s vs %s' % (self.binaries[0].get_md5(), self.binaries[1].get_md5()))
-
         match_type = matchTypeMap.get(match_type.upper(), 1)
         if self.function_matches == None or algorithm == 'init':
             diff_algorithms = pybinkit.DiffAlgorithms(self.binaries[0], self.binaries[1])
