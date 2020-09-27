@@ -255,6 +255,7 @@ class DiffAlgorithms
 {
 private:
     int m_debugLevel;
+    unordered_map<va_t, unordered_map<va_t, int>> m_matchRateCache;
     BasicBlocks *m_psourceBasicBlocks;
     BasicBlocks* m_ptargetBasicBlocks;
     BasicBlockMatchCombinations* GenerateBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
@@ -266,6 +267,7 @@ public:
     vector<BasicBlockMatch> DoInstructionHashMatch();
     vector<BasicBlockMatch> DoBlocksInstructionHashMatch(unordered_set<va_t>& sourceBlockAddresses, unordered_set<va_t>& targetBlockAddresses);
 
+    int GetMatchRate(va_t source, va_t target);
     vector<BasicBlockMatchCombination*> GetBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
     vector<BasicBlockMatch> DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType);
     vector<BasicBlockMatchCombination*> DoControlFlowMatches(vector<AddressPair> addressPairs, int matchType);

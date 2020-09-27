@@ -40,14 +40,14 @@ vector<BasicBlockMatch> DiffAlgorithms::DoInstructionHashMatch()
         // Only when the hash is unique
         if (p_srcInstructionHashMap->count(val.first) == 1 && p_targetInstructionHashMap->count(val.first) == 1)
         {
-            multimap <vector<unsigned char>, va_t>::iterator patchedInstructionHashIt = p_targetInstructionHashMap->find(val.first);
-            if (patchedInstructionHashIt != p_targetInstructionHashMap->end())
+            multimap <vector<unsigned char>, va_t>::iterator it = p_targetInstructionHashMap->find(val.first);
+            if (it != p_targetInstructionHashMap->end())
             {
                 BasicBlockMatch basicBlockMatch;
                 memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
                 basicBlockMatch.Type = INSTRUCTION_HASH_MATCH;
                 basicBlockMatch.Source = val.second;
-                basicBlockMatch.Target = patchedInstructionHashIt->second;
+                basicBlockMatch.Target = it->second;
                 basicBlockMatch.MatchRate = 100;
                 basicBlockMatchList.push_back(basicBlockMatch);
             }
@@ -149,6 +149,29 @@ vector<BasicBlockMatchCombination*> DiffAlgorithms::GetBasicBlockMatchCombinatio
     return p_basicBlockMatchCombinations->GetTopMatches();
 }
 
+int DiffAlgorithms::GetMatchRate(va_t source, va_t target)
+{
+    unordered_map<va_t, unordered_map<va_t, int>>::iterator it = m_matchRateCache.find(source);
+
+    if (it == m_matchRateCache.end())
+    {
+        unordered_map<va_t, int> it2;
+        pair<unordered_map<va_t, unordered_map<va_t, int>>::iterator, bool > result = m_matchRateCache.insert(pair<va_t, unordered_map<va_t, int>>(source, it2));
+        it = result.first;
+    }
+    else
+    {
+        unordered_map<va_t, int>::iterator it2 = it->second.find(target);
+        if (it2 != it->second.end())
+        {
+            return it2->second;
+        }
+    }
+
+    int matchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(source), m_ptargetBasicBlocks->GetInstructionHash(target));
+    it->second.insert(pair<va_t, int>(target, matchRate));
+}
+
 vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType)
 {
     bool debug = false;
@@ -174,7 +197,7 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
             basicBlockMatch.TargetParent = targetAddress;
             basicBlockMatch.Source = sourceAddresses[i];
             basicBlockMatch.Target = targetAddresses[i];
-            basicBlockMatch.MatchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]), m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[i]));
+            basicBlockMatch.MatchRate = GetMatchRate(sourceAddresses[i], targetAddresses[i]);
             controlFlowMatches.push_back(basicBlockMatch);
         }
         return controlFlowMatches;
@@ -191,7 +214,7 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
             vector<unsigned char> targetInstructionHash = m_ptargetBasicBlocks->GetInstructionHash(targetAddresses[j]);
             if (srcInstructionHash.size() > 0 && targetInstructionHash.size() > 0)
             {
-                int matchRate = GetInstructionHashMatchRate(srcInstructionHash, targetInstructionHash);
+                int matchRate = GetMatchRate(sourceAddresses[i], targetAddresses[j]);
                 if (maxMatchRate < matchRate)
                 {
                     maxMatchRate = matchRate;
