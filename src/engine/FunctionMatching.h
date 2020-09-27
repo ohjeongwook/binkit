@@ -15,49 +15,52 @@ struct FunctionMatch
     vector<BasicBlockMatch *> BasicBlockMatchList;
 };
 
-#define BASIC_BLOCK_MATCH_MAP unordered_map<va_t, unordered_map<va_t, BasicBlockMatch *>>
+#define BASIC_BLOCK_MATCH_MAP unordered_map<va_t, BasicBlockMatch *>
 #define BASIC_TARGET_BLOCK_MATCH_PAIR pair<va_t, BasicBlockMatch *>
-#define BASIC_BLOCK_MATCH_PAIR pair<va_t, unordered_map<va_t, BasicBlockMatch *>>
-#define BASIC_BLOCK_MATCH_PAIR_RETURN std::pair<unordered_map<va_t, unordered_map<va_t, BasicBlockMatch *>>::iterator, bool>
+#define BASIC_BLOCK_MATCH_PAIR pair<va_t, BasicBlockMatch *>
+#define BASIC_BLOCK_MATCH_PAIR_RETURN std::pair<unordered_map<va_t, BasicBlockMatch *>::iterator, bool>
 
 class BasicBlockList
 {
 private:
-    vector<BasicBlockMatch *> m_basic_block_match_list;
     BASIC_BLOCK_MATCH_MAP m_basic_block_matches;
 
 public:
-    void Add(BasicBlockMatch basicBlockMatch)
+    bool Add(BasicBlockMatch basicBlockMatch)
     {
         BASIC_BLOCK_MATCH_MAP::iterator it = m_basic_block_matches.find(basicBlockMatch.Source);
-
         if (it == m_basic_block_matches.end())
         {
-            BASIC_BLOCK_MATCH_PAIR_RETURN result = m_basic_block_matches.insert(BASIC_BLOCK_MATCH_PAIR(basicBlockMatch.Source, {}));
-            it = result.first;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList: Added %x - %x") % basicBlockMatch.Source % basicBlockMatch.Target;
+            BasicBlockMatch* p_basicBlockMatch = new BasicBlockMatch();
+            memcpy(p_basicBlockMatch, &basicBlockMatch, sizeof(basicBlockMatch));
+            m_basic_block_matches.insert(BASIC_BLOCK_MATCH_PAIR(basicBlockMatch.Source, p_basicBlockMatch));
+            return true;
         }
         else
         {
-            auto it2 = it->second.find(basicBlockMatch.Target);
-
-            if (it2 != it->second.end())
+            if (it->second->Target != basicBlockMatch.Target && it->second->MatchRate < basicBlockMatch.MatchRate)
             {
-                if (it2->second->MatchRate > basicBlockMatch.MatchRate)
-                {
-                    return;
-                }
+                memcpy(it->second, &basicBlockMatch, sizeof(basicBlockMatch));
+                return true;
             }
         }
-
-        BasicBlockMatch* p_basicBlockMatch = new BasicBlockMatch();
-        memcpy(p_basicBlockMatch, &basicBlockMatch, sizeof(basicBlockMatch));
-        it->second.insert(BASIC_TARGET_BLOCK_MATCH_PAIR(basicBlockMatch.Target, p_basicBlockMatch));
-        m_basic_block_match_list.push_back(p_basicBlockMatch);
+        return false;
     }
 
-    vector<BasicBlockMatch*> Get()
+    vector<BasicBlockMatch*> Get(int exclusionFilter = 0)
     {
-        return m_basic_block_match_list;
+        vector<BasicBlockMatch *> basicBlockMatchList;
+
+        for(auto& val : m_basic_block_matches)
+        {
+            if (val.second->Flags & exclusionFilter)
+            {
+                continue;
+            }
+            basicBlockMatchList.push_back(val.second);
+        }
+        return basicBlockMatchList;
     }
 };
 
@@ -100,7 +103,7 @@ public:
         return functionsAddresses;
     }
 
-    vector<FunctionMatch> GetMatches()
+    vector<FunctionMatch> GetMatches(int exclusionFilter = 0)
     {
         vector<FunctionMatch> functionMatchList;
 
@@ -111,8 +114,11 @@ public:
                 FunctionMatch functionMatch;
                 functionMatch.SourceFunction = val.first;
                 functionMatch.TargetFunction = val2.first;
-                functionMatch.BasicBlockMatchList = val2.second.Get();
-                functionMatchList.push_back(functionMatch);
+                functionMatch.BasicBlockMatchList = val2.second.Get(exclusionFilter);
+                if (functionMatch.BasicBlockMatchList.size() > 0)
+                {
+                    functionMatchList.push_back(functionMatch);
+                }
             }
         }
         return functionMatchList;
@@ -143,8 +149,9 @@ public:
         return functionMatchList;
     }
 
-    void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
+    bool Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
     {
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Add Function %x - %x basicBlockMatch.Source: %x Target: %x") % sourceFunctionAddress % targetFunctionAddress % basicBlockMatch.Source % basicBlockMatch.Target;
         unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(sourceFunctionAddress);
         if (it == m_matches.end())
         {
@@ -155,19 +162,37 @@ public:
         unordered_map<va_t, BasicBlockList>::iterator it2 = it->second.find(targetFunctionAddress);
         if (it2 == it->second.end())
         {
-            std::pair<unordered_map<va_t, BasicBlockList>::iterator, bool > result = it->second.insert(pair<va_t, BasicBlockList>(targetFunctionAddress, {}));
-            it2 = result.first;
+            if (it->second.size() == 0)
+            {
+                std::pair<unordered_map<va_t, BasicBlockList>::iterator, bool > result = it->second.insert(pair<va_t, BasicBlockList>(targetFunctionAddress, {}));
+                it2 = result.first;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        it2->second.Add(basicBlockMatch);
+        if (it2->second.Add(basicBlockMatch))
+        {
+            BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatches.Add: %x (%x) - %x (%x)") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target;
+            return true;
+        }
+        return false;
     }
 
-    void Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches)
+    int Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches)
     {
+        int count = 0;
         for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
         {
-            Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch);
+            if (Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch))
+            {
+                count++;
+            }
         }
+
+        return count;
     }
     
     void RemoveMatches(int matchSequence)

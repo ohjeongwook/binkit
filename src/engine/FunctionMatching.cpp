@@ -9,16 +9,18 @@ FunctionMatching::FunctionMatching(Binary* p_sourceBinary, Binary* p_targetBinar
     m_pdiffAlgorithms = new DiffAlgorithms(p_sourceBinary, p_targetBinary);
 }
 
-void FunctionMatching::AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList)
+void FunctionMatching::AddMatches(vector<BasicBlockMatch> basicBlockMatches)
 {
-    for (BasicBlockMatch basicBlockMatch : currentBasicBlockMatchList)
+    BOOST_LOG_TRIVIAL(debug) << boost::format("AddMatches count: %d") % basicBlockMatches.size();
+    for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
     {
-        Function* p_src_function = m_sourceBinary->GetFunction(basicBlockMatch.Source);
-        Function* p_target_function = m_targetBinary->GetFunction(basicBlockMatch.Target);
+        Function* pSrcFunction = m_sourceBinary->GetFunction(basicBlockMatch.Source);
+        Function* pTargetFunction = m_targetBinary->GetFunction(basicBlockMatch.Target);
 
-        if (p_src_function && p_target_function)
+        BOOST_LOG_TRIVIAL(debug) << boost::format("pSrcFunction: %p pTargetFunction: %p") % pSrcFunction % pTargetFunction;
+        if (pSrcFunction && pTargetFunction)
         {
-            m_functionMatchList.Add(p_src_function->GetAddress(), p_target_function->GetAddress(), basicBlockMatch);
+            m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch);
         }
     }
 }
@@ -119,31 +121,35 @@ int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
 
         BOOST_LOG_TRIVIAL(debug) << boost::format("matchType: %x matchMask: %x") % matchType % matchMask;
 
-        for(FunctionMatch & functionMatch : m_functionMatchList.GetMatchesByAddress(address))
+        for(FunctionMatch & functionMatch : m_functionMatchList.GetMatches(matchMask))
         {
             vector<BasicBlockMatch> fullBasicBlockMatchList;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("Function Source: %x Target: %x") % functionMatch.SourceFunction % functionMatch.TargetFunction;
             for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
             {
-                if (p_basicBlockMatch->Flags & matchMask)
-                {
-                    continue;
-                }
-                // BOOST_LOG_TRIVIAL(debug) << boost::format("Source: %x Target: %x") % p_basicBlockMatch->Source % p_basicBlockMatch->Target;
+                BOOST_LOG_TRIVIAL(debug) << boost::format("   Source: %x Target: %x") % p_basicBlockMatch->Source % p_basicBlockMatch->Target;
                 vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
-                matchCount += basicBlockMatchList.size();
-                // BOOST_LOG_TRIVIAL(debug) << boost::format("\tmatchCount: %x") % matchCount;
-                fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
-                p_basicBlockMatch->Flags |= matchMask;
-            }
-            if (fullBasicBlockMatchList.size() > 0)
-            {
-                BOOST_LOG_TRIVIAL(debug) << boost::format("\tAddBasicBlockMatches: fullBasicBlockMatchList.size(): %x") % fullBasicBlockMatchList.size();
-                m_functionMatchList.Add(functionMatch.SourceFunction, functionMatch.TargetFunction, fullBasicBlockMatchList);
+                BOOST_LOG_TRIVIAL(debug) << boost::format("AddBasicBlockMatches: basicBlockMatchList.size(): %x") % basicBlockMatchList.size();
+
+                for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
+                {
+                    Function* pSrcFunction = m_sourceBinary->GetFunction(basicBlockMatch.Source);
+                    Function* pTargetFunction = m_targetBinary->GetFunction(basicBlockMatch.Target);
+
+                    if (pSrcFunction && pTargetFunction)
+                    {
+                        if (m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch))
+                        {
+                            matchCount++;
+                        }
+                    }
+                }
+                p_basicBlockMatch->Flags |= matchMask;                
             }
         }
     }
 
     m_matchSequence++;
-
+    BOOST_LOG_TRIVIAL(debug) << boost::format("DoControlFlowMatch matchType: %x matchCount: %d") % matchType % matchCount;
     return matchCount;
 }
