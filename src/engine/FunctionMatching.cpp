@@ -119,23 +119,17 @@ int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
                 break;            
         }
 
-        BOOST_LOG_TRIVIAL(debug) << boost::format("matchType: %x matchMask: %x") % matchType % matchMask;
-
         for(FunctionMatch & functionMatch : m_functionMatchList.GetMatches(matchMask))
         {
-            vector<BasicBlockMatch> fullBasicBlockMatchList;
-            BOOST_LOG_TRIVIAL(debug) << boost::format("Function Source: %x Target: %x") % functionMatch.SourceFunction % functionMatch.TargetFunction;
             for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
             {
-                BOOST_LOG_TRIVIAL(debug) << boost::format("   Source: %x Target: %x") % p_basicBlockMatch->Source % p_basicBlockMatch->Target;
+                BOOST_LOG_TRIVIAL(debug) << boost::format("* DoControlFlowMatch: %x (%x) %x (%x) matchType: %x") % functionMatch.SourceFunction % p_basicBlockMatch->Source % functionMatch.TargetFunction % p_basicBlockMatch->Target % matchType;
                 vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
-                BOOST_LOG_TRIVIAL(debug) << boost::format("AddBasicBlockMatches: basicBlockMatchList.size(): %x") % basicBlockMatchList.size();
-
                 for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
                 {
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("  - basicBlockMatch: %x %x matchType: %x") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
                     Function* pSrcFunction = m_sourceBinary->GetFunction(basicBlockMatch.Source);
                     Function* pTargetFunction = m_targetBinary->GetFunction(basicBlockMatch.Target);
-
                     if (pSrcFunction && pTargetFunction)
                     {
                         if (m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch))

@@ -31,7 +31,7 @@ public:
         BASIC_BLOCK_MATCH_MAP::iterator it = m_basic_block_matches.find(basicBlockMatch.Source);
         if (it == m_basic_block_matches.end())
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList: Added %x - %x") % basicBlockMatch.Source % basicBlockMatch.Target;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList::Add: insert %x - %x MatchRate: %d") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             BasicBlockMatch* p_basicBlockMatch = new BasicBlockMatch();
             memcpy(p_basicBlockMatch, &basicBlockMatch, sizeof(basicBlockMatch));
             m_basic_block_matches.insert(BASIC_BLOCK_MATCH_PAIR(basicBlockMatch.Source, p_basicBlockMatch));
@@ -41,6 +41,7 @@ public:
         {
             if (it->second->Target != basicBlockMatch.Target && it->second->MatchRate < basicBlockMatch.MatchRate)
             {
+                BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList::Add: replace %x - %x (%d) <-- %x - %x (%d)") % it->second->Source % it->second->Target % it->second->MatchRate % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
                 memcpy(it->second, &basicBlockMatch, sizeof(basicBlockMatch));
                 return true;
             }
@@ -151,7 +152,6 @@ public:
 
     bool Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Add Function %x - %x basicBlockMatch.Source: %x Target: %x") % sourceFunctionAddress % targetFunctionAddress % basicBlockMatch.Source % basicBlockMatch.Target;
         unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(sourceFunctionAddress);
         if (it == m_matches.end())
         {
@@ -175,7 +175,7 @@ public:
 
         if (it2->second.Add(basicBlockMatch))
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatches.Add: %x (%x) - %x (%x)") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             return true;
         }
         return false;
