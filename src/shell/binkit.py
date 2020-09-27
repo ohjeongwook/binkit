@@ -16,7 +16,7 @@ for binkit_path in binkit_paths:
 
 import pybinkit
 import client
-from storage import *
+from function_match import *
 
 matchTypeMap = {
     "CALL":  0,
@@ -103,7 +103,6 @@ class BinaryMatcher:
     def save(self, filename):
         if not self.function_matches:
             return
-
         function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
         function_match_storage = function_match_tool.get_function_match_file()
         print("Saving diff snapshot to " + filename)
