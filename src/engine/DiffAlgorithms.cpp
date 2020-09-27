@@ -170,6 +170,8 @@ int DiffAlgorithms::GetMatchRate(va_t source, va_t target)
 
     int matchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(source), m_ptargetBasicBlocks->GetInstructionHash(target));
     it->second.insert(pair<va_t, int>(target, matchRate));
+
+    return matchRate;
 }
 
 vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType)
@@ -205,9 +207,8 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
 
     for (int i = 0; i < sourceAddresses.size(); i++)
     {
-        BasicBlockMatch basicBlockMatch;
-        memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
         int maxMatchRate = 0;
+        BasicBlockMatch basicBlockMatch;
         vector<unsigned char> srcInstructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddresses[i]);
         for (int j = 0; j < targetAddresses.size(); j++)
         {
