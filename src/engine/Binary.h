@@ -38,6 +38,6 @@ public:
 
     BasicBlocks* GetBasicBlocks();
     vector<Function*>* GetFunctions();
-    Function* GetFunction(va_t address);
+    vector<Function*> GetFunction(va_t address);
     bool IsInFunction(va_t basicBlockAddress, va_t functionAddress);
 };

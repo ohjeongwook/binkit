@@ -162,15 +162,8 @@ public:
         unordered_map<va_t, BasicBlockList>::iterator it2 = it->second.find(targetFunctionAddress);
         if (it2 == it->second.end())
         {
-            if (it->second.size() == 0)
-            {
-                std::pair<unordered_map<va_t, BasicBlockList>::iterator, bool > result = it->second.insert(pair<va_t, BasicBlockList>(targetFunctionAddress, {}));
-                it2 = result.first;
-            }
-            else
-            {
-                return false;
-            }
+            std::pair<unordered_map<va_t, BasicBlockList>::iterator, bool > result = it->second.insert(pair<va_t, BasicBlockList>(targetFunctionAddress, {}));
+            it2 = result.first;
         }
 
         if (it2->second.Add(basicBlockMatch))

@@ -17,7 +17,7 @@ class Function
 {
 private:
     va_t m_address;
-    BasicBlocks* m_pbasicBlocks;
+    string m_symbol;
     unordered_set<va_t> m_basicBlockAddresses;
 
 public:

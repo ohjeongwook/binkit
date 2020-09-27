@@ -60,7 +60,6 @@ void Binary::LoadFunctionAddressMap()
     int DoCallCheck = TRUE;
     unordered_set <va_t> functionAddresses;
 
-    // Enumerate function addresses
     m_pdisassemblyReader->ReadFunctionAddressMap(functionAddresses);
     for (va_t callTarget : m_pbasicBlocks->GetCallTargets())
     {
@@ -71,7 +70,6 @@ void Binary::LoadFunctionAddressMap()
         }
     }
 
-    // Build up m_functions, m_functionAddressMap
     for (va_t functionAddress : functionAddresses)
     {
         Function* p_function = new Function(m_pbasicBlocks, functionAddress);
@@ -200,13 +198,16 @@ vector<Function*>* Binary::GetFunctions()
     return &m_functions;
 }
 
-Function* Binary::GetFunction(va_t address)
+vector<Function*> Binary::GetFunction(va_t address)
 {
-    multimap <va_t, Function*>::iterator it = m_functionAddressMap.find(address);
-
-    if (it != m_functionAddressMap.end())
+    vector<Function*> functions;
+    for (multimap <va_t, Function*>::iterator it = m_functionAddressMap.find(address); it != m_functionAddressMap.end(); it++)
     {
-        return it->second;
+        if (it->first != address)
+        {
+            break;
+        }
+        functions.push_back(it->second);
     }
 
     if (m_basicBlockToFunctionAddresses.size() == 0)
@@ -214,17 +215,19 @@ Function* Binary::GetFunction(va_t address)
         LoadBasicBlockToFunctionMap();
     }
 
-    multimap <va_t, va_t>::iterator it2 = m_basicBlockToFunctionAddresses.find(address);
-
-    if (it2 != m_basicBlockToFunctionAddresses.end())
+    for(multimap <va_t, va_t>::iterator it2 = m_basicBlockToFunctionAddresses.find(address); it2 != m_basicBlockToFunctionAddresses.end(); it2++)
     {
+        if (it2->first != address)
+        {
+            break;
+        }
         multimap <va_t, Function*>::iterator it3 = m_functionAddressMap.find(it2->second);
         if (it3 != m_functionAddressMap.end())
         {
-            return it3->second;
+            functions.push_back(it3->second);
         }
     }
-    return NULL;
+    return functions;
 }
 
 bool Binary::IsInFunction(va_t basicBlockAddress, va_t functionAddress)
