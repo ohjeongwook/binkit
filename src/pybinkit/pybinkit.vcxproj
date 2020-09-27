@@ -133,6 +133,9 @@
       <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON3_PATH%\libs;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON3_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python27|x64'">
     <ClCompile>
@@ -149,6 +152,9 @@
       <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON2_PATH%\libs;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON2_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python38|Win32'">
     <ClCompile>
@@ -161,6 +167,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Python27|Win32'">
     <ClCompile>
@@ -173,6 +182,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Python38|Win32'">
     <ClCompile>
@@ -189,6 +201,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Python38|x64'">
     <ClCompile>
@@ -208,6 +223,9 @@
       <AdditionalLibraryDirectories>..\packages\boost.1.72.0.0\lib\native;..\packages\boost_atomic-vc142.1.72.0.0\lib\native;..\packages\boost_chrono-vc142.1.72.0.0\lib\native;..\packages\boost_date_time-vc142.1.72.0.0\lib\native;..\packages\boost_filesystem-vc142.1.72.0.0\lib\native;..\packages\boost_log-vc142.1.72.0.0\lib\native;..\packages\boost_log_setup-vc142.1.72.0.0\lib\native;..\packages\boost_system-vc142.1.72.0.0\lib\native;..\packages\boost_thread-vc142.1.72.0.0\lib\native;..\packages\boost_regex-vc142.1.72.0.0\lib\native;%PYTHON3_PATH%\libs;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libboost_regex-vc142-mt-gd-x64-1_72.lib;%PYTHON3_LIB_NAME%;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\shell</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="module.cpp" />
