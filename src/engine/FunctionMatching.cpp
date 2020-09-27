@@ -16,8 +16,6 @@ void FunctionMatching::AddMatches(vector<BasicBlockMatch> basicBlockMatches)
     {
         Function* pSrcFunction = m_sourceBinary->GetFunction(basicBlockMatch.Source);
         Function* pTargetFunction = m_targetBinary->GetFunction(basicBlockMatch.Target);
-
-        BOOST_LOG_TRIVIAL(debug) << boost::format("pSrcFunction: %p pTargetFunction: %p") % pSrcFunction % pTargetFunction;
         if (pSrcFunction && pTargetFunction)
         {
             m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch);
@@ -127,7 +125,7 @@ int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
                 vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
                 for (BasicBlockMatch basicBlockMatch : basicBlockMatchList)
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("  - basicBlockMatch: %x %x matchType: %x") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("  - basicBlockMatch: %x %x (MatchRate: %d)") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
                     Function* pSrcFunction = m_sourceBinary->GetFunction(basicBlockMatch.Source);
                     Function* pTargetFunction = m_targetBinary->GetFunction(basicBlockMatch.Target);
                     if (pSrcFunction && pTargetFunction)
