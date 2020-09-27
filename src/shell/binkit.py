@@ -104,9 +104,8 @@ class BinaryMatcher:
         if not self.function_matches:
             return
         function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
-        function_match_storage = function_match_tool.get_function_match_file()
-        print("Saving diff snapshot to " + filename)
-        function_match_storage.save(filename)
+        function_match_file = FunctionMatchFile(function_match_tool = function_match_tool, binaries = self.binaries)
+        function_match_file.save(filename)
 
     def show_on_ida(self, filename):
         profile_list = self.profiles.list()

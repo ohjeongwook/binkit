@@ -5,19 +5,37 @@ import pprint
 import traceback
 
 class FunctionMatchFile:
-    def __init__(self, filename = '', match_results = {}, binaries = None):
+    def __init__(self, filename = '', function_match_tool = None, binaries = None, debug_level = 0):
+        self.debug_level = debug_level
+        self.match_results = []
         if filename and os.path.isfile(filename):
             try:
                 with open(filename, 'r') as fd:
                     self.match_results = json.load(fd)
             except:
                 traceback.print_exc()
-        else:
-            self.match_results = match_results
+        elif function_match_tool:
+            self.match_results = self.load_function_matches(function_match_tool)
+
         self.binaries = binaries
         self.add_binary_meta_data()
         self.add_names()
         self.add_basic_block_data()
+
+    def load_function_matches(self, function_match_tool, level = 0, source_function_address = 0):
+        prefix = '\t' * level
+        function_basic_block_match_list = []
+        for function_match in function_match_tool.function_matches.get_matches():
+            if self.debug_level > 0:
+                print(prefix + 'FunctionMatch: %x vs %x' % (function_match.source, function_match.target))
+            function_basic_block_match = {'source': function_match.source, 'target': function_match.target}
+
+            function_basic_block_match['matches'] = function_match_tool.get_match_list(function_match.basic_block_match_list, level = level + 1)
+            unidentified_blocks = function_match_tool.get_unidentified_blocks(function_match, source_function_address)
+            if len(unidentified_blocks['sources']) > 0 or len(unidentified_blocks['targets']) > 0:
+                function_basic_block_match['unidentified_blocks'] = unidentified_blocks
+            function_basic_block_match_list.append(function_basic_block_match)
+        return {'function_matches': function_basic_block_match_list}
 
     def sort_matches(self, matches):
         source_to_match_map = {}
@@ -105,8 +123,6 @@ class FunctionMatchFile:
         print('add_basic_block_data finished')
 
     def save(self, filename):
-        print('save ' + filename)
-
         try:
             with open(filename, 'w') as fd:
                 json.dump(self.match_results, fd, indent = 4)
@@ -195,28 +211,6 @@ class FunctionMatchTool:
 
         return unidentified_blocks
 
-    def get_function_match_file(self, source_function_address = 0, level = 1):
-        if self.function_matches == None:
-            print("No function matches found")
-            return
-
-        prefix = '\t' * level
-        function_basic_block_match_list = []
-        for function_match in self.function_matches.get_matches():
-            if source_function_address !=0 and source_function_address != function_match.source:
-                continue
-            if self.debug_level > 0:
-                print(prefix + 'FunctionMatch: %x vs %x' % (function_match.source, function_match.target))
-            function_basic_block_match = {'source': function_match.source, 'target': function_match.target}
-            function_basic_block_match['matches'] = self.get_match_list(function_match.basic_block_match_list, level = level + 1)
-            unidentified_blocks = self.get_unidentified_blocks(function_match, source_function_address)
-
-            if len(unidentified_blocks['sources']) > 0 or len(unidentified_blocks['targets']) > 0:
-                function_basic_block_match['unidentified_blocks'] = unidentified_blocks
-
-            function_basic_block_match_list.append(function_basic_block_match)
-        return FunctionMatchFile(match_results = {'function_matches': function_basic_block_match_list}, binaries = self.binaries)
-
 if __name__ == '__main__':
     import os
     import sys
@@ -236,5 +230,8 @@ if __name__ == '__main__':
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
             function_match_file = FunctionMatchFile(filename)
-            function_match_file.sort()
-            function_match_file.save(filename)
+
+            if args.command == 'sort':
+                function_match_file.sort()
+                function_match_file.save(filename)
+
