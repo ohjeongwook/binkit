@@ -124,7 +124,7 @@ void Binary::LoadBasicBlockToFunctionMap()
         for (va_t parentAddress : m_pbasicBlocks->GetParents(val.first))
         {
             unordered_map<va_t, va_t>::iterator it = basicBlockFunctionHashes.find(val.first);
-            BOOST_LOG_TRIVIAL(debug) << boost::format("Found parent for %X -> %X") % val.first % parentAddress;
+            // BOOST_LOG_TRIVIAL(debug) << boost::format("Found parent for %X -> %X") % val.first % parentAddress;
 
             unordered_map<va_t, va_t>::iterator parent_membership_it = basicBlockFunctionHashes.find(parentAddress);
             if (it != basicBlockFunctionHashes.end() && parent_membership_it != basicBlockFunctionHashes.end())
@@ -137,7 +137,7 @@ void Binary::LoadBasicBlockToFunctionMap()
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Multiple function membership: %X (%d) %s") % val.first % val.second % isFunctionStart ? "Possible Head" : "Member";
+        // OOST_LOG_TRIVIAL(debug) << boost::format("Multiple function membership: %X (%d) %s") % val.first % val.second % isFunctionStart ? "Possible Head" : "Member";
 
         if (isFunctionStart)
         {
@@ -159,7 +159,7 @@ void Binary::LoadBasicBlockToFunctionMap()
                         a2f_it++
                         )
                     {
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("\tRemoving Block: %X Function: %X") % a2f_it->first % a2f_it->second;
+                        // BOOST_LOG_TRIVIAL(debug) << boost::format("\tRemoving Block: %X Function: %X") % a2f_it->first % a2f_it->second;
                         a2f_it = m_basicBlockToFunctionAddresses.erase(a2f_it);
                         if (a2f_it == m_basicBlockToFunctionAddresses.end())
                         {
@@ -167,7 +167,7 @@ void Binary::LoadBasicBlockToFunctionMap()
                         }
                     }
                     m_basicBlockToFunctionAddresses.insert(pair <va_t, va_t>(address, functionStartAddress));
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("\tAdding Block: %X Function: %X") % address % functionStartAddress;
+                    // BOOST_LOG_TRIVIAL(debug) << boost::format("\tAdding Block: %X Function: %X") % address % functionStartAddress;
                 }
             }
         }
