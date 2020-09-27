@@ -80,13 +80,13 @@ class BinaryMatcher:
             elif algorithm in ('cf', 'controlflow'):
                 print('* do_control_flow_match:')
                 current_match_count = self.function_matches.do_control_flow_match(0, match_type)
-            print('current_match_count: %d' % current_match_count)
+            print('  current_match_count: %d' % current_match_count)
             total_match_count += current_match_count            
             if current_match_count == 0:
                 break
             i += 1
 
-        print('total_match_count: %d' % total_match_count)
+        print('  total_match_count: %d' % total_match_count)
         return total_match_count
 
     def print_function_matches(self):
