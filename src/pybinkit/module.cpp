@@ -110,7 +110,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def(py::init())
         .def_readwrite("source", &FunctionMatch::SourceFunction)
         .def_readwrite("target", &FunctionMatch::TargetFunction)
-        .def_readwrite("basic_block_match_list", &FunctionMatch::BasicBlockMatchList);
+        .def_readwrite("matches", &FunctionMatch::BasicBlockMatchList);
 
     py::class_<FunctionMatching>(m, "FunctionMatching")
         .def(py::init<Binary*, Binary*>())
