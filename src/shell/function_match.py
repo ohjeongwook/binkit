@@ -94,7 +94,7 @@ class FunctionMatchTool:
             self.binaries = {
                 'source': {'md5': binaries[0].get_md5()},
                 'target': {'md5': binaries[1].get_md5()},
-            }            
+            }
 
     def get_basic_blocks(self, binary, address):
         basic_blocks = {}
@@ -133,8 +133,65 @@ class FunctionMatchTool:
                         unidentified_blocks_count[name] += len(function_match.unidentified_blocks[name])
         return {'function_match_count': function_match_count, 'unidentified_blocks_count': unidentified_blocks_count}
 
-    def score(self):
-        pass
+    def calculate_match_rates(self):
+        matches = []
+        for function_match in self.function_matches:
+            matched_bytes = 0
+            for match in function_match.matches:
+                if match.source_end > match.source:
+                    matched_bytes += match.source_end - match.source
+                if match.target_end > match.target:
+                    matched_bytes += match.target_end - match.target
+
+            unidentified_blocks_counts = {'sources': 0, 'targets': 0}
+            unidentified_blocks_bytes = {'sources': 0, 'targets': 0}
+            total_unidentified_blocks_bytes = 0
+            for name in unidentified_blocks_counts.keys():
+                if name in function_match.get('unidentified_blocks', {}):
+                    unidentified_blocks_counts[name] += len(function_match.unidentified_blocks[name])
+                    for unidentified_block in function_match.unidentified_blocks[name]:
+                        unidentified_blocks_bytes[name] += unidentified_block['end'] - unidentified_block['start']
+                    total_unidentified_blocks_bytes += unidentified_blocks_bytes[name]
+
+            if total_unidentified_blocks_bytes + matched_bytes > 0:
+                match_rate = ((matched_bytes*100)/ (total_unidentified_blocks_bytes + matched_bytes))
+            else:
+                match_rate = 0
+
+            matches.append({
+                'source': function_match.source,
+                'target': function_match.target,
+                'match_rate': match_rate
+            })
+            print('%s (%x) - %s (%x) matches: %d matched_bytes: %d / unidentified %d (%d) - %d (%d) match_rate: %d' % (
+                    function_match.source_name,
+                    function_match.source,
+                    function_match.target_name,
+                    function_match.target,
+                    len(function_match.matches),
+                    matched_bytes,
+                    unidentified_blocks_bytes['sources'],
+                    unidentified_blocks_counts['sources'],
+                    unidentified_blocks_bytes['targets'],
+                    unidentified_blocks_counts['targets'],
+                    match_rate
+                )
+            )
+
+        return matches
+
+    def choose_best_scores(self):
+        match_map = {}
+        for match in self.calculate_match_rates():
+            if not match['source'] in match_map:
+                match_map[match['source']] = [match]
+            else:
+                match_map[match['source']].append(match)
+
+        for source in match_map.keys():
+            print('* source: %x' % source)
+            for match in match_map[source]:
+                print('  match.target: %x match.match_rate: %d' % (match['target'], match['match_rate']))
 
     def sort_matches(self, matches):
         source_to_match_map = {}
@@ -201,7 +258,7 @@ if __name__ == '__main__':
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
             function_matches = FunctionMatchTool(filename = filename)
-            print(function_matches.get_stats())
+            function_matches.choose_best_scores()
             if args.command == 'sort':
                 function_matches.sort()
                 function_matches.save(filename)
