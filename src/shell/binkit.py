@@ -90,8 +90,8 @@ class BinaryMatcher:
         return total_match_count
 
     def print_function_matches(self):
-        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
-        print(function_match_tool.get_stats())
+        function_matches = FunctionMatchTool(function_matches = self.function_matches, binaries = self.binaries)
+        print(function_matches.get_stats())
         """
         for function_match in util.get_function_match_list():
             print('* %.8x - %.8x' % (function_match['source'], function_match['target']))
@@ -103,9 +103,8 @@ class BinaryMatcher:
     def save(self, filename):
         if not self.function_matches:
             return
-        function_match_tool = FunctionMatchTool(self.function_matches, binaries = self.binaries)
-        function_match_file = FunctionMatchFile(function_match_tool = function_match_tool, binaries = self.binaries)
-        function_match_file.save(filename)
+        function_matches = FunctionMatchTool(function_matches = self.function_matches, binaries = self.binaries)
+        function_matches.save(filename)
 
     def show_on_ida(self, filename):
         profile_list = self.profiles.list()
