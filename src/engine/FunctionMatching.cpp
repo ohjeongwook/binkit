@@ -22,7 +22,7 @@ void FunctionMatching::AddMatches(vector<BasicBlockMatch> basicBlockMatches)
                     pSrcFunction->GetSymbol() % pSrcFunction->GetAddress() %
                     pTargetFunction->GetSymbol() % pTargetFunction->GetAddress() %
                     basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
-                m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch);
+                m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch, "  ");
             }
         }
     }
@@ -135,7 +135,7 @@ int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
                                 basicBlockMatch.Target %
                                 basicBlockMatch.MatchRate;
 
-                            if (m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch), "      ")
+                            if (m_functionMatchList.Add(pSrcFunction->GetAddress(), pTargetFunction->GetAddress(), basicBlockMatch, "      "))
                             {
                                 matchCount++;
                             }

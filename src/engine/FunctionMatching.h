@@ -43,9 +43,17 @@ public:
         {
             if (it->second->Target != basicBlockMatch.Target && it->second->MatchRate < basicBlockMatch.MatchRate)
             {
-                BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "  BasicBlockList::Add: replace %x - %x (%d) <-- %x - %x (%d)") % it->second->Source % it->second->Target % it->second->MatchRate % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+                BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "BasicBlockList::Add: replace %x - %x (%d) <-- %x - %x (%d)") %
+                    it->second->Source % it->second->Target % it->second->MatchRate %
+                    basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
                 memcpy(it->second, &basicBlockMatch, sizeof(basicBlockMatch));
                 return true;
+            }
+            else
+            {
+                BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "BasicBlockList::Add: not adding %x - %x (%d) <-- %x - %x (%d)") %
+                    it->second->Source % it->second->Target % it->second->MatchRate %
+                    basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             }
         }
         return false;
@@ -168,20 +176,22 @@ public:
             it2 = result.first;
         }
 
+        BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % 
+            sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+
         if (it2->second.Add(basicBlockMatch, prefix + "  "))
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             return true;
         }
         return false;
     }
 
-    int Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches)
+    int Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches, string prefix = "")
     {
         int count = 0;
         for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
         {
-            if (Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch))
+            if (Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch, prefix))
             {
                 count++;
             }
