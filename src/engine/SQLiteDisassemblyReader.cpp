@@ -286,7 +286,7 @@ bool SQLiteDisassemblyReader::UpdateBasicBlockFunctions(multimap <va_t, va_t> bl
 
     for (auto& val : blockToFunction)
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Updating " BASIC_BLOCKS_TABLE " Address = %X Function = %X") % val.second % val.first;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Updating " BASIC_BLOCKS_TABLE " Address = %x Function = %x") % val.second % val.first;
         m_sqliteTool.ExecuteStatement(NULL, NULL, UPDATE_BASIC_BLOCKS_TABLE_FUNCTION_ADDRESS_STATEMENT,
             val.second, val.second == val.first ? FUNCTION_BLOCK : UNKNOWN_BLOCK, m_fileId, val.first);
         isFixed = TRUE;

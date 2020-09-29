@@ -340,7 +340,7 @@ list <insn_t>* ReoderInstructions(multimap <OperandPosition, OperandPosition, Op
         list <ea_t>::iterator TargetAddressesIter;
         TargetAddresses.push_back(address);
         list <insn_t> Signature;
-        BOOST_LOG_TRIVIAL(debug) << boost::format("RootAddressesIter=%X ") % address;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("RootAddressesIter=%x ") % address;
         for (TargetAddressesIter = TargetAddresses.begin(); TargetAddressesIter != TargetAddresses.end(); TargetAddressesIter++)
         {
             for (int Index = 0; Index < UA_MAXOP; Index++)
@@ -366,7 +366,7 @@ list <insn_t>* ReoderInstructions(multimap <OperandPosition, OperandPosition, Op
         //Convert it to string and add to string list.
         for (TargetAddressesIter = TargetAddresses.begin(); TargetAddressesIter != TargetAddresses.end(); TargetAddressesIter++)
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("%X-") % *TargetAddressesIter;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("%x-") % *TargetAddressesIter;
             OrderedAddresses.push_back(*TargetAddressesIter);
         }
         //Signatures.push_back();
@@ -391,7 +391,7 @@ list <insn_t>* ReoderInstructions(multimap <OperandPosition, OperandPosition, Op
         InstructionHashIter = InstructionHash.find(*AddressesIter);
         if (InstructionHashIter != InstructionHash.end())
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("Instruction at %X == %X: ") % *AddressesIter % InstructionHashIter->second.ea;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("Instruction at %x == %x: ") % *AddressesIter % InstructionHashIter->second.ea;
             for (int i = 0; i < UA_MAXOP; i++)
             {
                 if (InstructionHashIter->second.ops[i].type > 0)
@@ -473,7 +473,7 @@ void IDAAnalyzer::UpdateInstructionMap
 
     GetFeatureBits(instruction.itype, Features, sizeof(Features), insn);
 
-    BOOST_LOG_TRIVIAL(debug) << boost::format("%s(%X) %s") % ph.instruc[instruction.itype].name % instruction.itype % GetFeatureStr(ph.instruc[instruction.itype].feature).c_str();
+    BOOST_LOG_TRIVIAL(debug) << boost::format("%s(%x) %s") % ph.instruc[instruction.itype].name % instruction.itype % GetFeatureStr(ph.instruc[instruction.itype].feature).c_str();
 
     //Flags Tracing
     list <int> Flags = GetRelatedFlags(instruction.itype, true);
@@ -644,7 +644,7 @@ void IDAAnalyzer::AnalyzeBasicBlock(ea_t srcBlockAddress, list <insn_t>* p_cmdAr
             basic_block.BlockType = FUNCTION_BLOCK;
             if (name[0] == NULL)
             {
-                //TODO: Fix - _snprintf(name,sizeof(name)-1,"func_%X",basic_block.StartAddress);
+                //TODO: Fix - _snprintf(name,sizeof(name)-1,"func_%x",basic_block.StartAddress);
             }
         }
     }
@@ -728,7 +728,7 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
         blocksIter++
         )
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Analyzing %X") % *blocksIter;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Analyzing %x") % *blocksIter;
         ea_t block_StartAddress = *blocksIter;
 
         for (currentAddress = block_StartAddress;; currentAddress += current_item_size)
@@ -753,10 +753,10 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
                 
                 if (m_jumpInstructions.count(insn.itype) > 0)
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Got Jump at %X") % currentAddress;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Got Jump at %x") % currentAddress;
                     if (AddressHash.find(cref) == AddressHash.end())
                     {
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("Adding %X to queue") % cref;
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("Adding %x to queue") % cref;
                         AddressHash.insert(cref);
                         blocks.push_back(cref);
                     }
@@ -775,7 +775,7 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
                     if (m_callInstructions.count(insn.itype) <= 0)
                     {
                         //End of block
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("Got End of Block at %X") % currentAddress;
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("Got End of Block at %x") % currentAddress;
                         bEndOfBlock = TRUE;
                     }
                 }
@@ -798,7 +798,7 @@ list <AddressRegion> IDAAnalyzer::GetFunctionBlocks(ea_t address)
     list <AddressRegion>::iterator regionsIter;
     for (regionsIter=regions.begin();regionsIter!=regions.end();regionsIter++)
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Collected Addresses %X - %X") %(*regionsIter).startEA %(*regionsIter).endEA);
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Collected Addresses %x - %x") %(*regionsIter).startEA %(*regionsIter).endEA);
     }
     */
     return regions;
@@ -811,7 +811,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
         unordered_map <ea_t, ea_t>::iterator newFoundblockIter = m_newBlocks.find(startEA);
         if (newFoundblockIter != m_newBlocks.end())
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Skip %X block to %X") % startEA % newFoundblockIter->second;
+            BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Skip %x block to %x") % startEA % newFoundblockIter->second;
 
             if (startEA == newFoundblockIter->second)
                 break;
@@ -830,7 +830,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
     ea_t currentBlockStartAddress = currentAddress;
 
     int instructionCount = 0;
-    // BOOST_LOG_TRIVIAL(debug) << boost::format("Analyzing %X ~ %X") % startEA % endEA);
+    // BOOST_LOG_TRIVIAL(debug) << boost::format("Analyzing %x ~ %x") % startEA % endEA);
 
     bool found_branch = FALSE; //first we branch
     for (; currentAddress <= endEA; )
@@ -1049,13 +1049,13 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
                     //next_block_addr should not be analyzed again next time.
                     if (currentBlockStartAddress != startEA)
                     {
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %X~%X") % currentBlockStartAddress % (currentAddress + current_item_size);
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %x~%x") % currentBlockStartAddress % (currentAddress + current_item_size);
                         m_newBlocks.insert(pair<ea_t, ea_t>(currentBlockStartAddress, currentAddress + current_item_size));
                     }
                     if (currentBlockStartAddress != next_block_addr)
                     {
                         currentBlockStartAddress = next_block_addr;
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set currentBlockStartAddress=%X") % currentBlockStartAddress;
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set currentBlockStartAddress=%x") % currentBlockStartAddress;
                         currentAddress = next_block_addr;
                         found_branch = FALSE;
                         cref_list.clear();
@@ -1089,7 +1089,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
 
             if (currentBlockStartAddress != startEA)
             {
-                BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %X~%X") % currentBlockStartAddress % (currentAddress + current_item_size);
+                BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %x~%x") % currentBlockStartAddress % (currentAddress + current_item_size);
                 m_newBlocks.insert(pair<ea_t, ea_t>(currentBlockStartAddress, currentAddress + current_item_size));
             }
 
@@ -1102,7 +1102,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
 
     if (currentBlockStartAddress != startEA)
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %X~%X") % currentBlockStartAddress % currentAddress;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %x~%x") % currentBlockStartAddress % currentAddress;
         m_newBlocks.insert(pair<ea_t, ea_t>(currentBlockStartAddress, currentAddress));
     }
 
@@ -1115,7 +1115,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
 
 void IDAAnalyzer::AnalyzeRegion(ea_t startEA, ea_t endEA, bool gatherCmdArray)
 {
-    BOOST_LOG_TRIVIAL(debug) << boost::format("AnalyzeRegion %X ~ %X") % startEA % endEA;
+    BOOST_LOG_TRIVIAL(debug) << boost::format("AnalyzeRegion %x ~ %x") % startEA % endEA;
 
     for (ea_t currentAddressess = startEA; currentAddressess < endEA; )
     {
@@ -1319,7 +1319,7 @@ int IDAAnalyzer::ConnectFunctionChunks(ea_t address)
                 qstring cref_function_name;
                 get_func_name(&cref_function_name, cref);
 
-                BOOST_LOG_TRIVIAL(debug) << boost::format("Adding Location %s(%X) To Function Member Of %s(%X:%X)") %
+                BOOST_LOG_TRIVIAL(debug) << boost::format("Adding Location %s(%x) To Function Member Of %s(%x:%x)") %
                     function_name.c_str() % address % cref_function_name.c_str() % cref_func->start_ea % cref;
                     append_func_tail(cref_func, address, GetBlockEnd(address));
                     connected_links_count++;
@@ -1341,7 +1341,7 @@ int IDAAnalyzer::ConnectFunctionChunks(ea_t address)
                 {
                     qstring cref_function_name;
                     get_func_name(&cref_function_name, cref);
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Adding Function %s(%X) To Function Member Of %s(%X:%X)") % function_name.c_str() % address % cref_function_name.c_str() % cref_func->start_ea % cref;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Adding Function %s(%x) To Function Member Of %s(%x:%x)") % function_name.c_str() % address % cref_function_name.c_str() % cref_func->start_ea % cref;
                     append_func_tail(cref_func, address, GetBlockEnd(address));
                     connected_links_count++;
                 }
@@ -1381,7 +1381,7 @@ void IDAAnalyzer::MakeCode(ea_t startAddress, ea_t endAddress)
 {
     while (1) {
         bool converted = TRUE;
-        BOOST_LOG_TRIVIAL(debug) << boost::format("MakeCode: %X - %X ") % startAddress % endAddress;
+        BOOST_LOG_TRIVIAL(debug) << boost::format("MakeCode: %x - %x ") % startAddress % endAddress;
 
         del_items(startAddress, 0, endAddress - startAddress);
         for (ea_t addr = startAddress; addr <= endAddress; addr += get_item_size(addr))
@@ -1431,12 +1431,12 @@ void IDAAnalyzer::FixExceptionHandlers()
                         ea_t push_exception_handler = get_first_dref_to(sub_exception_handler);
                         while (push_exception_handler != BADADDR)
                         {
-                            BOOST_LOG_TRIVIAL(debug) << boost::format("push exception_handler: %X") % push_exception_handler;
+                            BOOST_LOG_TRIVIAL(debug) << boost::format("push exception_handler: %x") % push_exception_handler;
                             ea_t push_handlers_structure = get_first_cref_to(push_exception_handler);
 
                             while (push_handlers_structure != BADADDR)
                             {
-                                BOOST_LOG_TRIVIAL(debug) << boost::format("push hanlders structure: %X") % push_handlers_structure;
+                                BOOST_LOG_TRIVIAL(debug) << boost::format("push hanlders structure: %x") % push_handlers_structure;
                                 ea_t handlers_structure_start = get_first_dref_from(push_handlers_structure);
                                 while (handlers_structure_start != BADADDR)
                                 {
@@ -1445,7 +1445,7 @@ void IDAAnalyzer::FixExceptionHandlers()
                                     ea_t handlers_structure = handlers_structure_start;
                                     while (1)
                                     {
-                                        BOOST_LOG_TRIVIAL(debug) << boost::format("handlers_structure: %X") % handlers_structure;
+                                        BOOST_LOG_TRIVIAL(debug) << boost::format("handlers_structure: %x") % handlers_structure;
                                         qstring handlers_structure_name;
                                         get_name(&handlers_structure_name, handlers_structure);
 
@@ -1462,15 +1462,15 @@ void IDAAnalyzer::FixExceptionHandlers()
                                             int pos = (handlers_structure - handlers_structure_start) / 4;
                                             if (pos % 3 == 1 || pos % 3 == 2)
                                             {
-                                                BOOST_LOG_TRIVIAL(debug) << boost::format("Checking handlers_structure: %X") % handlers_structure;
+                                                BOOST_LOG_TRIVIAL(debug) << boost::format("Checking handlers_structure: %x") % handlers_structure;
 
                                                 ea_t exception_handler_routine = get_first_dref_from(handlers_structure);
                                                 while (exception_handler_routine != BADADDR)
                                                 {
-                                                    BOOST_LOG_TRIVIAL(debug) << boost::format("Checking exception_handler_routine: %X") % exception_handler_routine;
+                                                    BOOST_LOG_TRIVIAL(debug) << boost::format("Checking exception_handler_routine: %x") % exception_handler_routine;
                                                     if (!is_code(get_full_flags(exception_handler_routine)))
                                                     {
-                                                        BOOST_LOG_TRIVIAL(debug) << boost::format("Reanalyzing exception_handler_routine: %X") % exception_handler_routine;
+                                                        BOOST_LOG_TRIVIAL(debug) << boost::format("Reanalyzing exception_handler_routine: %x") % exception_handler_routine;
                                                         ea_t end_pos = exception_handler_routine;
                                                         while (1)
                                                         {
@@ -1481,7 +1481,7 @@ void IDAAnalyzer::FixExceptionHandlers()
                                                         }
                                                         if (!is_code(exception_handler_routine))
                                                         {
-                                                            BOOST_LOG_TRIVIAL(debug) << boost::format("routine 01: %X~%X") % exception_handler_routine % end_pos;
+                                                            BOOST_LOG_TRIVIAL(debug) << boost::format("routine 01: %x~%x") % exception_handler_routine % end_pos;
                                                             MakeCode(exception_handler_routine, end_pos);
                                                         }
                                                     }
@@ -1489,7 +1489,7 @@ void IDAAnalyzer::FixExceptionHandlers()
                                                 }
                                             }
                                         }
-                                        BOOST_LOG_TRIVIAL(debug) << boost::format("checked handlers_structure: %X") % handlers_structure;
+                                        BOOST_LOG_TRIVIAL(debug) << boost::format("checked handlers_structure: %x") % handlers_structure;
                                         handlers_structure += get_item_size(handlers_structure);
                                     }
                                     handlers_structure_start = get_next_dref_from(push_handlers_structure, handlers_structure_start);

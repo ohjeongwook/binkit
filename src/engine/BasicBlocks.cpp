@@ -167,7 +167,7 @@ void BasicBlocks::MergeBlocks()
                 }
                 else
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Number Of Children for %X  = %u")
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Number Of Children for %x  = %u")
                         % lastIt->first
                         % NumberOfChildren;
 
@@ -193,13 +193,13 @@ void BasicBlocks::MergeBlocks()
                 {
                     if (childIt->second->Type == CREF_TO && childIt->second->Dst != lastIt->first)
                     {
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("Found %X -> %X") % childIt->second->Dst % childIt->first;
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("Found %x -> %x") % childIt->second->Dst % childIt->first;
                         numberOfParents++;
                     }
                 }
                 if (numberOfParents == 0)
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format(" Found Mergable Nodes %X -> %X") % lastIt->first % lastIt->second->Dst;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format(" Found Mergable Nodes %x -> %x") % lastIt->first % lastIt->second->Dst;
                 }
             }
             lastIt = it;
@@ -292,7 +292,7 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
         vector<va_t> addresses = GetCodeReferences(blockAddress, types[i]);
         for (va_t address : addresses)
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format(" %X ") % address;
+            BOOST_LOG_TRIVIAL(debug) << boost::format(" %x ") % address;
         }
     }
     vector<unsigned char> instructionHash = GetInstructionHash(blockAddress);

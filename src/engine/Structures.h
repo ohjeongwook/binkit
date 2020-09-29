@@ -20,12 +20,12 @@ private:
 public:
     InstructionHashMap()
     {
-        printf("Calling InstructionHashMap(): %X\n", this);
+        printf("Calling InstructionHashMap(): %x\n", this);
     }
 
     ~InstructionHashMap()
     {
-        printf("Calling ~InstructionHashMap(): %X\n", this);
+        printf("Calling ~InstructionHashMap(): %x\n", this);
     }
 
     multimap <vector<unsigned char>, va_t>::iterator begin()
