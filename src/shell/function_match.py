@@ -97,6 +97,12 @@ class FunctionMatchTool:
             }
         self.build_address_to_name_map()
 
+    def get_md5(self, name):
+        if name in self.binaries:
+            return self.binaries[name]['md5']
+
+        return ''
+
     def get_basic_blocks(self, binary, address):
         basic_blocks = {}
         function = binary.get_function_by_start_address(address)
@@ -170,10 +176,11 @@ class FunctionMatchTool:
             matches.append({
                 'source': function_match.source,
                 'target': function_match.target,
+                'function_match': function_match,
                 'match_rate': match_rate
             })
 
-            if self.debug > -1:
+            if self.debug > 0:
                 print('%s (%x) - %s (%x) matches: %d matched_bytes: %d / total_unidentified_blocks_bytes (%d) / unidentified %d (%d) - %d (%d) match_rate: %d' % (
                         function_match.source_name,
                         function_match.source,
@@ -199,22 +206,36 @@ class FunctionMatchTool:
 
         return matches
 
-    def choose_best_scores(self):
+    def select_by_score(self):
         match_map = {}
         for match in self.calculate_match_rates():
             if not match['source'] in match_map:
                 match_map[match['source']] = [match]
             else:
                 match_map[match['source']].append(match)
+
+        selected_matches = []
         for source in match_map.keys():
-            if len(match_map[source]) < 2:
-                continue
-            print('* source: %x' % source)
+            if self.debug > 0:
+                print('* source: %x' % source)
+
+            maximum_score = -1
+            selected_match = None
             for match in match_map[source]:
-                source_name = self.function_names['source'][match['source']]
-                target_name = self.function_names['target'][match['target']]
-                print('  match.target: %x match.match_rate: %f' % (match['target'], match['match_rate']))
-                print('    %s - %s' % (source_name, target_name))
+                if self.debug > 0:
+                    source_name = self.function_names['source'][match['source']]
+                    target_name = self.function_names['target'][match['target']]
+                    print('  match.target: %x match.match_rate: %f' % (match['target'], match['match_rate']))
+                    print('    %s - %s' % (source_name, target_name))
+
+                if maximum_score < match['match_rate']:
+                    maximum_score = match['match_rate']
+                    selected_match = match
+
+            if selected_match:
+                selected_matches.append(selected_match['function_match'])
+
+        return selected_matches
 
     def sort_matches(self, matches):
         source_to_match_map = {}
@@ -281,7 +302,9 @@ if __name__ == '__main__':
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
             function_matches = FunctionMatchTool(filename = filename)
-            function_matches.choose_best_scores()
+            selected_matches = function_matches.select_by_score()
+            pprint.pprint(selected_matches)
+
             if args.command == 'sort':
                 function_matches.sort()
                 function_matches.save(filename)
