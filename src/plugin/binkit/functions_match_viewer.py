@@ -65,7 +65,7 @@ class FunctionsMatchViewer(idaapi.PluginForm):
             idaapi.set_node_info(func.start_ea, code_block.id, node_info, idaapi.NIF_BG_COLOR | idaapi.NIF_FRAME_COLOR)
 
     def set_basic_blocks_color(self):
-        for function_match in self.match_results['function_matches']:
+        for function_match in self.function_matches:
             self.matched_block_color_function_match(function_match)
 
     def tree_view_double_clicked_handler(self, ix):
@@ -151,15 +151,15 @@ class FunctionsMatchViewer(idaapi.PluginForm):
         for column_item in columns:
             column_item.setData(item_data, QtCore.Qt.UserRole)
 
-    def add_items(self, match_results, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
+    def add_items(self, function_matches, self_name, peer_name, peer_md5, matched_block_color, unidentified_block_color):
         self.matched_block_color = matched_block_color
         self.unidentified_block_color = unidentified_block_color
-        self.match_results = match_results
+        self.function_matches = function_matches
         self.self_name = self_name
         self.peer_name = peer_name
         self.peer_md5 = peer_md5
 
-        for function_match in self.match_results['function_matches']:
+        for function_match in self.function_matches:
             self.add_item(function_match)
 
         self.tree_view.setRootIsDecorated(False)
