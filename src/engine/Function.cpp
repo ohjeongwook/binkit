@@ -8,18 +8,18 @@ Function::Function(BasicBlocks* p_basicBlocks, va_t functionAddress)
 
     m_basicBlockAddresses.insert(functionAddress);
     newBasicBlockAddresses.push_back(functionAddress);
+    BOOST_LOG_TRIVIAL(debug) << boost::format("Function::Function Function Address: %x, Basic Address: %x") % m_address % functionAddress;
 
     while (newBasicBlockAddresses.size() > 0)
     {
         vector<va_t> currentNewBasicBlockAddresses;
         for (va_t currentAddress : newBasicBlockAddresses)
         {
-            vector<va_t> addresses = p_basicBlocks->GetCodeReferences(currentAddress, CREF_FROM);
-            for (va_t address : addresses)
+            for (va_t address : p_basicBlocks->GetCodeReferences(currentAddress, CREF_FROM))
             {
                 if (m_basicBlockAddresses.find(address) == m_basicBlockAddresses.end())
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Function::Function %x - %x") % functionAddress % address;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Function::Function Function Address: %x, Basic Address: %x") % m_address % address;
                     m_basicBlockAddresses.insert(address);
                     currentNewBasicBlockAddresses.push_back(address);
                 }
@@ -29,11 +29,12 @@ Function::Function(BasicBlocks* p_basicBlocks, va_t functionAddress)
     }
 }
 
-void Function::AddBasicBlock(va_t functionAddress)
+void Function::AddBasicBlock(va_t address)
 {
-    if (m_basicBlockAddresses.find(functionAddress) == m_basicBlockAddresses.end())
+    if (m_basicBlockAddresses.find(address) == m_basicBlockAddresses.end())
     {
-        m_basicBlockAddresses.insert(functionAddress);
+        BOOST_LOG_TRIVIAL(debug) << boost::format("Function::AddBasicBlock Function Address: %x, Basic Address: %x") % m_address % address;
+        m_basicBlockAddresses.insert(address);
     }
 }
 
