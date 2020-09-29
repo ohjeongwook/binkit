@@ -15,11 +15,13 @@ Function::Function(BasicBlocks* p_basicBlocks, va_t functionAddress)
         vector<va_t> currentNewBasicBlockAddresses;
         for (va_t currentAddress : newBasicBlockAddresses)
         {
+            BOOST_LOG_TRIVIAL(debug) << boost::format("  p_basicBlocks->GetCodeReferences: %x") % currentAddress;
             for (va_t address : p_basicBlocks->GetCodeReferences(currentAddress, CREF_FROM))
             {
+                BOOST_LOG_TRIVIAL(debug) << boost::format("    address: %x") % address;
                 if (m_basicBlockAddresses.find(address) == m_basicBlockAddresses.end())
                 {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Function::Function Function Address: %x, Basic Address: %x") % m_address % address;
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("      Function::Function Function Address: %x, Basic Address: %x") % m_address % address;
                     m_basicBlockAddresses.insert(address);
                     currentNewBasicBlockAddresses.push_back(address);
                 }
