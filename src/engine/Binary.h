@@ -20,7 +20,7 @@ private:
     BasicBlocks* m_pbasicBlocks;
 
     DisassemblyReader* m_pdisassemblyReader;
-    multimap<va_t, va_t> m_basicBlockToFunctionAddresses;
+    multimap<va_t, va_t> m_basicBlockToFunction;
     vector<Function*> m_functions;
     multimap<va_t, Function*> m_functionAddressMap;
 
