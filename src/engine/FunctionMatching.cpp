@@ -83,13 +83,11 @@ int FunctionMatching::DoControlFlowMatch(va_t address, int matchType)
     {
         for(FunctionMatch & functionMatch : m_functionMatchList.GetMatchesByAddress(address))
         {
-            vector<BasicBlockMatch> fullBasicBlockMatchList;                
             for (BasicBlockMatch *p_basicBlockMatch : functionMatch.BasicBlockMatchList)
             {
                 vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoControlFlowMatch(p_basicBlockMatch->Source, p_basicBlockMatch->Target, matchType);
-                fullBasicBlockMatchList.insert(fullBasicBlockMatchList.end(), basicBlockMatchList.begin(), basicBlockMatchList.end());
+                m_functionMatchList.Add(functionMatch.SourceFunction, functionMatch.TargetFunction, basicBlockMatchList);
             }
-            m_functionMatchList.Add(functionMatch.SourceFunction, functionMatch.TargetFunction, fullBasicBlockMatchList);
         }
     }
     else

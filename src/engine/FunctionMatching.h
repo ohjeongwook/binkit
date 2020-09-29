@@ -15,6 +15,8 @@ struct FunctionMatch
     vector<BasicBlockMatch *> BasicBlockMatchList;
 };
 
+
+// TODO: Change this to multiple match structure
 #define BASIC_BLOCK_MATCH_MAP unordered_map<va_t, BasicBlockMatch *>
 #define BASIC_TARGET_BLOCK_MATCH_PAIR pair<va_t, BasicBlockMatch *>
 #define BASIC_BLOCK_MATCH_PAIR pair<va_t, BasicBlockMatch *>
