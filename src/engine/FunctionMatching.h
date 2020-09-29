@@ -26,12 +26,12 @@ private:
     BASIC_BLOCK_MATCH_MAP m_basic_block_matches;
 
 public:
-    bool Add(BasicBlockMatch basicBlockMatch)
+    bool Add(BasicBlockMatch basicBlockMatch, string prefix = "")
     {
         BASIC_BLOCK_MATCH_MAP::iterator it = m_basic_block_matches.find(basicBlockMatch.Source);
         if (it == m_basic_block_matches.end())
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList::Add: insert %x - %x MatchRate: %d") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+            BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "BasicBlockList::Add: insert %x - %x MatchRate: %d") % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             BasicBlockMatch* p_basicBlockMatch = new BasicBlockMatch();
             memcpy(p_basicBlockMatch, &basicBlockMatch, sizeof(basicBlockMatch));
             m_basic_block_matches.insert(BASIC_BLOCK_MATCH_PAIR(basicBlockMatch.Source, p_basicBlockMatch));
@@ -41,7 +41,7 @@ public:
         {
             if (it->second->Target != basicBlockMatch.Target && it->second->MatchRate < basicBlockMatch.MatchRate)
             {
-                BOOST_LOG_TRIVIAL(debug) << boost::format("BasicBlockList::Add: replace %x - %x (%d) <-- %x - %x (%d)") % it->second->Source % it->second->Target % it->second->MatchRate % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+                BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "  BasicBlockList::Add: replace %x - %x (%d) <-- %x - %x (%d)") % it->second->Source % it->second->Target % it->second->MatchRate % basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate;
                 memcpy(it->second, &basicBlockMatch, sizeof(basicBlockMatch));
                 return true;
             }
@@ -150,7 +150,7 @@ public:
         return functionMatchList;
     }
 
-    bool Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch)
+    bool Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch, string prefix = "")
     {
         unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(sourceFunctionAddress);
         if (it == m_matches.end())
@@ -166,9 +166,9 @@ public:
             it2 = result.first;
         }
 
-        if (it2->second.Add(basicBlockMatch))
+        if (it2->second.Add(basicBlockMatch, prefix + "  "))
         {
-            BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+            BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
             return true;
         }
         return false;
@@ -224,7 +224,7 @@ public:
     void AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList);
     vector<FunctionMatch> GetMatches();
     void RemoveMatches(int matchSequence);
-    int DoFunctionInstructionHashMatch(va_t sourceFunctionAddress, va_t targetFunctionAddress);
+    int DoFunctionInstructionHashMatch(va_t srcFunctionAddress, va_t targetFunctionAddress);
     int DoInstructionHashMatch();
     int DoControlFlowMatch(va_t address = 0, int matchType = CREF_FROM);
 };
