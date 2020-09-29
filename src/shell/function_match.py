@@ -47,8 +47,8 @@ class FunctionMatch(dict):
             raise AttributeError('No such attribute: ' + name)
 
 class FunctionMatchTool:
-    def __init__(self, filename = '', function_matches = None, binaries = [], debug_level = 0):
-        self.debug_level = debug_level
+    def __init__(self, filename = '', function_matches = None, binaries = [], debug = 0):
+        self.debug = debug
         self.binaries = []
         self.function_matches = []
         if filename and os.path.isfile(filename):
@@ -95,10 +95,12 @@ class FunctionMatchTool:
                 'source': {'md5': binaries[0].get_md5()},
                 'target': {'md5': binaries[1].get_md5()},
             }
+        self.build_address_to_name_map()
 
     def get_basic_blocks(self, binary, address):
         basic_blocks = {}
-        for function in binary.get_function(address):
+        function = binary.get_function_by_start_address(address)
+        if function:
             for basic_block_address in function.get_basic_blocks():
                 basic_blocks[basic_block_address] = 1
         return basic_blocks
@@ -133,6 +135,12 @@ class FunctionMatchTool:
                         unidentified_blocks_count[name] += len(function_match.unidentified_blocks[name])
         return {'function_match_count': function_match_count, 'unidentified_blocks_count': unidentified_blocks_count}
 
+    def build_address_to_name_map(self):
+        self.function_names = {'source': {}, 'target': {}}
+        for function_match in self.function_matches:
+            self.function_names['source'][function_match.source] = function_match.source_name
+            self.function_names['target'][function_match.target] = function_match.target_name
+        
     def calculate_match_rates(self):
         matches = []
         for function_match in self.function_matches:
@@ -145,6 +153,7 @@ class FunctionMatchTool:
 
             unidentified_blocks_counts = {'sources': 0, 'targets': 0}
             unidentified_blocks_bytes = {'sources': 0, 'targets': 0}
+
             total_unidentified_blocks_bytes = 0
             for name in unidentified_blocks_counts.keys():
                 if name in function_match.get('unidentified_blocks', {}):
@@ -163,20 +172,30 @@ class FunctionMatchTool:
                 'target': function_match.target,
                 'match_rate': match_rate
             })
-            print('%s (%x) - %s (%x) matches: %d matched_bytes: %d / unidentified %d (%d) - %d (%d) match_rate: %d' % (
-                    function_match.source_name,
-                    function_match.source,
-                    function_match.target_name,
-                    function_match.target,
-                    len(function_match.matches),
-                    matched_bytes,
-                    unidentified_blocks_bytes['sources'],
-                    unidentified_blocks_counts['sources'],
-                    unidentified_blocks_bytes['targets'],
-                    unidentified_blocks_counts['targets'],
-                    match_rate
+
+            if self.debug > -1:
+                print('%s (%x) - %s (%x) matches: %d matched_bytes: %d / total_unidentified_blocks_bytes (%d) / unidentified %d (%d) - %d (%d) match_rate: %d' % (
+                        function_match.source_name,
+                        function_match.source,
+                        function_match.target_name,
+                        function_match.target,
+                        len(function_match.matches),
+                        matched_bytes,
+                        total_unidentified_blocks_bytes,
+                        unidentified_blocks_bytes['sources'],
+                        unidentified_blocks_counts['sources'],
+                        unidentified_blocks_bytes['targets'],
+                        unidentified_blocks_counts['targets'],
+                        match_rate
+                    )
                 )
-            )
+
+                for name in ('sources', 'targets'):
+                    if not 'unidentified_blocks' in function_match or not name in function_match.unidentified_blocks:
+                        continue
+                    print('\t' + name)
+                    for unidentified_block in function_match.unidentified_blocks[name]:
+                        print('\t\t%x - %x' % (unidentified_block['start'], unidentified_block['end']))
 
         return matches
 
@@ -187,11 +206,15 @@ class FunctionMatchTool:
                 match_map[match['source']] = [match]
             else:
                 match_map[match['source']].append(match)
-
         for source in match_map.keys():
+            if len(match_map[source]) < 2:
+                continue
             print('* source: %x' % source)
             for match in match_map[source]:
-                print('  match.target: %x match.match_rate: %d' % (match['target'], match['match_rate']))
+                source_name = self.function_names['source'][match['source']]
+                target_name = self.function_names['target'][match['target']]
+                print('  match.target: %x match.match_rate: %f' % (match['target'], match['match_rate']))
+                print('    %s - %s' % (source_name, target_name))
 
     def sort_matches(self, matches):
         source_to_match_map = {}
