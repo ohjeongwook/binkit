@@ -823,15 +823,14 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
             break;
         }
     }
-
+    
     ea_t currentAddress = startEA;
-    ea_t srcBlockAddress = currentAddress;
+    ea_t srcBlockAddress = startEA;
     ea_t firstBlockEndAddress = 0;
-    ea_t currentBlockStartAddress = currentAddress;
+    ea_t currentBlockStartAddress = startEA;
 
     int instructionCount = 0;
-    // BOOST_LOG_TRIVIAL(debug) << boost::format("Analyzing %x ~ %x") % startEA % endEA);
-
+    BOOST_LOG_TRIVIAL(debug) << boost::format("IDAAnalyzer::AnalyzeBlock %x ~ %x") % startEA % endEA;
     bool found_branch = FALSE; //first we branch
     for (; currentAddress <= endEA; )
     {
@@ -855,74 +854,51 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
         //Finding Next CREF
         vector<ea_t> cref_list;
 
-        //cref from
-        ea_t targetAddress = get_first_cref_from(currentAddress);
-        while (targetAddress != BADADDR)
+        ea_t cref = get_first_cref_from(currentAddress);
+        while (cref != BADADDR)
         {
-            //if just flowing
-            if (targetAddress == currentAddress + current_item_size)
+            if (cref == currentAddress + current_item_size)
             {
-                //next instruction...
                 cref_to_next_addr = TRUE;
-            }
-            else
+            } else if (m_callInstructions.count(insn.itype) > 0)
             {
-                //j* something or call
-                //if branching
-                //if cmd type is "call"
-
-                if (m_callInstructions.count(insn.itype) > 0)
+                controlFlow.Type = CALL;
+                controlFlow.Dst = cref;
+                m_pdisassemblyWriter->AddControlFlow(controlFlow);
+            } else {
+                found_branch = TRUE;
+                bool isNopBlock = FALSE;
+                decode_insn(&insn, cref);
+                if (m_unconditionalJumpInstructions.count(insn.itype) > 0)
                 {
-
-                    //this is a call
-                    //PUSH THIS: call_addrs targetAddress
-                    controlFlow.Type = CALL;
-                    controlFlow.Dst = targetAddress;
-
-                    m_pdisassemblyWriter->AddControlFlow(controlFlow);
-                }
-                else {
-                    //this is a jump
-                    found_branch = TRUE; //j* or ret* instruction found
-                    bool IsNOPBlock = FALSE;
-                    //check if the jumped position(targetAddress) is a nop block
-                    //if insn type is "j*"
-
-                    decode_insn(&insn, targetAddress);
-
-                    if (m_unconditionalJumpInstructions.count(insn.itype) > 0)
+                    int cref_from_cref_number = 0;
+                    ea_t cref_from_cref = get_first_cref_from(cref);
+                    while (cref_from_cref != BADADDR)
                     {
-                        int cref_from_cref_number = 0;
-                        ea_t cref_from_cref = get_first_cref_from(targetAddress);
+                        cref_from_cref_number++;
+                        cref_from_cref = get_next_cref_from(cref, cref_from_cref);
+                    }
+                    if (cref_from_cref_number == 1)
+                    {
+                        //we add the cref's next position instead cref
+                        //because this is a null block(doing nothing but jump)
+                        ea_t cref_from_cref = get_first_cref_from(cref);
                         while (cref_from_cref != BADADDR)
                         {
-                            cref_from_cref_number++;
-                            cref_from_cref = get_next_cref_from(targetAddress, cref_from_cref);
+                            //next_ crefs  cref_from_cref
+                            cref_list.push_back(cref_from_cref);
+                            cref_from_cref = get_next_cref_from(cref, cref_from_cref);
                         }
-                        if (cref_from_cref_number == 1)
-                        {
-                            //we add the cref's next position instead cref
-                            //because this is a null block(doing nothing but jump)
-                            ea_t cref_from_cref = get_first_cref_from(targetAddress);
-                            while (cref_from_cref != BADADDR)
-                            {
-                                //next_ crefs  cref_from_cref
-                                cref_list.push_back(cref_from_cref);
-                                cref_from_cref = get_next_cref_from(targetAddress, cref_from_cref);
-                            }
-                            IsNOPBlock = TRUE;
-                        }
-                    }
-                    if (!IsNOPBlock)
-                        //all other cases
-                    {
-                        //PUSH THIS: next_crefs  cref
-                        cref_list.push_back(targetAddress);
+                        isNopBlock = TRUE;
                     }
                 }
-            }
 
-            targetAddress = get_next_cref_from(currentAddress, targetAddress);
+                if (!isNopBlock)
+                {
+                    cref_list.push_back(cref);
+                }
+            }
+            cref = get_next_cref_from(currentAddress, cref);
         }
 
         if (!found_branch)
@@ -960,10 +936,7 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
             }
         }
 
-        //Skip Null Block
-        if (is_code(*p_flags) &&
-            found_branch &&
-            cref_to_next_addr)
+        if (is_code(*p_flags) && found_branch && cref_to_next_addr)
         {
             ea_t cref = currentAddress + current_item_size;
 
@@ -972,19 +945,15 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
 
             if (m_unconditionalJumpInstructions.count(insn.itype) > 0)
             {
-                //we add the cref's next position instead cref
-                //because this is a null block(doing nothing but jump)
                 ea_t cref_from_cref = get_first_cref_from(cref);
                 while (cref_from_cref != BADADDR)
                 {
-                    //PUSH THIS: next_crefs  cref_from_cref
                     cref_list.push_back(cref_from_cref);
                     cref_from_cref = get_next_cref_from(cref, cref_from_cref);
                 }
             }
             else
             {
-                //next_crefs  currentAddress+current_item_size
                 cref_list.push_back(currentAddress + current_item_size);
             }
         }
@@ -1024,12 +993,10 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
                 }
             }
 
-            vector<ea_t>::iterator cref_list_iter;
-            //If Split Block
-            //must be jmp,next block has only one cref_to
+            /*
             if (cref_list.size() == 1 && m_unconditionalJumpInstructions.count(current_itype) > 0 && instructionCount > 1)
             {
-                cref_list_iter = cref_list.begin();
+                vector<ea_t>::iterator cref_list_iter = cref_list.begin();
                 ea_t next_block_addr = *cref_list_iter;
 
                 //cref_to
@@ -1041,17 +1008,20 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
                         cref_to_count++;
                     cref_to = get_next_cref_to(next_block_addr, cref_to);
                 }
+
                 if (cref_to_count == 0)
                 {
                     //Merge it
                     if (!firstBlockEndAddress)
                         firstBlockEndAddress = currentAddress + current_item_size;
+
                     //next_block_addr should not be analyzed again next time.
                     if (currentBlockStartAddress != startEA)
                     {
                         BOOST_LOG_TRIVIAL(debug) << boost::format("[newFoundblockIter] Set Analyzed %x~%x") % currentBlockStartAddress % (currentAddress + current_item_size);
                         m_newBlocks.insert(pair<ea_t, ea_t>(currentBlockStartAddress, currentAddress + current_item_size));
                     }
+
                     if (currentBlockStartAddress != next_block_addr)
                     {
                         currentBlockStartAddress = next_block_addr;
@@ -1062,27 +1032,23 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
                         continue;
                     }
                 }
-            }
+            }*/
+
             if (is_positive_jmp)
             {
-                for (cref_list_iter = cref_list.begin();
-                    cref_list_iter != cref_list.end();
-                    cref_list_iter++)
+                for (vector<ea_t>::iterator it = cref_list.begin(); it != cref_list.end(); it++)
                 {
                     controlFlow.Type = CREF_FROM;
-                    controlFlow.Dst = *cref_list_iter;
+                    controlFlow.Dst = *it;
                     m_pdisassemblyWriter->AddControlFlow(controlFlow);
                 }
             }
             else
             {
-                vector<ea_t>::reverse_iterator cref_list_iter;
-                for (cref_list_iter = cref_list.rbegin();
-                    cref_list_iter != cref_list.rend();
-                    cref_list_iter++)
+                for (vector<ea_t>::reverse_iterator it = cref_list.rbegin(); it != cref_list.rend(); it++)
                 {
                     controlFlow.Type = CREF_FROM;
-                    controlFlow.Dst = *cref_list_iter;
+                    controlFlow.Dst = *it;
                     m_pdisassemblyWriter->AddControlFlow(controlFlow);
                 }
             }
