@@ -228,15 +228,12 @@ private:
     Binary* m_sourceBinary;
     Binary* m_targetBinary;
     DiffAlgorithms* m_pdiffAlgorithms;
-    int m_matchSequence;
     FunctionMatches m_functionMatchList;
 
 public:
     FunctionMatching(Binary* p_sourceBinary, Binary* p_targetBinary);
-    void AddMatches(vector<BasicBlockMatch> currentBasicBlockMatchList);
     vector<FunctionMatch> GetMatches();
     void RemoveMatches(int matchSequence);
-    int DoFunctionInstructionHashMatch(va_t srcFunctionAddress, va_t targetFunctionAddress);
     int DoInstructionHashMatch();
     int DoControlFlowMatch(va_t address = 0, int matchType = CREF_FROM);
 };

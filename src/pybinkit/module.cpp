@@ -114,8 +114,6 @@ PYBIND11_MODULE(pybinkit, m) {
 
     py::class_<FunctionMatching>(m, "FunctionMatching")
         .def(py::init<Binary*, Binary*>())
-        .def("do_function_instruction_hash_match", &FunctionMatching::DoFunctionInstructionHashMatch)
-        .def("add_matches", &FunctionMatching::AddMatches)
         .def("do_instruction_hash_match", &FunctionMatching::DoInstructionHashMatch)
         .def("do_control_flow_match", &FunctionMatching::DoControlFlowMatch, "Perform control flow matches inside function", py::arg("source_address") = 0, py::arg("matchType") = 1)
         .def("get_matches", &FunctionMatching::GetMatches)
