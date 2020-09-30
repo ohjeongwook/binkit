@@ -174,40 +174,15 @@ int DiffAlgorithms::GetMatchRate(va_t source, va_t target)
 
 vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType)
 {
-    bool debug = false;
     vector<BasicBlockMatch> matches;
-
     vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, matchType);
     vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, matchType);
 
-    if (sourceAddresses.size() == 0 || targetAddresses.size() == 0)
-    {
-        return matches;
-    }
-
-    if (sourceAddresses.size() > 2 && sourceAddresses.size() == targetAddresses.size() && matchType == CREF_FROM)
-    {
-        //Special case for switch case
-        for (int i = 0; i < sourceAddresses.size(); i++)
-        {
-            BasicBlockMatch basicBlockMatch;
-            memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
-            basicBlockMatch.Type = CONTROLFLOW_MATCH;
-            basicBlockMatch.SourceParent = sourceAddress;
-            basicBlockMatch.TargetParent = targetAddress;
-            basicBlockMatch.Source = sourceAddresses[i];
-            basicBlockMatch.Target = targetAddresses[i];
-            basicBlockMatch.MatchRate = GetMatchRate(sourceAddresses[i], targetAddresses[i]);
-            matches.push_back(basicBlockMatch);
-        }
-        return matches;
-    }
-
     for (int i = 0; i < sourceAddresses.size(); i++)
     {
+        int matchedIndex = -1;
         int maxMatchRate = 0;
         int maxMatchCount = 0;
-        BasicBlockMatch basicBlockMatch;
         for (int j = 0; j < targetAddresses.size(); j++)
         {
             int matchRate = GetMatchRate(sourceAddresses[i], targetAddresses[j]);
@@ -220,24 +195,37 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
             }
             else if (maxMatchRate < matchRate)
             {
-                basicBlockMatch.Type = CONTROLFLOW_MATCH;
-                basicBlockMatch.SourceParent = sourceAddress;
-                basicBlockMatch.TargetParent = targetAddress;
-                basicBlockMatch.Source = sourceAddresses[i];
-                basicBlockMatch.Target = targetAddresses[j];
-                basicBlockMatch.ReferenceOrderDifference = abs(i - j);
-                basicBlockMatch.MatchRate = matchRate;
+                matchedIndex = j;
                 maxMatchRate = matchRate;
                 maxMatchCount = 1;
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << boost::format("Source: %x Target: %x MatchRate: %d maxMatchRate: %d maxMatchCount: %d") % 
-            basicBlockMatch.Source % basicBlockMatch.Target % basicBlockMatch.MatchRate %
-            maxMatchRate % maxMatchCount;
-
         if (maxMatchRate > 0 && maxMatchCount == 1)
         {
+            BasicBlockMatch basicBlockMatch;
+            basicBlockMatch.Type = CONTROLFLOW_MATCH;
+            basicBlockMatch.SourceParent = sourceAddress;
+            basicBlockMatch.TargetParent = targetAddress;
+            basicBlockMatch.Source = sourceAddresses[i];
+            basicBlockMatch.Target = targetAddresses[matchedIndex];
+            basicBlockMatch.MatchRate = maxMatchRate;
+            matches.push_back(basicBlockMatch);
+        }
+    }
+
+    if (matches.size() == 0 && sourceAddresses.size() == targetAddresses.size() && matchType == CREF_FROM)
+    {
+        for (int i = 0; i < sourceAddresses.size(); i++)
+        {
+            BasicBlockMatch basicBlockMatch;
+            memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
+            basicBlockMatch.Type = CONTROLFLOW_MATCH;
+            basicBlockMatch.SourceParent = sourceAddress;
+            basicBlockMatch.TargetParent = targetAddress;
+            basicBlockMatch.Source = sourceAddresses[i];
+            basicBlockMatch.Target = targetAddresses[i];
+            basicBlockMatch.MatchRate = GetMatchRate(sourceAddresses[i], targetAddresses[i]);
             matches.push_back(basicBlockMatch);
         }
     }
