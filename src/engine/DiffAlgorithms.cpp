@@ -178,43 +178,46 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
     vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, matchType);
     vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, matchType);
 
-    for (int i = 0; i < sourceAddresses.size(); i++)
+    if (matchType != CREF_FROM || (sourceAddresses.size() <= 2 && targetAddresses.size() <= 2))
     {
-        int matchedIndex = -1;
-        int maxMatchRate = 0;
-        int maxMatchCount = 0;
-        for (int j = 0; j < targetAddresses.size(); j++)
+        for (int i = 0; i < sourceAddresses.size(); i++)
         {
-            int matchRate = GetMatchRate(sourceAddresses[i], targetAddresses[j]);
-            BOOST_LOG_TRIVIAL(debug) << boost::format("Source: %x Target: %x MatchRate: %d") %
-                sourceAddresses[i] % targetAddresses[j] % matchRate;
-
-            if (maxMatchRate == matchRate)
+            int matchedIndex = -1;
+            int maxMatchRate = 0;
+            int maxMatchCount = 0;
+            for (int j = 0; j < targetAddresses.size(); j++)
             {
-                maxMatchCount++;
+                int matchRate = GetMatchRate(sourceAddresses[i], targetAddresses[j]);
+                if (maxMatchRate == matchRate)
+                {
+                    maxMatchCount++;
+                }
+                else if (maxMatchRate < matchRate)
+                {
+                    matchedIndex = j;
+                    maxMatchRate = matchRate;
+                    maxMatchCount = 1;
+                }
             }
-            else if (maxMatchRate < matchRate)
-            {
-                matchedIndex = j;
-                maxMatchRate = matchRate;
-                maxMatchCount = 1;
-            }
-        }
 
-        if (maxMatchRate > 0 && maxMatchCount == 1)
-        {
-            BasicBlockMatch basicBlockMatch;
-            basicBlockMatch.Type = CONTROLFLOW_MATCH;
-            basicBlockMatch.SourceParent = sourceAddress;
-            basicBlockMatch.TargetParent = targetAddress;
-            basicBlockMatch.Source = sourceAddresses[i];
-            basicBlockMatch.Target = targetAddresses[matchedIndex];
-            basicBlockMatch.MatchRate = maxMatchRate;
-            matches.push_back(basicBlockMatch);
+            if (maxMatchRate > 0 && maxMatchCount == 1)
+            {
+                BasicBlockMatch basicBlockMatch;
+                basicBlockMatch.Type = CONTROLFLOW_MATCH;
+                basicBlockMatch.SourceParent = sourceAddress;
+                basicBlockMatch.TargetParent = targetAddress;
+                basicBlockMatch.Source = sourceAddresses[i];
+                basicBlockMatch.Target = targetAddresses[matchedIndex];
+                basicBlockMatch.MatchRate = maxMatchRate;
+                matches.push_back(basicBlockMatch);
+
+                BOOST_LOG_TRIVIAL(debug) << boost::format("DiffAlgorithms::DoControlFlowMatch: Max match - %x - %x -> %x - %x MatchRate: %d") %
+                    sourceAddress % targetAddress % sourceAddresses[i] % targetAddresses[matchedIndex] % maxMatchRate;            
+            }
         }
     }
 
-    if (matches.size() == 0 && sourceAddresses.size() == targetAddresses.size() && matchType == CREF_FROM)
+    if (matchType == CREF_FROM && matches.size() == 0 && sourceAddresses.size() == targetAddresses.size())
     {
         for (int i = 0; i < sourceAddresses.size(); i++)
         {
@@ -227,6 +230,9 @@ vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, v
             basicBlockMatch.Target = targetAddresses[i];
             basicBlockMatch.MatchRate = GetMatchRate(sourceAddresses[i], targetAddresses[i]);
             matches.push_back(basicBlockMatch);
+
+            BOOST_LOG_TRIVIAL(debug) << boost::format("DiffAlgorithms::DoControlFlowMatch: Same Size Match - %x - %x -> %x - %x MatchRate: %d") %
+                sourceAddress % targetAddress % sourceAddresses[i] % targetAddresses[i] % basicBlockMatch.MatchRate ;            
         }
     }
 
