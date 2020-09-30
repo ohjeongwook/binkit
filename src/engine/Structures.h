@@ -119,7 +119,6 @@ typedef struct _BasicBlockMatch_ {
     short Type;
     short SubType;
     short Status;
-    short ReferenceOrderDifference;
     va_t Source;
     va_t Target;
     int MatchRate;

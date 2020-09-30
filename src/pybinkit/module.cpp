@@ -101,7 +101,6 @@ PYBIND11_MODULE(pybinkit, m) {
         .def_readwrite("status", &BasicBlockMatch::Status)
         .def_readwrite("source", &BasicBlockMatch::Source)
         .def_readwrite("target", &BasicBlockMatch::Target)
-        .def_readwrite("reference_order_difference", &BasicBlockMatch::ReferenceOrderDifference)
         .def_readwrite("match_rate", &BasicBlockMatch::MatchRate)
         .def_readwrite("source_parent", &BasicBlockMatch::SourceParent)
         .def_readwrite("target_parent", &BasicBlockMatch::TargetParent)
