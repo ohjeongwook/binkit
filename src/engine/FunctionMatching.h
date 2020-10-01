@@ -146,11 +146,11 @@ public:
                 break;
             }
 
-            va_t sourceFunctionAddress = it->first;
+            va_t srcFunctionAddress = it->first;
             for (auto& val2 : it->second)
             {
                 FunctionMatch functionMatch;
-                functionMatch.SourceFunction = sourceFunctionAddress;
+                functionMatch.SourceFunction = srcFunctionAddress;
                 functionMatch.TargetFunction = val2.first;
                 functionMatch.BasicBlockMatchList = val2.second.Get();
                 functionMatchList.push_back(functionMatch);
@@ -160,12 +160,12 @@ public:
         return functionMatchList;
     }
 
-    bool Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch, string prefix = "")
+    bool Add(va_t srcFunctionAddress, va_t targetFunctionAddress, BasicBlockMatch basicBlockMatch, string prefix = "")
     {
-        unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(sourceFunctionAddress);
+        unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(srcFunctionAddress);
         if (it == m_matches.end())
         {
-            std::pair<unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator, bool > result = m_matches.insert(pair<va_t, unordered_map<va_t, BasicBlockList>>(sourceFunctionAddress, {}));
+            std::pair<unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator, bool > result = m_matches.insert(pair<va_t, unordered_map<va_t, BasicBlockList>>(srcFunctionAddress, {}));
             it = result.first;
         }
 
@@ -177,7 +177,7 @@ public:
         }
 
         BOOST_LOG_TRIVIAL(debug) << boost::format(prefix + "FunctionMatches::Add: %x (%x) - %x (%x) MatchRate: %d") % 
-            sourceFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
+            srcFunctionAddress % basicBlockMatch.Source % targetFunctionAddress % basicBlockMatch.Target % basicBlockMatch.MatchRate;
 
         if (it2->second.Add(basicBlockMatch, prefix + "  "))
         {
@@ -186,18 +186,33 @@ public:
         return false;
     }
 
-    int Add(va_t sourceFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches, string prefix = "")
+    int Add(va_t srcFunctionAddress, va_t targetFunctionAddress, vector<BasicBlockMatch> basicBlockMatches, string prefix = "")
     {
         int count = 0;
         for (BasicBlockMatch basicBlockMatch : basicBlockMatches)
         {
-            if (Add(sourceFunctionAddress, targetFunctionAddress, basicBlockMatch, prefix))
+            if (Add(srcFunctionAddress, targetFunctionAddress, basicBlockMatch, prefix))
             {
                 count++;
             }
         }
 
         return count;
+    }
+
+    vector<BasicBlockMatch*> GetBasicBlockMatches(va_t srcFunctionAddress, va_t targetFunctionAddress)
+    {
+        // vector<pair<va_t, va_t>>
+
+        unordered_map<va_t, unordered_map<va_t, BasicBlockList>>::iterator it = m_matches.find(srcFunctionAddress);
+        if (it != m_matches.end())
+        {
+            unordered_map<va_t, BasicBlockList>::iterator it2 = it->second.find(targetFunctionAddress);
+            if (it2 != it->second.end())
+            {
+                return it2->second.Get();
+            }
+        }
     }
     
     void RemoveMatches(int matchSequence)
