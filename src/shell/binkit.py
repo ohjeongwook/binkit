@@ -72,7 +72,7 @@ class BinaryMatcher:
         i = 0
         while i < iteration:
             current_match_count = 0
-            if algorithm == ('inshash', 'hash'):
+            if algorithm in ('inshash', 'hash'):
                 print('* do_instruction_hash_match:')
                 current_match_count = self.function_matches.do_instruction_hash_match()
             elif algorithm in ('cf', 'controlflow'):
