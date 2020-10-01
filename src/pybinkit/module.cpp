@@ -55,7 +55,7 @@ PYBIND11_MODULE(pybinkit, m) {
         .def(py::init())
         .def("get_addresses", &BasicBlocks::GetAddresses)
         .def("get_basic_block", &BasicBlocks::GetBasicBlock)
-        .def("get_basic_block_end", &BasicBlocks::GetBasicBlockEnd)        
+        .def("get_end_address", &BasicBlocks::GetEndAddress)        
         .def("get_symbol", &BasicBlocks::GetSymbol)
         .def("get_instruction_hash", &BasicBlocks::GetInstructionHash)
         .def("get_instruction_bytes", &BasicBlocks::GetInstructionBytes)
@@ -75,7 +75,7 @@ PYBIND11_MODULE(pybinkit, m) {
     py::class_<Function>(m, "Function")
         .def(py::init())
         .def("get_address", &Function::GetAddress)
-        .def("get_basic_blocks", &Function::GetBasicBlocks)
+        .def("get_basic_block_addresses", &Function::GetBasicBlockAddresses)
         .def("get_symbol", &Function::GetSymbol);    
 
     py::class_<AddressPair>(m, "AddressPair")

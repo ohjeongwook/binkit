@@ -48,10 +48,10 @@ int FunctionMatching::DoInstructionHashMatch()
         for(auto & val : m_functionMatchList.GetFunctionAddresses())
         {
             Function* pSrcFunction = m_sourceBinary->GetFunctionByStartAddress(val.first);
-            unordered_set<va_t> srcFunctionAddresses = pSrcFunction->GetBasicBlocks();
+            unordered_set<va_t> srcFunctionAddresses = pSrcFunction->GetBasicBlockAddresses();
 
             Function* pTargetFunction = m_targetBinary->GetFunctionByStartAddress(val.second);
-            unordered_set<va_t> targetFunctionAddresses = pTargetFunction->GetBasicBlocks();
+            unordered_set<va_t> targetFunctionAddresses = pTargetFunction->GetBasicBlockAddresses();
 
             for(BasicBlockMatch* p_basicBlockMatch : m_functionMatchList.GetBasicBlockMatches(val.first, val.second))
             {

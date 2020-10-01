@@ -77,9 +77,9 @@ class FunctionMatchTool:
                 for match in function_match.matches:
                     function_match_data['matches'].append({                     
                         'source': match.source,
-                        'source_end': src_basic_blocks.get_basic_block_end(match.source),
+                        'source_end': src_basic_blocks.get_end_address(match.source),
                         'target': match.target,
-                        'target_end': target_basic_blocks.get_basic_block_end(match.target),
+                        'target_end': target_basic_blocks.get_end_address(match.target),
                         'source_parent': match.source_parent,
                         'target_parent': match.target_parent,
                         'type': match.type,
@@ -107,7 +107,7 @@ class FunctionMatchTool:
         basic_blocks = {}
         function = binary.get_function_by_start_address(address)
         if function:
-            for basic_block_address in function.get_basic_blocks():
+            for basic_block_address in function.get_basic_block_addresses():
                 basic_blocks[basic_block_address] = 1
         return basic_blocks
 
@@ -125,9 +125,9 @@ class FunctionMatchTool:
 
         if len(src_basic_blocks) > 0 or len(target_basic_blocks) > 0:
             for source in src_basic_blocks.keys():
-                unidentified_blocks['sources'].append({'start': source, 'end': binaries[0].get_basic_blocks().get_basic_block_end(source)})
+                unidentified_blocks['sources'].append({'start': source, 'end': binaries[0].get_basic_blocks().get_end_address(source)})
             for target in target_basic_blocks.keys():
-                unidentified_blocks['targets'].append({'start': target, 'end': binaries[1].get_basic_blocks().get_basic_block_end(target)})
+                unidentified_blocks['targets'].append({'start': target, 'end': binaries[1].get_basic_blocks().get_end_address(target)})
         return unidentified_blocks
 
     def get_stats(self, source_function_address = 0, level = 1):

@@ -60,17 +60,17 @@ vector<va_t> BasicBlocks::GetAddresses()
     return addresses;
 }
 
-va_t BasicBlocks::GetBasicBlockStart(va_t address)
-{
-    return m_pdisassemblyReader->ReadBlockStartAddress(address);
-}
-
 PBasicBlock BasicBlocks::GetBasicBlock(va_t address)
 {
     return m_pdisassemblyReader->ReadBasicBlock(address);
 }
 
-va_t BasicBlocks::GetBasicBlockEnd(va_t address)
+va_t BasicBlocks::GetStartAddress(va_t address)
+{
+    return m_pdisassemblyReader->ReadBlockStartAddress(address);
+}
+
+va_t BasicBlocks::GetEndAddress(va_t address)
 {
     multimap<va_t, va_t>::iterator it = m_disassemblyHashMaps.addressRangeMap.find(address);
 
@@ -301,60 +301,4 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
     {
         BOOST_LOG_TRIVIAL(debug) << boost::format(" instruction_hash: %s") % BytesToHexString(instructionHash).c_str();
     }
-}
-
-void BasicBlocks::GenerateTwoLevelInstructionHash()
-{
-    /*
-    multimap <unsigned char *, va_t>::iterator instructionHashMap_pIter;
-    for (instructionHashMap_pIter = m_disassemblyHashMaps.instructionHashMap.begin();
-        instructionHashMap_pIter != m_disassemblyHashMaps.instructionHashMap.end();
-        instructionHashMap_pIter++)
-
-    {
-        if(m_disassemblyHashMaps.instructionHashMap.count(instructionHashMap_pIter->first)>1)
-        {
-            int addresses_number = 0;
-            va_t *addresses = GetCodeReferences(instructionHashMap_pIter->second, CREF_FROM, &addresses_number);
-            if(!addresses)
-                addresses = GetCodeReferences(instructionHashMap_pIter->second, CREF_TO, NULL);
-            if(addresses)
-            {
-                int TwoLevelInstructionHashLength = 0;
-                TwoLevelInstructionHashLength += *(unsigned short *)instructionHashMap_pIter->first; //+
-                multimap <va_t,  unsigned char *>::iterator addressToInstructionHashMap_Iter;
-                for (int i = 0;i<addresses_number;i++)
-                {
-                    addressToInstructionHashMap_Iter = m_disassemblyHashMaps.addressToInstructionHashMap.find(addresses[i]);
-                    if(addressToInstructionHashMap_Iter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
-                    {
-                        TwoLevelInstructionHashLength += *(unsigned short *)addressToInstructionHashMap_Iter->second; //+
-                    }
-                }
-
-                if(TwoLevelInstructionHashLength>0)
-                {
-                    unsigned char *TwoLevelInstructionHash = (unsigned char *)malloc(TwoLevelInstructionHashLength+sizeof(short));
-                    if(TwoLevelInstructionHash)
-                    {
-                        *(unsigned short *)TwoLevelInstructionHash = TwoLevelInstructionHashLength;
-
-                        int Offset = sizeof(short);
-                        memcpy(TwoLevelInstructionHash+Offset, instructionHashMap_pIter->first+sizeof(short), *(unsigned short *)instructionHashMap_pIter->first);
-                        Offset += *(unsigned short *)instructionHashMap_pIter->first;
-                        for (int i = 0;i<addresses_number;i++)
-                        {
-                            addressToInstructionHashMap_Iter = m_disassemblyHashMaps.addressToInstructionHashMap.find(addresses[i]);
-                            if(addressToInstructionHashMap_Iter != m_disassemblyHashMaps.addressToInstructionHashMap.end())
-                            {
-                                memcpy(TwoLevelInstructionHash+Offset, addressToInstructionHashMap_Iter->second+sizeof(short), *(unsigned short *)addressToInstructionHashMap_Iter->second);
-                                Offset += *(unsigned short *)addressToInstructionHashMap_Iter->second;
-                            }
-                        }
-                        m_disassemblyHashMaps.instructionHashMap.insert(InstructionHashAddress_Pair(TwoLevelInstructionHash, instructionHashMap_pIter->second));
-                    }
-                }
-            }
-        }
-    }*/
 }

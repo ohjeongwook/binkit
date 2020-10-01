@@ -40,7 +40,7 @@ void Function::AddBasicBlock(va_t address)
     }
 }
 
-unordered_set<va_t> Function::GetBasicBlocks()
+unordered_set<va_t> Function::GetBasicBlockAddresses()
 {
     return m_basicBlockAddresses;
 }

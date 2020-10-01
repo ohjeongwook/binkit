@@ -88,7 +88,7 @@ void Binary::LoadBasicBlockToFunctionMap()
 
     for (Function* p_function : m_functions)
     {
-        for (va_t address : p_function->GetBasicBlocks())
+        for (va_t address : p_function->GetBasicBlockAddresses())
         {
             BOOST_LOG_TRIVIAL(debug) << boost::format("Binary::LoadBasicBlockToFunctionMap basic block: %x function: %x") % address % p_function->GetAddress();
             m_basicBlockToFunction.insert(pair<va_t, va_t>(address, p_function->GetAddress()));
@@ -144,7 +144,7 @@ void Binary::LoadBasicBlockToFunctionMap()
 
             if (it != m_functionAddressMap.end())
             {
-                for (va_t address : it->second->GetBasicBlocks())
+                for (va_t address : it->second->GetBasicBlockAddresses())
                 {
                     unordered_map<va_t, va_t>::iterator current_membership_it = basicBlockFunctionHashes.find(address);
 

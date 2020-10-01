@@ -25,9 +25,10 @@ public:
 
     void Load(va_t functionAddress = 0);
     vector<va_t> GetAddresses();
-    va_t GetBasicBlockStart(va_t address);
+
     PBasicBlock GetBasicBlock(va_t address);
-    va_t GetBasicBlockEnd(va_t address);    
+    va_t GetStartAddress(va_t address);    
+    va_t GetEndAddress(va_t address);
     string GetSymbol(va_t address);
     string GetDisasmLines(unsigned long startAddress);
     vector<va_t> GetCodeReferences(va_t address, int type);
@@ -38,7 +39,5 @@ public:
     vector<va_t> GetInstructionHashMatches(vector<unsigned char> instructionHash);
     vector<unsigned char> GetInstructionHash(va_t address);
     vector<unsigned char> GetInstructionBytes(va_t address);
-
-    void GenerateTwoLevelInstructionHash();
     void DumpBlockInfo(va_t blockAddress);
 };
