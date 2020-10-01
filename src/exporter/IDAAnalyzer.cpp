@@ -962,7 +962,6 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
         while (dref != BADADDR)
         {
             controlFlow.Type = DREF_TO;
-            controlFlow.Src = currentAddress;
             controlFlow.Dst = dref;
             m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_to(currentAddress, dref);
@@ -972,7 +971,6 @@ ea_t IDAAnalyzer::AnalyzeBlock(ea_t startEA, ea_t endEA, list <insn_t>* p_cmdArr
         while (dref != BADADDR)
         {
             controlFlow.Type = DREF_FROM;
-            controlFlow.Src = currentAddress;
             controlFlow.Dst = dref;
             m_pdisassemblyWriter->AddControlFlow(controlFlow);
             dref = get_next_dref_from(currentAddress, dref);
