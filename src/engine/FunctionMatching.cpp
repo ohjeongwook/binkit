@@ -24,6 +24,8 @@ void FunctionMatching::RemoveMatches(int matchSequence)
 int FunctionMatching::DoInstructionHashMatch()
 {
     int matchCount = 0;
+
+    BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatching::DoInstructionHashMatch m_functionMatchList.GetSize(): %d") % m_functionMatchList.GetSize();
     if (m_functionMatchList.GetSize() == 0)
     {
         for (BasicBlockMatch basicBlockMatch : m_pdiffAlgorithms->DoInstructionHashMatch())
@@ -51,26 +53,35 @@ int FunctionMatching::DoInstructionHashMatch()
             Function* pTargetFunction = m_targetBinary->GetFunctionByStartAddress(val.second);
             unordered_set<va_t> targetFunctionAddresses = pTargetFunction->GetBasicBlocks();
 
-            std::stringstream sourceAddressesString("");
+            for(BasicBlockMatch* p_basicBlockMatch : m_functionMatchList.GetBasicBlockMatches(val.first, val.second))
+            {
+                srcFunctionAddresses.erase(p_basicBlockMatch->Source);
+                targetFunctionAddresses.erase(p_basicBlockMatch->Target);
+            }
+
+            if (srcFunctionAddresses.size() == 0 && targetFunctionAddresses.size() == 0)
+            {
+                continue;
+            }
+
+            std::stringstream srcAddressesString("");
             for(va_t address : srcFunctionAddresses)
             {
-                sourceAddressesString << std::setfill('0') << std::setw(8) << std::hex << address;
+                srcAddressesString << std::setfill('0') << std::setw(8) << std::hex << address << " ";
             }
 
             std::stringstream targetAddressesString("");
             for(va_t address : targetFunctionAddresses)
             {
-                targetAddressesString << std::setfill('0') << std::setw(8) << std::hex << address;
+                targetAddressesString << std::setfill('0') << std::setw(8) << std::hex << address << " ";
             }            
 
             BOOST_LOG_TRIVIAL(debug) << boost::format("FunctionMatching::DoInstructionHashMatch %s (%x) - %s (%x)") % 
                 pSrcFunction->GetSymbol() % pSrcFunction->GetAddress() %
                 pTargetFunction->GetSymbol() % pTargetFunction->GetAddress();
 
-            BOOST_LOG_TRIVIAL(debug) << boost::format("    > Source Addresses: %s") % sourceAddressesString.str().c_str();
+            BOOST_LOG_TRIVIAL(debug) << boost::format("    > Source Addresses: %s") % srcAddressesString.str().c_str();
             BOOST_LOG_TRIVIAL(debug) << boost::format("    > Target Addresses: %s") % targetAddressesString.str().c_str();
-
-            // TODO: Remove any basic blocks that are in match table already
             vector<BasicBlockMatch> basicBlockMatchList = m_pdiffAlgorithms->DoBlocksInstructionHashMatch(srcFunctionAddresses, targetFunctionAddresses);
             matchCount += m_functionMatchList.Add(val.first, val.second, basicBlockMatchList);
         }
