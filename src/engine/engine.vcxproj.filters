@@ -78,6 +78,9 @@
     <ClInclude Include="..\common\SQLiteDisassemblyCommon.h">
       <Filter>SQLite</Filter>
     </ClInclude>
+    <ClInclude Include="InstructionHash.h">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Utility.cpp">
@@ -118,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="Function.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InstructionHash.cpp">
+      <Filter>Algorithms</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

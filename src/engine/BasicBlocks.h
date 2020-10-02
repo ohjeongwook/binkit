@@ -6,6 +6,7 @@
 #include <list>
 
 #include "Structures.h"
+#include "InstructionHash.h"
 #include "DisassemblyReader.h"
 
 using namespace std;

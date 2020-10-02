@@ -1,8 +1,6 @@
 #pragma once
 #include "StorageDataStructures.h"
 #include <vector>
-#include "Utility.h"
-
 #include <iostream>
 #include <boost/format.hpp> 
 #include <boost/log/trivial.hpp>
@@ -10,71 +8,8 @@
 using namespace std;
 using namespace stdext;
 
-class InstructionHashMap
-{
-private:
-    multimap <vector<unsigned char>, va_t> m_instructionHashMap;
-    multimap <va_t, vector<unsigned char>> m_addressToInstructionHashMap;
-
-public:
-    void Add(vector<unsigned char> bytes, va_t address)
-    {
-        m_instructionHashMap.insert(pair <vector<unsigned char>, va_t>(bytes, address));
-        m_addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, bytes));
-    }
-
-    vector<vector<unsigned char>> GetUniqueHashes()
-    {
-        vector<vector<unsigned char>> hashes;
-
-        for (auto& val : m_instructionHashMap)
-        {
-            if (m_instructionHashMap.count(val.first))
-            {
-                hashes.push_back(val.first);
-            }
-        }
-        return hashes;
-    }
-    
-    vector<unsigned char> GetInstructionHash(va_t address)
-    {
-        multimap <va_t, vector<unsigned char>>::iterator it = m_addressToInstructionHashMap.find(address);
-        if (it != m_addressToInstructionHashMap.end())
-        {
-            return it->second;
-        }
-        return {};
-    }
-
-    vector<va_t> GetHashMatches(vector<unsigned char> hash)
-    {
-        vector<va_t> addresses;
-        for (multimap <vector<unsigned char>, va_t>::iterator it = m_instructionHashMap.find(hash); it != m_instructionHashMap.end(); it++)
-        {
-            if (it->first != hash)
-                break;
-            addresses.push_back(it->second);
-        }
-
-        return addresses;
-    }    
-
-    int Count(vector<unsigned char> hash)
-    {
-        return m_instructionHashMap.count(hash);
-    }
-
-    int Size()
-    {
-        return m_instructionHashMap.size();
-    }
-
-    void Clear()
-    {
-        m_instructionHashMap.clear();
-    }
-};
+#include "Utility.h"
+#include "InstructionHash.h"
 
 typedef struct _DisassemblyHashMaps_ {
     InstructionHashMap instructionHashMap;
