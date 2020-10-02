@@ -10,82 +10,81 @@
 using namespace std;
 using namespace stdext;
 
-
-#ifdef XXX
 class InstructionHashMap
 {
 private:
     multimap <vector<unsigned char>, va_t> m_instructionHashMap;
+    multimap <va_t, vector<unsigned char>> m_addressToInstructionHashMap;
 
 public:
-    InstructionHashMap()
+    void Add(vector<unsigned char> bytes, va_t address)
     {
-        printf("Calling InstructionHashMap(): %x\n", this);
+        m_instructionHashMap.insert(pair <vector<unsigned char>, va_t>(bytes, address));
+        m_addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, bytes));
     }
 
-    ~InstructionHashMap()
+    vector<vector<unsigned char>> GetUniqueHashes()
     {
-        printf("Calling ~InstructionHashMap(): %x\n", this);
+        vector<vector<unsigned char>> hashes;
+
+        for (auto& val : m_instructionHashMap)
+        {
+            if (m_instructionHashMap.count(val.first))
+            {
+                hashes.push_back(val.first);
+            }
+        }
+        return hashes;
+    }
+    
+    vector<unsigned char> GetInstructionHash(va_t address)
+    {
+        multimap <va_t, vector<unsigned char>>::iterator it = m_addressToInstructionHashMap.find(address);
+        if (it != m_addressToInstructionHashMap.end())
+        {
+            return it->second;
+        }
+        return {};
     }
 
-    multimap <vector<unsigned char>, va_t>::iterator begin()
+    vector<va_t> GetHashMatches(vector<unsigned char> hash)
     {
-        return m_instructionHashMap.begin();
+        vector<va_t> addresses;
+        for (multimap <vector<unsigned char>, va_t>::iterator it = m_instructionHashMap.find(hash); it != m_instructionHashMap.end(); it++)
+        {
+            if (it->first != hash)
+                break;
+            addresses.push_back(it->second);
+        }
+
+        return addresses;
+    }    
+
+    int Count(vector<unsigned char> hash)
+    {
+        return m_instructionHashMap.count(hash);
     }
 
-    multimap <vector<unsigned char>, va_t>::iterator end()
-    {
-        return m_instructionHashMap.end();
-    }
-
-    multimap <vector<unsigned char>, va_t>::iterator find(vector<unsigned char> instructionHash)
-    {
-        return m_instructionHashMap.find(instructionHash);
-    }
-
-    multimap <vector<unsigned char>, va_t>::iterator insert(pair<vector<unsigned char>, va_t> values)
-    {
-        return m_instructionHashMap.insert(values);
-    }
-
-    multimap <vector<unsigned char>, va_t>::iterator erase(multimap <vector<unsigned char>, va_t>::iterator it)
-    {
-        return m_instructionHashMap.erase(it);
-    }
-
-    void clear()
-    {
-        return m_instructionHashMap.clear();
-    }
-
-    size_t count(vector<unsigned char> const instructionHash)
-    {
-        return m_instructionHashMap.count(instructionHash);
-    }
-
-    size_t size()
+    int Size()
     {
         return m_instructionHashMap.size();
     }
-};
-#endif
 
-typedef multimap <vector<unsigned char>, va_t> InstructionHashMap;
+    void Clear()
+    {
+        m_instructionHashMap.clear();
+    }
+};
 
 typedef struct _DisassemblyHashMaps_ {
-    BinaryMetaData binaryMetaData;
     InstructionHashMap instructionHashMap;
-    multimap <va_t, vector<unsigned char>> addressToInstructionHashMap;
     multimap <string, va_t> symbolMap;
     multimap <va_t, string> addressToSymbolMap;
-    multimap <va_t, PControlFlow> addressToControlFlowMap;
-    multimap <va_t, va_t> dstToSrcAddressMap;
     multimap <va_t, va_t> addressRangeMap;
 
     void DumpDisassemblyHashMaps()
     {
-        BOOST_LOG_TRIVIAL(debug) << boost::format("OriginalFilePath = %s") % binaryMetaData.OriginalFilePath;
-        BOOST_LOG_TRIVIAL(debug) << boost::format("instructionHashMap = %u") % instructionHashMap.size();
+        BOOST_LOG_TRIVIAL(debug) << boost::format("instructionHashMap = %u") % instructionHashMap.Size();
     }
 } DisassemblyHashMaps, * PDisassemblyHashMaps;
 

@@ -57,7 +57,6 @@ PYBIND11_MODULE(pybinkit, m) {
         .def("get_basic_block", &BasicBlocks::GetBasicBlock)
         .def("get_end_address", &BasicBlocks::GetEndAddress)        
         .def("get_symbol", &BasicBlocks::GetSymbol)
-        .def("get_instruction_hash", &BasicBlocks::GetInstructionHash)
         .def("get_instruction_bytes", &BasicBlocks::GetInstructionBytes)
         .def("get_code_references", &BasicBlocks::GetCodeReferences)
         .def("get_parents", &BasicBlocks::GetParents)

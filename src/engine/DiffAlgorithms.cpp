@@ -15,8 +15,10 @@ DiffAlgorithms::DiffAlgorithms()
 DiffAlgorithms::DiffAlgorithms(Binary* p_sourceBinary, Binary* p_targetBinary)
 {
     m_debugLevel = 0;
-    m_psourceBasicBlocks = p_sourceBinary->GetBasicBlocks();
+    m_psrcBasicBlocks = p_sourceBinary->GetBasicBlocks();
     m_ptargetBasicBlocks = p_targetBinary->GetBasicBlocks();
+    m_psrcInstructionHash = m_psrcBasicBlocks->GetInstructionHashes();
+    m_ptargetInstructionHash = m_ptargetBasicBlocks->GetInstructionHashes();    
 }
 
 int DiffAlgorithms::GetInstructionHashMatchRate(vector<unsigned char> instructionHash1, vector<unsigned char> instructionHash2)
@@ -32,25 +34,18 @@ vector<BasicBlockMatch> DiffAlgorithms::DoInstructionHashMatch()
 {
     vector<BasicBlockMatch> basicBlockMatchList;
 
-    InstructionHashMap *p_srcInstructionHashMap = m_psourceBasicBlocks->GetInstructionHashes();
-    InstructionHashMap* p_targetInstructionHashMap = m_ptargetBasicBlocks->GetInstructionHashes();
-
-    for (auto& val : *p_srcInstructionHashMap)
+    for (vector<unsigned char> hash : m_psrcInstructionHash->GetUniqueHashes())
     {
-        // Only when the hash is unique
-        if (p_srcInstructionHashMap->count(val.first) == 1 && p_targetInstructionHashMap->count(val.first) == 1)
+        vector<va_t> addresses = m_ptargetInstructionHash->GetHashMatches(hash);
+        if (addresses.size() == 1)
         {
-            multimap <vector<unsigned char>, va_t>::iterator it = p_targetInstructionHashMap->find(val.first);
-            if (it != p_targetInstructionHashMap->end())
-            {
-                BasicBlockMatch basicBlockMatch;
-                memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
-                basicBlockMatch.Type = INSTRUCTION_HASH_MATCH;
-                basicBlockMatch.Source = val.second;
-                basicBlockMatch.Target = it->second;
-                basicBlockMatch.MatchRate = 100;
-                basicBlockMatchList.push_back(basicBlockMatch);
-            }
+            BasicBlockMatch basicBlockMatch;
+            memset(&basicBlockMatch, 0, sizeof(BasicBlockMatch));
+            basicBlockMatch.Type = INSTRUCTION_HASH_MATCH;
+            basicBlockMatch.Source = m_psrcInstructionHash->GetHashMatches(hash)[0];
+            basicBlockMatch.Target = addresses[0];
+            basicBlockMatch.MatchRate = 100;
+            basicBlockMatchList.push_back(basicBlockMatch);
         }
     }
 
@@ -69,10 +64,10 @@ vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(unordered_s
 
     for (va_t sourceAddress : sourceBlockAddresses)
     {
-        vector<unsigned char> instructionHash = m_psourceBasicBlocks->GetInstructionHash(sourceAddress);
+        vector<unsigned char> instructionHash = m_psrcInstructionHash->GetInstructionHash(sourceAddress);
         vector<va_t> targetAddresses;
 
-        for (va_t targetAddress : m_ptargetBasicBlocks->GetInstructionHashMatches(instructionHash))
+        for (va_t targetAddress : m_ptargetInstructionHash->GetHashMatches(instructionHash))
         {
             if (targetBlockAddressSet.find(targetAddress) == targetBlockAddressSet.end())
             {
@@ -167,7 +162,8 @@ int DiffAlgorithms::GetMatchRate(va_t source, va_t target)
             return it2->second;
         }
     }
-    int matchRate = GetInstructionHashMatchRate(m_psourceBasicBlocks->GetInstructionHash(source), m_ptargetBasicBlocks->GetInstructionHash(target));
+
+    int matchRate = GetInstructionHashMatchRate(m_psrcInstructionHash->GetInstructionHash(source), m_ptargetInstructionHash->GetInstructionHash(target));
     it->second.insert(pair<va_t, int>(target, matchRate));
     return matchRate;
 }
@@ -175,7 +171,7 @@ int DiffAlgorithms::GetMatchRate(va_t source, va_t target)
 vector<BasicBlockMatch> DiffAlgorithms::DoControlFlowMatch(va_t sourceAddress, va_t targetAddress, int matchType)
 {
     vector<BasicBlockMatch> matches;
-    vector<va_t> sourceAddresses = m_psourceBasicBlocks->GetCodeReferences(sourceAddress, matchType);
+    vector<va_t> sourceAddresses = m_psrcBasicBlocks->GetCodeReferences(sourceAddress, matchType);
     vector<va_t> targetAddresses = m_ptargetBasicBlocks->GetCodeReferences(targetAddress, matchType);
 
     if (matchType != CREF_FROM || (sourceAddresses.size() <= 2 && targetAddresses.size() <= 2))

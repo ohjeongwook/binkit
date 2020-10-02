@@ -16,14 +16,15 @@ class BasicBlocks
 private:
     DisassemblyReader* m_pdisassemblyReader;
     DisassemblyHashMaps m_disassemblyHashMaps;
+    multimap <va_t, PControlFlow> m_addressToControlFlowMap;
+    multimap <va_t, va_t> m_dstToSrcAddressMap;
 
+    void LoadData(va_t functionAddress = 0);
     void MergeBlocks();
-    void RemoveFromInstructionHashHash(va_t address);
 public:
     BasicBlocks(DisassemblyReader* p_disassemblyReader = NULL, bool load = false);
     ~BasicBlocks();
 
-    void Load(va_t functionAddress = 0);
     vector<va_t> GetAddresses();
 
     PBasicBlock GetBasicBlock(va_t address);
@@ -36,8 +37,6 @@ public:
     vector<va_t> GetCallTargets();
     InstructionHashMap *GetInstructionHashes();
 
-    vector<va_t> GetInstructionHashMatches(vector<unsigned char> instructionHash);
-    vector<unsigned char> GetInstructionHash(va_t address);
     vector<unsigned char> GetInstructionBytes(va_t address);
     void DumpBlockInfo(va_t blockAddress);
 };

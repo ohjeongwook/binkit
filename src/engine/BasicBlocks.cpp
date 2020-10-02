@@ -12,7 +12,7 @@ BasicBlocks::BasicBlocks(DisassemblyReader* p_disassemblyReader, bool load)
 
     if (load)
     {
-        Load();
+        LoadData();
     }
 }
 
@@ -20,17 +20,16 @@ BasicBlocks::~BasicBlocks()
 {
     m_disassemblyHashMaps.symbolMap.clear();
 
-    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    for (auto& val : m_addressToControlFlowMap)
     {
         if (val.second)
             delete val.second;
     }
-    m_disassemblyHashMaps.addressToControlFlowMap.clear();
-    m_disassemblyHashMaps.addressToInstructionHashMap.clear();
-    m_disassemblyHashMaps.instructionHashMap.clear();
+    m_addressToControlFlowMap.clear();
+    m_disassemblyHashMaps.instructionHashMap.Clear();
 }
 
-void BasicBlocks::Load(va_t functionAddress)
+void BasicBlocks::LoadData(va_t functionAddress)
 {
     char conditionStr[50] = { 0, };
     if (functionAddress)
@@ -39,12 +38,72 @@ void BasicBlocks::Load(va_t functionAddress)
     }
     m_pdisassemblyReader->ReadBasicBlockHashes(conditionStr, &m_disassemblyHashMaps);
 
-    m_pdisassemblyReader->ReadControlFlow(m_disassemblyHashMaps.addressToControlFlowMap, functionAddress, true);
-    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    m_pdisassemblyReader->ReadControlFlow(m_addressToControlFlowMap, functionAddress, true);
+    for (auto& val : m_addressToControlFlowMap)
     {
         if (val.second->Type == CREF_FROM)
         {
-            m_disassemblyHashMaps.dstToSrcAddressMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
+            m_dstToSrcAddressMap.insert(pair<va_t, va_t>(val.second->Dst, val.first));
+        }
+    }
+}
+
+void BasicBlocks::MergeBlocks()
+{
+    multimap <va_t, PControlFlow>::iterator lastIt = m_addressToControlFlowMap.end();
+    multimap <va_t, PControlFlow>::iterator it;
+    multimap <va_t, PControlFlow>::iterator childIt;
+
+    int NumberOfChildren = 1;
+    for (it = m_addressToControlFlowMap.begin(); it != m_addressToControlFlowMap.end(); it++)
+    {
+        if (it->second->Type == CREF_FROM)
+        {
+            BOOL bHasOnlyOneChild = FALSE;
+            if (lastIt != m_addressToControlFlowMap.end())
+            {
+                if (lastIt->first == it->first)
+                {
+                    NumberOfChildren++;
+                }
+                else
+                {
+                    BOOST_LOG_TRIVIAL(debug) << boost::format("Number Of Children for %x  = %u")
+                        % lastIt->first
+                        % NumberOfChildren;
+
+                    if (NumberOfChildren == 1)
+                        bHasOnlyOneChild = TRUE;
+
+                    multimap <va_t, PControlFlow>::iterator nextIt = it;
+                    nextIt++;
+                    if (nextIt == m_addressToControlFlowMap.end())
+                    {
+                        lastIt = it;
+                        bHasOnlyOneChild = TRUE;
+                    }
+                    NumberOfChildren = 1;
+                }
+            }
+            if (bHasOnlyOneChild)
+            {
+                int numberOfParents = 0;
+                for (childIt = m_addressToControlFlowMap.find(lastIt->second->Dst);
+                    childIt != m_addressToControlFlowMap.end() && childIt->first == lastIt->second->Dst;
+                    childIt++)
+                {
+                    if (childIt->second->Type == CREF_TO && childIt->second->Dst != lastIt->first)
+                    {
+                        BOOST_LOG_TRIVIAL(debug) << boost::format("Found %x -> %x") % childIt->second->Dst % childIt->first;
+                        numberOfParents++;
+                    }
+                }
+                if (numberOfParents == 0)
+                {
+                    BOOST_LOG_TRIVIAL(debug) << boost::format(" Found Mergable Nodes %x -> %x") % lastIt->first % lastIt->second->Dst;
+                }
+            }
+            lastIt = it;
         }
     }
 }
@@ -52,11 +111,10 @@ void BasicBlocks::Load(va_t functionAddress)
 vector<va_t> BasicBlocks::GetAddresses()
 {
     vector<va_t> addresses;
-    for (auto& val : m_disassemblyHashMaps.addressToInstructionHashMap)
+    for (auto& val : m_disassemblyHashMaps.addressRangeMap)
     {
         addresses.push_back(val.first);
     }
-
     return addresses;
 }
 
@@ -103,7 +161,7 @@ vector<va_t> BasicBlocks::GetCodeReferences(va_t address, int type)
 {
     vector<va_t> addresses;
     multimap <va_t, PControlFlow>::iterator it;
-    for (it = m_disassemblyHashMaps.addressToControlFlowMap.find(address); it != m_disassemblyHashMaps.addressToControlFlowMap.end(); it++)
+    for (it = m_addressToControlFlowMap.find(address); it != m_addressToControlFlowMap.end(); it++)
     {
         if (it->first != address)
             break;
@@ -121,10 +179,7 @@ vector<va_t> BasicBlocks::GetParents(va_t address)
 {
     vector<va_t> parentAddresses;
 
-    for (multimap<va_t, va_t>::iterator it = m_disassemblyHashMaps.dstToSrcAddressMap.find(address);
-        it != m_disassemblyHashMaps.dstToSrcAddressMap.end() && it->first == address;
-        it++
-        )
+    for (multimap<va_t, va_t>::iterator it = m_dstToSrcAddressMap.find(address); it != m_dstToSrcAddressMap.end() && it->first == address; it++)
     {
         parentAddresses.push_back(it->second);
     }
@@ -136,7 +191,7 @@ vector<va_t> BasicBlocks::GetCallTargets()
 {
     vector<va_t> callTargets;
 
-    for (auto& val : m_disassemblyHashMaps.addressToControlFlowMap)
+    for (auto& val : m_addressToControlFlowMap)
     {
         if (val.second->Type == CALL)
         {
@@ -145,88 +200,6 @@ vector<va_t> BasicBlocks::GetCallTargets()
     }
 
     return callTargets; 
-}
-
-void BasicBlocks::MergeBlocks()
-{
-    multimap <va_t, PControlFlow>::iterator lastIt = m_disassemblyHashMaps.addressToControlFlowMap.end();
-    multimap <va_t, PControlFlow>::iterator it;
-    multimap <va_t, PControlFlow>::iterator childIt;
-
-    int NumberOfChildren = 1;
-    for (it = m_disassemblyHashMaps.addressToControlFlowMap.begin(); it != m_disassemblyHashMaps.addressToControlFlowMap.end(); it++)
-    {
-        if (it->second->Type == CREF_FROM)
-        {
-            BOOL bHasOnlyOneChild = FALSE;
-            if (lastIt != m_disassemblyHashMaps.addressToControlFlowMap.end())
-            {
-                if (lastIt->first == it->first)
-                {
-                    NumberOfChildren++;
-                }
-                else
-                {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format("Number Of Children for %x  = %u")
-                        % lastIt->first
-                        % NumberOfChildren;
-
-                    if (NumberOfChildren == 1)
-                        bHasOnlyOneChild = TRUE;
-
-                    multimap <va_t, PControlFlow>::iterator nextIt = it;
-                    nextIt++;
-                    if (nextIt == m_disassemblyHashMaps.addressToControlFlowMap.end())
-                    {
-                        lastIt = it;
-                        bHasOnlyOneChild = TRUE;
-                    }
-                    NumberOfChildren = 1;
-                }
-            }
-            if (bHasOnlyOneChild)
-            {
-                int numberOfParents = 0;
-                for (childIt = m_disassemblyHashMaps.addressToControlFlowMap.find(lastIt->second->Dst);
-                    childIt != m_disassemblyHashMaps.addressToControlFlowMap.end() && childIt->first == lastIt->second->Dst;
-                    childIt++)
-                {
-                    if (childIt->second->Type == CREF_TO && childIt->second->Dst != lastIt->first)
-                    {
-                        BOOST_LOG_TRIVIAL(debug) << boost::format("Found %x -> %x") % childIt->second->Dst % childIt->first;
-                        numberOfParents++;
-                    }
-                }
-                if (numberOfParents == 0)
-                {
-                    BOOST_LOG_TRIVIAL(debug) << boost::format(" Found Mergable Nodes %x -> %x") % lastIt->first % lastIt->second->Dst;
-                }
-            }
-            lastIt = it;
-        }
-    }
-}
-
-vector<unsigned char> BasicBlocks::GetInstructionHash(va_t address)
-{
-    if (m_disassemblyHashMaps.addressToInstructionHashMap.size() > 0)
-    {
-        multimap <va_t, vector<unsigned char>>::iterator it = m_disassemblyHashMaps.addressToInstructionHashMap.find(address);
-        if (it != m_disassemblyHashMaps.addressToInstructionHashMap.end())
-        {
-            return it->second;
-        }
-    }
-    else
-    {
-        char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
-
-        if (p_instructionHashStr)
-        {
-            return HexToBytes(p_instructionHashStr);
-        }
-    }
-    return {};
 }
 
 vector<unsigned char> BasicBlocks::GetInstructionBytes(va_t address)
@@ -244,43 +217,6 @@ InstructionHashMap *BasicBlocks::GetInstructionHashes()
     return &(m_disassemblyHashMaps.instructionHashMap);
 }
 
-vector<va_t> BasicBlocks::GetInstructionHashMatches(vector<unsigned char> instructionHash)
-{
-    vector<va_t> addresses;
-    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash); it != m_disassemblyHashMaps.instructionHashMap.end(); it++)
-    {
-        if (it->first != instructionHash)
-            break;
-
-        addresses.push_back(it->second);
-    }
-
-    return addresses;
-}
-
-void BasicBlocks::RemoveFromInstructionHashHash(va_t address)
-{
-    char* p_instructionHashStr = m_pdisassemblyReader->ReadInstructionHash(address);
-
-    if (!p_instructionHashStr)
-    {
-        return;
-    }
-
-    vector<unsigned char> instructionHash = HexToBytes(p_instructionHashStr);
-    for (multimap <vector<unsigned char>, va_t>::iterator it = m_disassemblyHashMaps.instructionHashMap.find(instructionHash); it != m_disassemblyHashMaps.instructionHashMap.end(); it++)
-    {
-        if (it->first != instructionHash)
-            break;
-
-        if (it->second == address)
-        {
-            m_disassemblyHashMaps.instructionHashMap.erase(it);
-            break;
-        }
-    }
-}
-
 void BasicBlocks::DumpBlockInfo(va_t blockAddress)
 {
     int types[] = { CREF_FROM, CREF_TO, CALL, DREF_FROM, DREF_TO, CALLED };
@@ -295,7 +231,7 @@ void BasicBlocks::DumpBlockInfo(va_t blockAddress)
             BOOST_LOG_TRIVIAL(debug) << boost::format(" %x ") % address;
         }
     }
-    vector<unsigned char> instructionHash = GetInstructionHash(blockAddress);
+    vector<unsigned char> instructionHash = m_disassemblyHashMaps.instructionHashMap.GetInstructionHash(blockAddress);
 
     if (!instructionHash.empty())
     {

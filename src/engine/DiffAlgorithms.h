@@ -256,8 +256,11 @@ class DiffAlgorithms
 private:
     int m_debugLevel;
     unordered_map<va_t, unordered_map<va_t, int>> m_matchRateCache;
-    BasicBlocks *m_psourceBasicBlocks;
+    BasicBlocks *m_psrcBasicBlocks;
     BasicBlocks* m_ptargetBasicBlocks;
+    InstructionHashMap *m_psrcInstructionHash;
+    InstructionHashMap* m_ptargetInstructionHash;
+
     BasicBlockMatchCombinations* GenerateBasicBlockMatchCombinations(vector<BasicBlockMatch> basicBlockMatchList);
 
 public:

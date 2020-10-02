@@ -41,18 +41,13 @@ int SQLiteDisassemblyReader::ReadBasicBlockHashCallback(void *arg, int argc, cha
     {
         va_t address = strtoul10(argv[0]);
         va_t endAddress = strtoul10(argv[1]);
-
         m_disassemblyHashMaps->addressRangeMap.insert(pair<va_t, va_t>(address, endAddress));
-
         vector<unsigned char> bytes(HexToBytes(argv[2]));
-        m_disassemblyHashMaps->instructionHashMap.insert(pair <vector<unsigned char>, va_t>(bytes, address));
-        m_disassemblyHashMaps->addressToInstructionHashMap.insert(pair <va_t, vector<unsigned char>>(address, bytes));
-
+        m_disassemblyHashMaps->instructionHashMap.Add(bytes, address);
         if (strtoul10(argv[4]) == 1 && strlen(argv[3]) > 0)
         {
-            char *name = argv[3];
-            m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(name, address));
-            m_disassemblyHashMaps->addressToSymbolMap.insert(pair<va_t, string>(address, name));
+            m_disassemblyHashMaps->symbolMap.insert(pair<string, va_t>(argv[3], address));
+            m_disassemblyHashMaps->addressToSymbolMap.insert(pair<va_t, string>(address, argv[3]));
         }
     }
     return 0;
