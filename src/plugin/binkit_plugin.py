@@ -7,14 +7,21 @@ import traceback
 
 from binkit.viewer import *
 from binkit.service import *
+import binkit.binaries
 
-class MenuHandler(idaapi.action_handler_t):
+class LoadResultsHandler(idaapi.action_handler_t):
     def __init__(self):
         idaapi.action_handler_t.__init__(self)
         self.viewer_sequence = 0
 
+    def get_filename(self):
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "","All Files (*);;JSON (*.json)", options=options)
+        return filename
+
     def load_results(self):
-        filename = get_filename()
+        filename = self.get_filename()
         if filename and os.path.isfile(filename):
             viewer = Viewer(filename)
             form_name = "Function Matches-%d" % self.viewer_sequence
@@ -23,8 +30,30 @@ class MenuHandler(idaapi.action_handler_t):
             idaapi.set_dock_pos(form_name, "Functions window", idaapi.DP_TAB)
 
     def activate(self, ctx):
-        print('activate: ' + str(ctx))
         self.load_results()
+        return 1
+
+    def update(self, ctx):
+        return idaapi.AST_ENABLE_ALWAYS
+
+class DiffHandler(idaapi.action_handler_t):
+    def __init__(self):
+        idaapi.action_handler_t.__init__(self)
+        self.viewer_sequence = 0
+
+    def get_filename(self):
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "","All Files (*);;DB (*.db)", options=options)
+        return filename
+
+    def activate(self, ctx):
+        target_filename = self.get_filename()
+        if target_filename and os.path.isfile(target_filename):
+            src_filename = os.path.splitext(idc.get_idb_path())[0] + '.db'
+            print('Diffing: %s - %s' % (src_filename, target_filename))
+            binary_matcher = binkit.binaries.Matcher(filenames = (src_filename, target_filename))
+            binary_matcher.match("output-diff.json")
         return 1
 
     def update(self, ctx):
@@ -41,9 +70,13 @@ class BinkitPlugin(idaapi.plugin_t):
         self.get_connection_filename()
         thread.start_new_thread(start_binkit_server, (self.connection_filename,))
 
-        action_desc = idaapi.action_desc_t('my:action', 'Load Results', MenuHandler(), 'Ctrl+H', 'Load Results', 199)
+        action_desc = idaapi.action_desc_t('my:action', 'Load Results', LoadResultsHandler(), 'Ctrl+H', 'Load Results', 199)
         idaapi.register_action(action_desc)        
         idaapi.attach_action_to_menu('Edit/Other/', 'my:action', idaapi.SETMENU_APP)
+
+        action_desc = idaapi.action_desc_t('my:diff', 'Diff Results', DiffHandler(), 'Ctrl+D', 'Diff Results', 199)
+        idaapi.register_action(action_desc)        
+        idaapi.attach_action_to_menu('Edit/Other/', 'my:diff', idaapi.SETMENU_APP)
 
         return idaapi.PLUGIN_KEEP
 

@@ -31,12 +31,6 @@ class Viewer:
         form.Show(form_name)
         form.add_items(self.functions_matcher.select_by_score(), self.self_name, self.peer_name, self.functions_matcher.get_md5(self.peer_name), 0x00ff00, 0x0000ff)
 
-def get_filename():
-    options = QtWidgets.QFileDialog.Options()
-    options |= QtWidgets.QFileDialog.DontUseNativeDialog
-    filename, _ = QtWidgets.QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "","All Files (*);;JSON (*.json)", options=options)
-    return filename
-
 if __name__ == '__main__':
     viewer = Viewer(get_filename())
     viewer.show_functions_match_viewer()
