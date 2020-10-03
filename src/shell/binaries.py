@@ -16,7 +16,7 @@ for binkit_path in binkit_paths:
 
 import pybinkit
 import client
-import functions
+from functions import *
 
 matchTypeMap = {
     "CALL":  0,
@@ -27,7 +27,7 @@ matchTypeMap = {
     "CALLED":  5
 }
 
-class BinaryMatcher:
+class Matcher:
     def __init__(self, log_setting_filename = ''):
         self.function_matches = None
         self.binaries = []        
@@ -88,8 +88,8 @@ class BinaryMatcher:
         return total_match_count
 
     def print_function_matches(self):
-        functions_matcher = functions.Matcher(function_matches = self.function_matches, binaries = self.binaries)
-        print(functions_matcher.get_stats())
+        function_matches = functions.Matcher(function_matches = self.function_matches, binaries = self.binaries)
+        print(function_matches.get_stats())
         """
         for function_match in util.get_function_match_list():
             print('* %.8x - %.8x' % (function_match['source'], function_match['target']))
@@ -101,8 +101,8 @@ class BinaryMatcher:
     def save(self, filename):
         if not self.function_matches:
             return
-        functions_matcher = functions.Matcher(function_matches = self.function_matches, binaries = self.binaries)
-        functions_matcher.save(filename)
+        function_matches = functions.Matcher(function_matches = self.function_matches, binaries = self.binaries)
+        function_matches.save(filename)
 
     def show_on_ida(self, filename):
         profile_list = self.profiles.list()
@@ -121,13 +121,13 @@ class BinaryMatcher:
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='BinKit BinaryMatcher')
+    parser = argparse.ArgumentParser(description='BinKit Binary Matcher')
     parser.add_argument('-c', '--command', metavar='command', type=str, default = '', help='File script command')
     parser.add_argument('-o', '--output_filename', metavar='output_filename', type=str, default = 'diff.yml', help='Output filename')
     parser.add_argument('filenames', metavar='filenames', nargs='+', type=str, help='IDAPython script filename')
     args = parser.parse_args()
 
-    binary_matcher = BinaryMatcher()
+    binary_matcher = Matcher()
     for filename in args.filenames:
         binary_matcher.load(filename)
 

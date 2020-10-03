@@ -46,7 +46,7 @@ class FunctionMatch(dict):
         else:
             raise AttributeError('No such attribute: ' + name)
 
-class FunctionMatchTool:
+class Matcher:
     def __init__(self, filename = '', function_matches = None, binaries = [], debug = 0):
         self.debug = debug
         self.binaries = []
@@ -301,10 +301,10 @@ if __name__ == '__main__':
 
     for filename_pattern in args.filenames:
         for filename in glob.glob(filename_pattern):
-            function_matches = FunctionMatchTool(filename = filename)
-            selected_matches = function_matches.select_by_score()
+            functions_matcher = Matcher(filename = filename)
+            selected_matches = functions_matcher.select_by_score()
             pprint.pprint(selected_matches)
 
             if args.command == 'sort':
-                function_matches.sort()
-                function_matches.save(filename)
+                functions_matcher.sort()
+                functions_matcher.save(filename)
