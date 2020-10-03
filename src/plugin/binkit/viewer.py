@@ -1,10 +1,13 @@
 import os
-import idaapi
-import ida_bytes
 import json
-from functions_match_viewer import *
-from function_match import *
+
+import idaapi
+import idc
+import ida_bytes
 from PyQt5 import QtGui, QtCore, QtWidgets
+
+from function_match import *
+from functions_match_viewer import *
 
 class Viewer:
     def __init__(self, filename):
@@ -24,7 +27,6 @@ class Viewer:
             self.peer_name = 'target'
 
     def show_functions_match_viewer(self, form_name):
-        idaapi.msg("show_functions_match_viewer\n")
         form = FunctionsMatchViewer()
         form.Show(form_name)
         form.add_items(self.function_match_tool.select_by_score(), self.self_name, self.peer_name, self.function_match_tool.get_md5(self.peer_name), 0x00ff00, 0x0000ff)
