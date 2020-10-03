@@ -11,7 +11,7 @@ import idc
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
-from binkit.viewer import *
+from viewer import *
 
 def execute_sync(function, sync_type):
     """
