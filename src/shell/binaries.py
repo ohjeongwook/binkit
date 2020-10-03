@@ -16,7 +16,7 @@ for binkit_path in binkit_paths:
 
 import pybinkit
 import client
-from functions import *
+import functions
 
 matchTypeMap = {
     "CALL":  0,
@@ -103,6 +103,7 @@ class Matcher:
     def save(self, filename):
         if not self.function_matches:
             return
+
         function_matches = functions.Matcher(function_matches = self.function_matches, binaries = self.binaries)
         function_matches.save(filename)
 
