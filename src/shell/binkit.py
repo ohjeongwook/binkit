@@ -131,12 +131,9 @@ if __name__ == '__main__':
     for filename in args.filenames:
         binary_matcher.load(filename)
 
-    #input("binary_matcher.diff(algorithm = 'init')") 
     match_count = binary_matcher.diff(algorithm = 'init')
     while match_count > 0:
-        #input("binary_matcher.diff(algorithm = 'hash')") 
         match_count = binary_matcher.diff(algorithm = 'hash')
         for matchType in ("CALL", "CREF_FROM", "CREF_TO"):
-            #input("binary_matcher.diff(algorithm = 'controlflow', match_type = '%s', iteration = 1)" % (matchType)) 
             match_count += binary_matcher.diff(algorithm = 'controlflow', match_type = matchType, iteration = 1)
     binary_matcher.save(args.output_filename)
