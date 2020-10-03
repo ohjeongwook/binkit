@@ -28,11 +28,13 @@ matchTypeMap = {
 }
 
 class Matcher:
-    def __init__(self, log_setting_filename = ''):
+    def __init__(self, filenames = [], log_setting_filename = ''):
         self.function_matches = None
         self.binaries = []        
         self.profiles = client.Profiles()
         pybinkit.load_log_settings(log_setting_filename)
+        for filename in filenames:
+            self.load(filename)
 
     def get_binaries(self):
         return self.binaries
@@ -118,6 +120,14 @@ class Matcher:
 
             connection.root.show_diff(filename)
 
+    def match(self, output_filename):
+        match_count = self.diff(algorithm = 'init')
+        while match_count > 0:
+            match_count = self.diff(algorithm = 'hash')
+            for matchType in ("CALL", "CREF_FROM", "CREF_TO"):
+                match_count += self.diff(algorithm = 'controlflow', match_type = matchType, iteration = 1)
+        self.save(output_filename)
+
 if __name__ == '__main__':
     import argparse
 
@@ -127,13 +137,5 @@ if __name__ == '__main__':
     parser.add_argument('filenames', metavar='filenames', nargs='+', type=str, help='IDAPython script filename')
     args = parser.parse_args()
 
-    binary_matcher = Matcher()
-    for filename in args.filenames:
-        binary_matcher.load(filename)
-
-    match_count = binary_matcher.diff(algorithm = 'init')
-    while match_count > 0:
-        match_count = binary_matcher.diff(algorithm = 'hash')
-        for matchType in ("CALL", "CREF_FROM", "CREF_TO"):
-            match_count += binary_matcher.diff(algorithm = 'controlflow', match_type = matchType, iteration = 1)
-    binary_matcher.save(args.output_filename)
+    binary_matcher = Matcher(args.filenames)
+    binary_matcher.match(args.output_filename)
