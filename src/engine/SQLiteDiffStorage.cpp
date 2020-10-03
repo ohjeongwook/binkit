@@ -1,10 +1,8 @@
 #pragma once
 #include <stdio.h>
 #include <string>
-#include <unordered_set>
 
 using namespace std;
-using namespace stdext;
 
 #include "sqlite3.h"
 
