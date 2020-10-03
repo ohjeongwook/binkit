@@ -65,18 +65,7 @@ vector<BasicBlockMatch> DiffAlgorithms::DoBlocksInstructionHashMatch(unordered_s
     for (va_t sourceAddress : sourceBlockAddresses)
     {
         vector<unsigned char> instructionHash = m_psrcInstructionHash->GetInstructionHash(sourceAddress);
-        vector<va_t> targetAddresses;
-
-        for (va_t targetAddress : m_ptargetInstructionHash->GetHashMatches(instructionHash))
-        {
-            if (targetBlockAddressSet.find(targetAddress) == targetBlockAddressSet.end())
-            {
-                continue;
-            }
-
-            targetAddresses.push_back(targetAddress);
-        }
-
+        vector<va_t> targetAddresses = m_ptargetInstructionHash->GetHashMatches(instructionHash, targetBlockAddressSet);
         if (targetAddresses.size() == 1)
         {
             BasicBlockMatch basicBlockMatch;
