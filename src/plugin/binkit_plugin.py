@@ -4,10 +4,12 @@ import idaapi
 import idc
 import thread
 import traceback
+import threading
 
 from binkit.viewer import *
 from binkit.service import *
 import binkit.binaries
+import binkit.python
 
 class LoadResultsHandler(idaapi.action_handler_t):
     def __init__(self):
@@ -40,6 +42,7 @@ class DiffHandler(idaapi.action_handler_t):
     def __init__(self):
         idaapi.action_handler_t.__init__(self)
         self.viewer_sequence = 0
+        self.use_process = True
 
     def get_filename(self):
         options = QtWidgets.QFileDialog.Options()
@@ -47,13 +50,27 @@ class DiffHandler(idaapi.action_handler_t):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "","All Files (*);;DB (*.db)", options=options)
         return filename
 
+    def match_thread(self, src_filename, target_filename):
+        print('match_thread:', src_filename, target_filename)
+        binary_matcher = binkit.binaries.Matcher(filenames = (src_filename, target_filename))
+        binary_matcher.match("output-diff2.json")
+
     def activate(self, ctx):
         target_filename = self.get_filename()
         if target_filename and os.path.isfile(target_filename):
             src_filename = os.path.splitext(idc.get_idb_path())[0] + '.db'
             print('Diffing: %s - %s' % (src_filename, target_filename))
-            binary_matcher = binkit.binaries.Matcher(filenames = (src_filename, target_filename))
-            binary_matcher.match("output-diff.json")
+
+            if self.use_process:
+                launcher = binkit.python.Launcher()
+                script_name = os.path.splitext(binkit.binaries.__file__)[0] + '.py'
+                parameters = [script_name, '-o', 'output.json', src_filename, target_filename]
+                print(parameters)
+                launcher.run(parameters)
+            else:
+                t = threading.Thread(target=self.match_thread, args=(src_filename, target_filename))
+                t.start()
+
         return 1
 
     def update(self, ctx):
